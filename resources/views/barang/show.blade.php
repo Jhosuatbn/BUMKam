@@ -1,73 +1,29 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Edit Barang</title>
-</head>
-<body>
+@extends('layouts.app')
 
-    <h1>Edit Barang</h1>
+@section('title', 'Detail Barang')
 
-    @if ($errors->any())
-        <div>
-            <strong>Terjadi kesalahan:</strong>
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+@section('content')
+    <div class="space-y-6">
+        <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Detail Barang</h1>
+                <p class="mt-2 text-sm text-slate-600">Informasi barang dan harga yang tercatat.</p>
+            </div>
+            <a href="{{ route('barang.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Kembali</a>
+        </header>
 
-    <form action="{{ route('barang.update', $barang->id_barang) }}" method="POST">
-        @csrf
-        @method('PUT')
-
-        <div>
-            <label>ID Barang</label><br>
-            <input type="text"
-                   value="{{ $barang->id_barang }}"
-                   disabled>
-        </div>
-
-        <br>
-
-        <div>
-            <label>Nama Barang</label><br>
-            <input type="text"
-                   name="nama_barang"
-                   value="{{ old('nama_barang', $barang->nama_barang) }}"
-                   required>
-        </div>
-
-        <br>
-
-        <div>
-            <label>Kategori</label><br>
-            <input type="text"
-                   name="kategori"
-                   value="{{ old('kategori', $barang->kategori) }}"
-                   required>
-        </div>
-
-        <br>
-
-        <div>
-            <label>Harga</label><br>
-            <input type="number"
-                   name="harga"
-                   value="{{ old('harga', $barang->harga) }}"
-                   min="0"
-                   required>
-        </div>
-
-        <br>
-
-        <button type="submit">Update</button>
-
-        <a href="{{ route('barang.index') }}">
-            Kembali
-        </a>
-    </form>
-
-</body>
-</html>
+        <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-labelledby="barang-detail-heading">
+            <h2 id="barang-detail-heading" class="border-b border-slate-200 px-5 py-4 text-base font-semibold text-slate-900 sm:px-6">Informasi Barang</h2>
+            <dl class="grid grid-cols-1 gap-x-10 px-5 sm:grid-cols-2 sm:px-6">
+                <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">ID Barang</dt><dd class="mt-1 break-words text-sm font-semibold text-slate-900">{{ $barang->id_barang }}</dd></div>
+                <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Nama Barang</dt><dd class="mt-1 break-words text-sm font-semibold text-slate-900">{{ $barang->nama_barang }}</dd></div>
+                <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Kategori</dt><dd class="mt-1 text-sm font-semibold text-slate-900">{{ $barang->kategori }}</dd></div>
+                <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Harga</dt><dd class="mt-1 tabular-nums text-sm font-semibold text-slate-900">Rp {{ number_format($barang->harga, 0, ',', '.') }}</dd></div>
+            </dl>
+            <div class="flex flex-wrap gap-3 border-t border-slate-200 px-5 py-4 sm:px-6">
+                <a href="{{ route('barang.edit', $barang->id_barang) }}" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Edit</a>
+                <a href="{{ route('barang.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Daftar Barang</a>
+            </div>
+        </section>
+    </div>
+@endsection

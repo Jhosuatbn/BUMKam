@@ -33,6 +33,9 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('pengguna', PenggunaController::class);
 
+    Route::get('/laporan', [\App\Http\Controllers\LaporanController::class, 'index'])
+        ->name('laporan.index');
+
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 

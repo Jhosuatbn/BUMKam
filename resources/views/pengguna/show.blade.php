@@ -1,37 +1,29 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Detail Pengguna</title>
-</head>
-<body>
+@extends('layouts.app')
 
-    <h1>Detail Pengguna</h1>
+@section('title', 'Detail Pengguna')
 
-    <p>
-        <strong>ID Pengguna:</strong>
-        {{ $pengguna->id_pengguna }}
-    </p>
+@section('content')
+    <div class="space-y-6">
+        <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Detail Pengguna</h1>
+                <p class="mt-2 text-sm text-slate-600">Informasi akun dan peran pengguna.</p>
+            </div>
+            <a href="{{ route('pengguna.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Kembali</a>
+        </header>
 
-    <p>
-        <strong>Username:</strong>
-        {{ $pengguna->username }}
-    </p>
-
-    <p>
-        <strong>Nama Lengkap:</strong>
-        {{ $pengguna->nama_lengkap }}
-    </p>
-
-    <p>
-        <strong>Peran:</strong>
-        {{ $pengguna->peran }}
-    </p>
-
-    <br>
-
-    <a href="{{ route('pengguna.index') }}">
-        Kembali
-    </a>
-
-</body>
-</html>
+        <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-labelledby="pengguna-detail-heading">
+            <h2 id="pengguna-detail-heading" class="border-b border-slate-200 px-5 py-4 text-base font-semibold text-slate-900 sm:px-6">Informasi Pengguna</h2>
+            <dl class="grid grid-cols-1 gap-x-10 px-5 sm:grid-cols-2 sm:px-6">
+                <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">ID Pengguna</dt><dd class="mt-1 break-words text-sm font-semibold text-slate-900">{{ $pengguna->id_pengguna }}</dd></div>
+                <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Username</dt><dd class="mt-1 break-words text-sm font-semibold text-slate-900">{{ $pengguna->username }}</dd></div>
+                <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Nama Lengkap</dt><dd class="mt-1 break-words text-sm font-semibold text-slate-900">{{ $pengguna->nama_lengkap }}</dd></div>
+                <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Peran</dt><dd class="mt-1 text-sm font-semibold text-slate-900">{{ $pengguna->peran }}</dd></div>
+            </dl>
+            <div class="flex flex-wrap gap-3 border-t border-slate-200 px-5 py-4 sm:px-6">
+                <a href="{{ route('pengguna.edit', $pengguna->id_pengguna) }}" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Edit</a>
+                <a href="{{ route('pengguna.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Daftar Pengguna</a>
+            </div>
+        </section>
+    </div>
+@endsection

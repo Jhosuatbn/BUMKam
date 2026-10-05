@@ -1,181 +1,111 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Edit Pemesanan</title>
-</head>
-<body>
+@extends('layouts.app')
 
-    <h1>Edit Pemesanan</h1>
+@section('title', 'Edit Pemesanan')
 
-    @if ($errors->any())
-        <div>
-            <strong>Terjadi kesalahan:</strong>
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+@section('content')
+    <div class="space-y-6">
+        <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Edit Pemesanan</h1>
+                <p class="mt-2 text-sm text-slate-600">Perbarui data pemesanan, barang, dan skema pembayaran.</p>
+            </div>
+            <a href="{{ route('pemesanan.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Kembali</a>
+        </header>
 
-    <form action="{{ route('pemesanan.update', $pemesanan->id_pemesanan) }}" method="POST">
-        @csrf
-        @method('PUT')
-
-        <div>
-            <label>ID Pemesanan</label><br>
-            <input
-                type="text"
-                value="{{ $pemesanan->id_pemesanan }}"
-                disabled
-            >
-        </div>
-
-        <br>
-
-        <div>
-            <label>Pelanggan</label><br>
-            <select name="id_pelanggan" required>
-                @foreach ($pelanggan as $item)
-                    <option
-                        value="{{ $item->id_pelanggan }}"
-                        {{ $pemesanan->id_pelanggan == $item->id_pelanggan ? 'selected' : '' }}
-                    >
-                        {{ $item->nama_pelanggan }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-
-        <br>
-
-        <div>
-            <label>Tanggal Pemesanan</label><br>
-            <input
-                type="date"
-                name="tanggal_pemesanan"
-                value="{{ $pemesanan->tanggal_pemesanan }}"
-                required
-            >
-        </div>
-
-        <hr>
-
-        <h3>Barang</h3>
+        @if ($errors->any())
+            <div role="alert" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900">
+                <p class="font-semibold">Terjadi kesalahan:</p>
+                <ul class="mt-2 list-inside list-disc space-y-1">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
         @php
             $detail = $pemesanan->detailPemesanan->first();
         @endphp
 
-        <div>
-            <label>Barang</label><br>
-            <select name="id_barang" required>
-                @foreach ($barang as $item)
-                    <option
-                        value="{{ $item->id_barang }}"
-                        {{ $detail && $detail->id_barang == $item->id_barang ? 'selected' : '' }}
-                    >
-                        {{ $item->nama_barang }}
-                        - Rp {{ number_format($item->harga, 0, ',', '.') }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
+        <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <form action="{{ route('pemesanan.update', $pemesanan->id_pemesanan) }}" method="POST" class="space-y-8">
+                @csrf
+                @method('PUT')
+                <fieldset>
+                    <legend class="text-base font-semibold text-slate-900">Informasi Pemesanan</legend>
+                    <div class="mt-4 grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2">
+                        <div>
+                            <label for="id_pemesanan_display" class="block text-sm font-semibold text-slate-700">ID Pemesanan</label>
+                            <input id="id_pemesanan_display" type="text" value="{{ $pemesanan->id_pemesanan }}" disabled class="mt-2 block min-h-11 w-full rounded-xl border border-slate-200 bg-slate-100 px-3.5 py-2.5 text-sm text-slate-600">
+                        </div>
+                        <div>
+                            <label for="tanggal_pemesanan" class="block text-sm font-semibold text-slate-700">Tanggal Pemesanan</label>
+                            <input id="tanggal_pemesanan" type="date" name="tanggal_pemesanan" value="{{ $pemesanan->tanggal_pemesanan }}" required class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label for="id_pelanggan" class="block text-sm font-semibold text-slate-700">Pelanggan</label>
+                            <select id="id_pelanggan" name="id_pelanggan" required class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                                @foreach ($pelanggan as $item)
+                                    <option value="{{ $item->id_pelanggan }}" {{ $pemesanan->id_pelanggan == $item->id_pelanggan ? 'selected' : '' }}>{{ $item->nama_pelanggan }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </fieldset>
 
-        <br>
+                <fieldset class="border-t border-slate-200 pt-6">
+                    <legend class="text-base font-semibold text-slate-900">Barang</legend>
+                    <div class="mt-4 grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2">
+                        <div class="md:col-span-2">
+                            <label for="id_barang" class="block text-sm font-semibold text-slate-700">Barang</label>
+                            <select id="id_barang" name="id_barang" required class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                                @foreach ($barang as $item)
+                                    <option value="{{ $item->id_barang }}" {{ $detail && $detail->id_barang == $item->id_barang ? 'selected' : '' }}>{{ $item->nama_barang }} - Rp {{ number_format($item->harga, 0, ',', '.') }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label for="jumlah" class="block text-sm font-semibold text-slate-700">Jumlah</label>
+                            <input id="jumlah" type="number" name="jumlah" value="{{ $detail->jumlah ?? 1 }}" min="1" required class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                        </div>
+                    </div>
+                </fieldset>
 
-        <div>
-            <label>Jumlah</label><br>
-            <input
-                type="number"
-                name="jumlah"
-                value="{{ $detail->jumlah ?? 1 }}"
-                min="1"
-                required
-            >
-        </div>
+                <fieldset class="border-t border-slate-200 pt-6">
+                    <legend class="text-base font-semibold text-slate-900">Skema Pembayaran</legend>
+                    <div class="mt-4 grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2">
+                        <div>
+                            <label for="skema_pembayaran" class="block text-sm font-semibold text-slate-700">Skema Pembayaran</label>
+                            <select id="skema_pembayaran" name="skema_pembayaran" required class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                                <option value="DP" {{ $pemesanan->skema_pembayaran == 'DP' ? 'selected' : '' }}>DP</option>
+                                <option value="Sebagian" {{ $pemesanan->skema_pembayaran == 'Sebagian' ? 'selected' : '' }}>Sebagian</option>
+                                <option value="Tanpa DP" {{ $pemesanan->skema_pembayaran == 'Tanpa DP' ? 'selected' : '' }}>Tanpa DP</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="dp" class="block text-sm font-semibold text-slate-700">Jumlah DP</label>
+                            <input id="dp" type="number" name="dp" value="{{ $pemesanan->dp }}" min="0" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                        </div>
+                        <div>
+                            <label for="tenor" class="block text-sm font-semibold text-slate-700">Tenor (bulan)</label>
+                            <input id="tenor" type="number" name="tenor" value="{{ $pemesanan->tenor }}" min="1" required class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                        </div>
+                        <div>
+                            <label for="bunga" class="block text-sm font-semibold text-slate-700">Bunga</label>
+                            <input id="bunga" type="number" name="bunga" value="{{ $pemesanan->bunga }}" min="0" step="0.01" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label for="jaminan" class="block text-sm font-semibold text-slate-700">Jaminan</label>
+                            <textarea id="jaminan" name="jaminan" rows="3" class="mt-2 block w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">{{ $pemesanan->jaminan }}</textarea>
+                        </div>
+                    </div>
+                </fieldset>
 
-        <hr>
-
-        <h3>Pembayaran</h3>
-
-        <div>
-            <label>Skema Pembayaran</label><br>
-
-            <select name="skema_pembayaran" required>
-                <option value="DP"
-                    {{ $pemesanan->skema_pembayaran == 'DP' ? 'selected' : '' }}>
-                    DP
-                </option>
-
-                <option value="Sebagian"
-                    {{ $pemesanan->skema_pembayaran == 'Sebagian' ? 'selected' : '' }}>
-                    Sebagian
-                </option>
-
-                <option value="Tanpa DP"
-                    {{ $pemesanan->skema_pembayaran == 'Tanpa DP' ? 'selected' : '' }}>
-                    Tanpa DP
-                </option>
-            </select>
-        </div>
-
-        <br>
-
-        <div>
-            <label>Jumlah DP</label><br>
-            <input
-                type="number"
-                name="dp"
-                value="{{ $pemesanan->dp }}"
-                min="0"
-            >
-        </div>
-
-        <br>
-
-        <div>
-            <label>Tenor (bulan)</label><br>
-            <input
-                type="number"
-                name="tenor"
-                value="{{ $pemesanan->tenor }}"
-                min="1"
-                required
-            >
-        </div>
-
-        <br>
-
-        <div>
-            <label>Jaminan</label><br>
-            <textarea name="jaminan">{{ $pemesanan->jaminan }}</textarea>
-        </div>
-
-        <br>
-
-        <div>
-            <label>Bunga</label><br>
-            <input
-                type="number"
-                name="bunga"
-                value="{{ $pemesanan->bunga }}"
-                min="0"
-                step="0.01"
-            >
-        </div>
-
-        <br>
-
-        <button type="submit">
-            Update Pemesanan
-        </button>
-
-        <a href="{{ route('pemesanan.index') }}">
-            Kembali
-        </a>
-
-    </form>
-
-</body>
-</html>
+                <div class="flex flex-wrap gap-3 border-t border-slate-200 pt-5">
+                    <button type="submit" class="inline-flex min-h-11 items-center justify-center rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Update Pemesanan</button>
+                    <a href="{{ route('pemesanan.index') }}" class="inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Batal</a>
+                </div>
+            </form>
+        </section>
+    </div>
+@endsection
