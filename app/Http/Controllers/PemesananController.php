@@ -1,3 +1,4 @@
+
 <?php
 
 namespace App\Http\Controllers;
@@ -9,7 +10,6 @@ use App\Models\DetailPemesanan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use RuntimeException;
 
 class PemesananController extends Controller
 {
@@ -21,15 +21,18 @@ class PemesananController extends Controller
     }
 
     /**
-     * Menghitung perkiraan ID untuk ditampilkan di halaman form.
-     * ID akan diverifikasi dan dibuat ulang saat penyimpanan.
+     * Menghitung perkiraan ID untuk form.
+     * ID akan dibuat ulang saat penyimpanan.
      */
     private function idPemesananBerikutnya(): string
     {
         $prefix = 'PSN-' . now()->format('dmy') . '-';
 
-        $ids = Pemesanan::where('id_pemesanan', 'like', $prefix . '%')
-            ->pluck('id_pemesanan');
+        $ids = Pemesanan::where(
+            'id_pemesanan',
+            'like',
+            $prefix . '%'
+        )->pluck('id_pemesanan');
 
         $nomorTerakhir = 0;
 
@@ -80,7 +83,6 @@ class PemesananController extends Controller
         ]);
 
         $barang = Barang::findOrFail($request->id_barang);
-
         $totalHarga = $barang->harga * (int) $request->jumlah;
         $bunga = $totalHarga * 0.15;
 
@@ -89,21 +91,16 @@ class PemesananController extends Controller
             : 0;
 
         if ($dp > $totalHarga) {
-            return back()
-                ->withInput()
-                ->withErrors([
-                    'dp' => 'Nominal DP tidak boleh melebihi total harga barang.',
-                ]);
+            return back()->withInput()->withErrors([
+                'dp' => 'Nominal DP tidak boleh melebihi total harga barang.',
+            ]);
         }
 
         $angsuran = (
             $totalHarga - $dp + $bunga
         ) / (int) $request->tenor;
 
-        /*
-         * MySQL advisory lock mencegah dua proses penyimpanan
-         * menghitung nomor urut yang sama secara bersamaan.
-         */
+        // Mencegah dua proses membuat nomor urut yang sama.
         $tanggalId = now()->format('dmy');
         $namaLock = 'pemesanan_' . $tanggalId;
 
@@ -113,11 +110,9 @@ class PemesananController extends Controller
         );
 
         if (!$lock || (int) $lock->lock_status !== 1) {
-            return back()
-                ->withInput()
-                ->withErrors([
-                    'id_pemesanan' => 'Sistem sedang memproses pemesanan lain. Silakan coba lagi.',
-                ]);
+            return back()->withInput()->withErrors([
+                'id_pemesanan' => 'Sistem sedang memproses pemesanan lain. Silakan coba lagi.',
+            ]);
         }
 
         try {
@@ -181,8 +176,6 @@ class PemesananController extends Controller
                     'subtotal' => $totalHarga,
                 ]);
             });
-        } catch (\Throwable $e) {
-            throw $e;
         } finally {
             DB::selectOne(
                 'SELECT RELEASE_LOCK(?)',
@@ -234,7 +227,6 @@ class PemesananController extends Controller
         ]);
 
         $barang = Barang::findOrFail($request->id_barang);
-
         $totalHarga = $barang->harga * (int) $request->jumlah;
         $bunga = $totalHarga * 0.15;
 
@@ -243,11 +235,9 @@ class PemesananController extends Controller
             : 0;
 
         if ($dp > $totalHarga) {
-            return back()
-                ->withInput()
-                ->withErrors([
-                    'dp' => 'Nominal DP tidak boleh melebihi total harga barang.',
-                ]);
+            return back()->withInput()->withErrors([
+                'dp' => 'Nominal DP tidak boleh melebihi total harga barang.',
+            ]);
         }
 
         $angsuran = (

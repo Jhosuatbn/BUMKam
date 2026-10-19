@@ -23,6 +23,12 @@ Route::post('/login', [LoginController::class, 'login'])
 // Halaman yang harus login terlebih dahulu
 Route::middleware('auth')->group(function () {
 
+    // Pencarian pelanggan (untuk dropdown di form pemesanan).
+    // WAJIB di atas Route::resource('pelanggan'), kalau tidak "cari"
+    // akan dianggap sebagai {pelanggan} milik route show.
+    Route::get('pelanggan/cari', [PelangganController::class, 'cari'])
+        ->name('pelanggan.cari');
+
     Route::resource('pelanggan', PelangganController::class);
 
     Route::resource('barang', BarangController::class);
