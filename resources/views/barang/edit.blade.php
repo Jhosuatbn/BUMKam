@@ -35,7 +35,11 @@
                     </div>
                     <div>
                         <label for="kategori" class="block text-sm font-semibold text-slate-700">Kategori</label>
-                        <input id="kategori" type="text" name="kategori" value="{{ old('kategori', $barang->kategori) }}" required class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                        <select id="kategori" name="kategori" required class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                            @foreach ($kategoriList as $kat)
+                                <option value="{{ $kat }}" {{ old('kategori', $barang->kategori) == $kat ? 'selected' : '' }}>{{ $kat }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="md:col-span-2">
                         <label for="nama_barang" class="block text-sm font-semibold text-slate-700">Nama Barang</label>
