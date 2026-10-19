@@ -21,7 +21,7 @@ Route::post('/login', [LoginController::class, 'login'])
     ->name('login.process');
 
 // Halaman yang harus login terlebih dahulu
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'pimpinan.access'])->group(function () {
 
     Route::resource('pelanggan', PelangganController::class);
 

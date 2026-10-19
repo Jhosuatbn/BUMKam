@@ -5,24 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Dashboard') | BUMKam Tuah Rezeki</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('styles')
 </head>
 <body class="min-h-screen bg-slate-100 font-sans text-slate-900 antialiased">
     @php
-        $navigationItems = [
-            ['label' => 'Dashboard', 'route' => 'dashboard', 'active' => 'dashboard'],
-            ['label' => 'Pelanggan', 'route' => 'pelanggan.index', 'active' => 'pelanggan.*'],
-            ['label' => 'Barang', 'route' => 'barang.index', 'active' => 'barang.*'],
-            ['label' => 'Pemesanan', 'route' => 'pemesanan.index', 'active' => 'pemesanan.*'],
-            ['label' => 'Pembayaran', 'route' => 'pembayaran.index', 'active' => 'pembayaran.*'],
-            ['label' => 'Laporan', 'route' => 'laporan.index', 'active' => 'laporan.*'],
-            ['label' => 'Pengguna', 'route' => 'pengguna.index', 'active' => 'pengguna.*'],
-        ];
-        $authenticatedUser = auth()->user();
-        $displayName = $authenticatedUser?->nama_lengkap ?? $authenticatedUser?->username ?? 'Admin';
+        
+$authenticatedUser = auth()->user();
+
+if ($authenticatedUser?->peran === 'Pimpinan') {
+    $navigationItems = [
+        ['label' => 'Dashboard', 'route' => 'dashboard', 'active' => 'dashboard'],
+        ['label' => 'Pelanggan', 'route' => 'pelanggan.index', 'active' => 'pelanggan.*'],
+        ['label' => 'Barang', 'route' => 'barang.index', 'active' => 'barang.*'],
+        ['label' => 'Laporan', 'route' => 'laporan.index', 'active' => 'laporan.*'],
+    ];
+} else {
+    $navigationItems = [
+        ['label' => 'Dashboard', 'route' => 'dashboard', 'active' => 'dashboard'],
+        ['label' => 'Pelanggan', 'route' => 'pelanggan.index', 'active' => 'pelanggan.*'],
+        ['label' => 'Barang', 'route' => 'barang.index', 'active' => 'barang.*'],
+        ['label' => 'Pemesanan', 'route' => 'pemesanan.index', 'active' => 'pemesanan.*'],
+        ['label' => 'Pembayaran', 'route' => 'pembayaran.index', 'active' => 'pembayaran.*'],
+        ['label' => 'Laporan', 'route' => 'laporan.index', 'active' => 'laporan.*'],
+        ['label' => 'Pengguna', 'route' => 'pengguna.index', 'active' => 'pengguna.*'],
+    ];
+}
+
+$displayName = $authenticatedUser?->nama_lengkap ?? $authenticatedUser?->username ?? 'Admin';
+
     @endphp
 
     <div class="min-h-screen lg:grid lg:grid-cols-[16rem_minmax(0,1fr)]">
-        <aside class="hidden min-h-screen flex-col bg-[#0b1f3a] text-white lg:sticky lg:top-0 lg:flex lg:h-screen">
+        <aside class="app-sidebar hidden min-h-screen flex-col bg-[#0b1f3a] text-white lg:sticky lg:top-0 lg:flex lg:h-screen">
             <a href="{{ route('dashboard') }}" class="flex items-center gap-3 border-b border-white/10 px-6 py-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-blue-300">
                 <span class="grid size-11 shrink-0 place-items-center rounded-xl bg-blue-500 text-lg font-bold text-white">B</span>
                 <span class="min-w-0">
@@ -57,7 +71,7 @@
         </aside>
 
         <div class="flex min-h-screen min-w-0 flex-col">
-            <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur">
+            <header class="app-header sticky top-0 z-30 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur">
                 <div class="flex min-h-[4.5rem] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
                     <div class="flex min-w-0 items-center gap-3">
                         <a href="{{ route('dashboard') }}" class="flex items-center gap-2 lg:hidden">
