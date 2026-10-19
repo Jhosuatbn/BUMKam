@@ -34,7 +34,7 @@ class PemesananController extends Controller
         'id_barang' => 'required|exists:barang,id_barang',
         'jumlah' => 'required|integer|min:1',
 
-        'skema_pembayaran' => 'required|in:DP,Sebagian,Tanpa DP',
+        'skema_pembayaran' => 'required|in:DP,Tanpa DP',
         'dp' => 'nullable|numeric|min:0',
         'tenor' => 'required|integer|min:1',
         'jaminan' => 'nullable|string',
@@ -59,16 +59,12 @@ class PemesananController extends Controller
     // Hitung angsuran
     if ($request->skema_pembayaran === 'DP') {
 
-        $angsuran = ($totalHarga - $dp + $bunga) / $request->tenor;
+        $angsuran = ($totalHarga - $dp + $bunga) / $request->tenor;       
 
-    } elseif ($request->skema_pembayaran === 'Sebagian') {
-
-        $angsuran = ($totalHarga - $dp + $bunga) / $request->tenor;
-
-    } else {
+    } else { 
 
         // Tanpa DP
-        $angsuran = ($totalHarga + $bunga) / $request->tenor;
+        $angsuran = ($totalHarga + $bunga ) / $request->tenor;
     }
 
     // Simpan pemesanan
@@ -134,7 +130,7 @@ class PemesananController extends Controller
         'id_barang' => 'required|exists:barang,id_barang',
         'jumlah' => 'required|integer|min:1',
 
-        'skema_pembayaran' => 'required|in:DP,Sebagian,Tanpa DP',
+        'skema_pembayaran' => 'required|in:DP,Tanpa DP',
         'dp' => 'nullable|numeric|min:0',
         'tenor' => 'required|integer|min:1',
         'jaminan' => 'nullable|string',
@@ -159,7 +155,7 @@ class PemesananController extends Controller
     // Hitung angsuran
     if (
         $request->skema_pembayaran === 'DP' ||
-        $request->skema_pembayaran === 'Sebagian'
+        $request->skema_pembayaran === 'Tanpa DP'
     ) {
         $angsuran = ($totalHarga - $dp + $bunga) / $request->tenor;
     } else {

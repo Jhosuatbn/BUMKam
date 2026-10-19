@@ -16,11 +16,37 @@
             <div role="status" class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900">{{ session('success') }}</div>
         @endif
 
+        @if (session('error'))
+            <div role="alert" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-900">{{ session('error') }}</div>
+        @endif
+
         <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-labelledby="pelanggan-list-heading">
-            <div class="border-b border-slate-200 px-5 py-4 sm:px-6">
-                <h2 id="pelanggan-list-heading" class="text-base font-semibold text-slate-900">Daftar Pelanggan</h2>
-                <p class="mt-1 text-sm text-slate-500">Informasi kontak pelanggan yang tersimpan.</p>
+            <div class="flex flex-col gap-4 border-b border-slate-200 px-5 py-4 sm:px-6 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                    <h2 id="pelanggan-list-heading" class="text-base font-semibold text-slate-900">Daftar Pelanggan</h2>
+                    <p class="mt-1 text-sm text-slate-500">
+                        Informasi kontak pelanggan yang tersimpan
+                        @if ($pelanggan->total() > 0)
+                            ({{ $pelanggan->total() }} data).
+                        @else
+                            .
+                        @endif
+                    </p>
+                </div>
+
+                {{-- Pencarian pelanggan --}}
+                <form action="{{ route('pelanggan.index') }}" method="GET" role="search" class="flex w-full flex-col gap-2 sm:flex-row lg:max-w-md">
+                    <label for="q" class="sr-only">Cari pelanggan</label>
+                    <input id="q" type="search" name="q" value="{{ request('q') }}" placeholder="Cari nama, ID, NIK, atau no. telepon..." class="block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                    <div class="flex gap-2">
+                        <button type="submit" class="inline-flex min-h-11 items-center justify-center rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Cari</button>
+                        @if (request()->filled('q'))
+                            <a href="{{ route('pelanggan.index') }}" class="inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Reset</a>
+                        @endif
+                    </div>
+                </form>
             </div>
+
             <div class="overflow-x-auto">
                 <table class="min-w-[58rem] divide-y divide-slate-200 text-left text-sm">
                     <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-600">
@@ -54,11 +80,26 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="6" class="px-6 py-12 text-center text-sm text-slate-500">Belum ada data pelanggan.</td></tr>
+                            <tr>
+                                <td colspan="6" class="px-6 py-12 text-center text-sm text-slate-500">
+                                    @if (request()->filled('q'))
+                                        Tidak ada pelanggan yang cocok dengan "{{ request('q') }}".
+                                    @else
+                                        Belum ada data pelanggan.
+                                    @endif
+                                </td>
+                            </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
+
+            {{-- Navigasi halaman --}}
+            @if ($pelanggan->hasPages())
+                <div class="border-t border-slate-200 px-5 py-4 sm:px-6">
+                    {{ $pelanggan->links() }}
+                </div>
+            @endif
         </section>
     </div>
 @endsection

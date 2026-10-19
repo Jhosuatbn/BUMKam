@@ -37,5 +37,7 @@ class DatabaseSeeder extends Seeder
                 'peran' => 'Pimpinan',
             ]
         );
+
+      
     }
 }
