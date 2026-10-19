@@ -25,5 +25,16 @@ class DatabaseSeeder extends Seeder
                 'peran' => 'Pimpinan',
             ]
         );
+
+        Pengguna::firstOrCreate(
+
+            ['username' => 'staff'],
+            [
+                'id_pengguna' => 'PGN-002',
+                'password' => Hash::make('staff123'),
+                'nama_lengkap' => 'Staff',
+                'peran' => 'Staff',
+            ]
+         );  
     }
 }
