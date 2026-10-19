@@ -7,7 +7,18 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-slate-100 font-sans text-slate-900 antialiased">
-    @php
+    
+@php
+    $authenticatedUser = auth()->user();
+
+    $navigationItems = [
+        ['label' => 'Dashboard', 'route' => 'dashboard', 'active' => 'dashboard'],
+        ['label' => 'Pelanggan', 'route' => 'pelanggan.index', 'active' => 'pelanggan.*'],
+        ['label' => 'Barang', 'route' => 'barang.index', 'active' => 'barang.*'],
+        ['label' => 'Laporan', 'route' => 'laporan.index', 'active' => 'laporan.*'],
+    ];
+
+    if ($authenticatedUser?->peran !== 'Pimpinan') {
         $navigationItems = [
             ['label' => 'Dashboard', 'route' => 'dashboard', 'active' => 'dashboard'],
             ['label' => 'Pelanggan', 'route' => 'pelanggan.index', 'active' => 'pelanggan.*'],
@@ -17,9 +28,13 @@
             ['label' => 'Laporan', 'route' => 'laporan.index', 'active' => 'laporan.*'],
             ['label' => 'Pengguna', 'route' => 'pengguna.index', 'active' => 'pengguna.*'],
         ];
-        $authenticatedUser = auth()->user();
-        $displayName = $authenticatedUser?->nama_lengkap ?? $authenticatedUser?->username ?? 'Admin';
-    @endphp
+    }
+
+    $displayName = $authenticatedUser?->nama_lengkap
+        ?? $authenticatedUser?->username
+        ?? 'Admin';
+@endphp
+
 
     <div class="min-h-screen lg:grid lg:grid-cols-[16rem_minmax(0,1fr)]">
         <aside class="hidden min-h-screen flex-col bg-[#0b1f3a] text-white lg:sticky lg:top-0 lg:flex lg:h-screen">
