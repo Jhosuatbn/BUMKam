@@ -29,12 +29,17 @@
                 @csrf
                 <div class="grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2">
                     <div>
-                        <label for="id_barang" class="block text-sm font-semibold text-slate-700">ID Barang</label>
-                        <input id="id_barang" type="text" name="id_barang" value="{{ old('id_barang') }}" placeholder="Contoh: BRG001" required class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                        <label for="kategori" class="block text-sm font-semibold text-slate-700">Kategori</label>
+                        <select id="kategori" name="kategori" required class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                            <option value="" disabled selected>-- Pilih Kategori --</option>
+                            @foreach ($kategoriList as $kat)
+                                <option value="{{ $kat }}" {{ old('kategori') == $kat ? 'selected' : '' }}>{{ $kat }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div>
-                        <label for="kategori" class="block text-sm font-semibold text-slate-700">Kategori</label>
-                        <input id="kategori" type="text" name="kategori" value="{{ old('kategori') }}" placeholder="Contoh: Furniture" required class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                        <label for="id_barang_notice" class="block text-sm font-semibold text-slate-700">ID Barang</label>
+                        <input id="id_barang_notice" type="text" value="Dibuat otomatis berdasarkan kategori" disabled class="mt-2 block min-h-11 w-full rounded-xl border border-slate-200 bg-slate-100 px-3.5 py-2.5 text-sm text-slate-500 italic">
                     </div>
                     <div class="md:col-span-2">
                         <label for="nama_barang" class="block text-sm font-semibold text-slate-700">Nama Barang</label>
