@@ -234,9 +234,9 @@
                                 Tanpa DP
                             </option>
 
-                            <option value="Pakai DP"
-                                {{ old('skema_pembayaran') == 'Pakai DP' ? 'selected' : '' }}>
-                                Pakai DP
+                            <option value="DP"
+                                {{ old('skema_pembayaran') == 'DP' ? 'selected' : '' }}>
+                                DP
                             </option>
                         </select>
                     </div>
@@ -526,12 +526,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Tampilkan/sembunyikan input DP sesuai skema pembayaran.
     function aturTampilanDP() {
-        const pakaiDP = skemaInput.value === 'Pakai DP';
+        const DP = skemaInput.value === 'DP';
 
-        bagianDP.classList.toggle('hidden', !pakaiDP);
-        dpInput.required = pakaiDP;
+        bagianDP.classList.toggle('hidden', !DP);
+        dpInput.required = DP;
 
-        if (!pakaiDP) {
+        if (!DP) {
             dpInput.value = '0';
         }
 
@@ -548,11 +548,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const jumlah = Number(jumlahInput.value);
         const tenor = Number(tenorInput.value);
-        const pakaiDP = skemaInput.value === 'Pakai DP';
+        const DP = skemaInput.value === 'DP';
 
         const totalHarga = harga * jumlah;
         const bunga = totalHarga * 0.15;
-        const dp = pakaiDP ? Number(dpInput.value) : 0;
+        const dp = DP ? Number(dpInput.value) : 0;
         const totalPembayaran = totalHarga + bunga;
 
         hargaSatuan.textContent = harga > 0
@@ -577,7 +577,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        if (pakaiDP && dpInput.value.trim() === '') {
+        if (DP && dpInput.value.trim() === '') {
             ringkasanAngsuran.textContent = 'Rp 0';
             keteranganAngsuran.textContent =
                 'Masukkan nominal DP untuk menghitung angsuran.';
@@ -597,7 +597,7 @@ document.addEventListener('DOMContentLoaded', function () {
         keteranganAngsuran.textContent =
             'Dibayar selama ' + tenor + ' bulan' +
             (
-                pakaiDP
+                DP
                     ? ', dengan DP ' + formatRupiah(dp) + '.'
                     : ', tanpa uang muka.'
             );
@@ -645,12 +645,12 @@ document.addEventListener('DOMContentLoaded', function () {
             : 0;
 
         const totalHarga = harga * Number(jumlahInput.value);
-        const dp = skemaInput.value === 'Pakai DP'
+        const dp = skemaInput.value === 'DP'
             ? Number(dpInput.value)
             : 0;
 
         if (
-            skemaInput.value === 'Pakai DP' &&
+            skemaInput.value === 'DP' &&
             (
                 dpInput.value.trim() === '' ||
                 !Number.isFinite(dp) ||

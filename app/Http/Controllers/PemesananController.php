@@ -9,7 +9,6 @@ use App\Models\DetailPemesanan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use RuntimeException;
 
 class PemesananController extends Controller
 {
@@ -73,8 +72,8 @@ class PemesananController extends Controller
             'tanggal_pemesanan' => 'required|date',
             'id_barang' => 'required|exists:barang,id_barang',
             'jumlah' => 'required|integer|min:1',
-            'skema_pembayaran' => 'required|in:Tanpa DP,Pakai DP',
-            'dp' => 'required_if:skema_pembayaran,Pakai DP|nullable|numeric|min:0',
+            'skema_pembayaran' => 'required|in:DP,Tanpa DP',
+            'dp' => 'required_if:skema_pembayaran,DP|nullable|numeric|min:0',
             'tenor' => 'required|integer|min:1',
             'jaminan' => 'nullable|string',
         ]);
@@ -84,7 +83,7 @@ class PemesananController extends Controller
         $totalHarga = $barang->harga * (int) $request->jumlah;
         $bunga = $totalHarga * 0.15;
 
-        $dp = $request->skema_pembayaran === 'Pakai DP'
+        $dp = $request->skema_pembayaran === 'DP'
             ? (float) $request->dp
             : 0;
 
@@ -181,8 +180,6 @@ class PemesananController extends Controller
                     'subtotal' => $totalHarga,
                 ]);
             });
-        } catch (\Throwable $e) {
-            throw $e;
         } finally {
             DB::selectOne(
                 'SELECT RELEASE_LOCK(?)',
@@ -227,8 +224,8 @@ class PemesananController extends Controller
             'tanggal_pemesanan' => 'required|date',
             'id_barang' => 'required|exists:barang,id_barang',
             'jumlah' => 'required|integer|min:1',
-            'skema_pembayaran' => 'required|in:Tanpa DP,Pakai DP',
-            'dp' => 'required_if:skema_pembayaran,Pakai DP|nullable|numeric|min:0',
+            'skema_pembayaran' => 'required|in:DP,Tanpa DP',
+            'dp' => 'required_if:skema_pembayaran,DP|nullable|numeric|min:0',
             'tenor' => 'required|integer|min:1',
             'jaminan' => 'nullable|string',
         ]);
@@ -238,7 +235,7 @@ class PemesananController extends Controller
         $totalHarga = $barang->harga * (int) $request->jumlah;
         $bunga = $totalHarga * 0.15;
 
-        $dp = $request->skema_pembayaran === 'Pakai DP'
+        $dp = $request->skema_pembayaran === 'DP'
             ? (float) $request->dp
             : 0;
 
