@@ -20,6 +20,21 @@
                 <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">NIK</dt><dd class="mt-1 break-words text-sm font-semibold text-slate-900">{{ $pelanggan->nik }}</dd></div>
                 <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">No. Telepon</dt><dd class="mt-1 break-words text-sm font-semibold text-slate-900">{{ $pelanggan->no_telepon }}</dd></div>
                 <div class="border-b border-slate-100 py-4 sm:col-span-2"><dt class="text-sm font-medium text-slate-500">Alamat</dt><dd class="mt-1 break-words text-sm font-semibold text-slate-900">{{ $pelanggan->alamat }}</dd></div>
+
+                {{-- Foto KTP --}}
+                <div class="border-b border-slate-100 py-4 sm:col-span-2">
+                    <dt class="text-sm font-medium text-slate-500">Foto KTP</dt>
+                    <dd class="mt-2">
+                        @if ($pelanggan->foto_ktp_url)
+                            <a href="{{ $pelanggan->foto_ktp_url }}" target="_blank" rel="noopener" class="inline-block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">
+                                <img src="{{ $pelanggan->foto_ktp_url }}" alt="Foto KTP {{ $pelanggan->nama_pelanggan }}" class="max-h-72 rounded-xl border border-slate-200 object-contain">
+                            </a>
+                            <p class="mt-1.5 text-xs text-slate-500">Klik gambar untuk melihat ukuran penuh.</p>
+                        @else
+                            <p class="text-sm text-slate-500">Foto KTP belum diunggah.</p>
+                        @endif
+                    </dd>
+                </div>
             </dl>
             <div class="flex flex-wrap gap-3 border-t border-slate-200 px-5 py-4 sm:px-6">
                 <a href="{{ route('pelanggan.edit', $pelanggan->id_pelanggan) }}" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Edit</a>

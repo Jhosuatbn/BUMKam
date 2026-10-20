@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Pelanggan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class PelangganController extends Controller
@@ -38,6 +39,13 @@ class PelangganController extends Controller
             'no_telepon' => ['required', 'digits_between:10,13'],
 
             'alamat' => ['required', 'string', 'max:255'],
+
+            // Foto KTP: opsional, gambar JPG/PNG/WEBP, maksimal 2 MB.
+            // Ganti 'nullable' menjadi 'required' di store() jika foto wajib.
+            'foto_ktp' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+
+            // Centang "hapus foto" di halaman edit.
+            'hapus_foto' => ['nullable', 'boolean'],
         ];
     }
 
@@ -48,6 +56,10 @@ class PelangganController extends Controller
             'nik.digits' => 'NIK harus berupa angka tepat 16 digit.',
             'nik.unique' => 'NIK sudah terdaftar.',
             'no_telepon.digits_between' => 'Nomor telepon harus berupa angka, 10 sampai 13 digit.',
+            'foto_ktp.image' => 'File harus berupa gambar.',
+            'foto_ktp.mimes' => 'Foto KTP harus berformat JPG, JPEG, PNG, atau WEBP.',
+            'foto_ktp.max' => 'Ukuran foto KTP maksimal 2 MB.',
+            'foto_ktp.uploaded' => 'Foto KTP gagal diunggah. Pastikan ukurannya maksimal 2 MB.',
         ];
     }
 
@@ -73,11 +85,27 @@ class PelangganController extends Controller
     {
         $data = $request->validate($this->rules(), $this->messages());
 
-        $pelanggan = DB::transaction(function () use ($data) {
-            return Pelanggan::create(
-                ['id_pelanggan' => Pelanggan::generateId()] + $data
-            );
-        });
+        unset($data['foto_ktp'], $data['hapus_foto']);
+
+        if ($request->hasFile('foto_ktp')) {
+            // Disimpan di storage/app/public/pelanggan
+            $data['foto_ktp'] = $request->file('foto_ktp')->store('pelanggan', 'public');
+        }
+
+        try {
+            $pelanggan = DB::transaction(function () use ($data) {
+                return Pelanggan::create(
+                    ['id_pelanggan' => Pelanggan::generateId()] + $data
+                );
+            });
+        } catch (\Throwable $e) {
+            // Jika gagal menyimpan ke database, hapus file yang terlanjur diunggah.
+            if (! empty($data['foto_ktp'])) {
+                Storage::disk('public')->delete($data['foto_ktp']);
+            }
+
+            throw $e;
+        }
 
         return redirect()
             ->route('pelanggan.index')
@@ -98,6 +126,24 @@ class PelangganController extends Controller
     {
         $data = $request->validate($this->rules($pelanggan), $this->messages());
 
+        unset($data['foto_ktp'], $data['hapus_foto']);
+
+        if ($request->hasFile('foto_ktp')) {
+            // Ganti foto: hapus file lama, simpan yang baru.
+            if ($pelanggan->foto_ktp) {
+                Storage::disk('public')->delete($pelanggan->foto_ktp);
+            }
+
+            $data['foto_ktp'] = $request->file('foto_ktp')->store('pelanggan', 'public');
+        } elseif ($request->boolean('hapus_foto')) {
+            // Hanya hapus foto, tanpa menggantinya.
+            if ($pelanggan->foto_ktp) {
+                Storage::disk('public')->delete($pelanggan->foto_ktp);
+            }
+
+            $data['foto_ktp'] = null;
+        }
+
         // id_pelanggan tidak ikut diubah.
         $pelanggan->update($data);
 
@@ -112,7 +158,13 @@ class PelangganController extends Controller
             return back()->with('error', 'Pelanggan tidak bisa dihapus karena sudah memiliki pemesanan.');
         }
 
+        $foto = $pelanggan->foto_ktp;
+
         $pelanggan->delete();
+
+        if ($foto) {
+            Storage::disk('public')->delete($foto);
+        }
 
         return redirect()
             ->route('pelanggan.index')

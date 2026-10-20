@@ -21,11 +21,21 @@ class Pelanggan extends Model
         'nik',
         'no_telepon',
         'alamat',
+        'foto_ktp',
     ];
 
     public function pemesanan()
     {
         return $this->hasMany(Pemesanan::class, 'id_pelanggan');
+    }
+
+    /**
+     * URL foto KTP untuk ditampilkan di view: {{ $pelanggan->foto_ktp_url }}
+     * Bernilai null jika pelanggan belum punya foto.
+     */
+    public function getFotoKtpUrlAttribute(): ?string
+    {
+        return $this->foto_ktp ? asset('storage/' . $this->foto_ktp) : null;
     }
 
     /**

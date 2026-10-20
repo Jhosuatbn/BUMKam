@@ -25,7 +25,9 @@
 
         <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6" aria-labelledby="pelanggan-form-heading">
             <h2 id="pelanggan-form-heading" class="text-base font-semibold text-slate-900">Informasi Pelanggan</h2>
-            <form action="{{ route('pelanggan.update', $pelanggan->id_pelanggan) }}" method="POST" class="mt-6">
+
+            {{-- enctype WAJIB ada agar file bisa diunggah --}}
+            <form action="{{ route('pelanggan.update', $pelanggan->id_pelanggan) }}" method="POST" enctype="multipart/form-data" class="mt-6">
                 @csrf
                 @method('PUT')
                 <div class="grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2">
@@ -64,6 +66,43 @@
                         @enderror
                     </div>
 
+                    {{-- Foto KTP --}}
+                    <div>
+                        <label for="foto_ktp" class="block text-sm font-semibold text-slate-700">Foto KTP</label>
+                        <input id="foto_ktp" type="file" name="foto_ktp" accept="image/jpeg,image/png,image/webp" aria-describedby="foto_ktp_hint" class="mt-2 block w-full cursor-pointer rounded-xl border bg-white text-sm text-slate-700 file:mr-4 file:min-h-11 file:cursor-pointer file:border-0 file:bg-blue-50 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-blue-800 hover:file:bg-blue-100 focus:outline-none focus:ring-2 @error('foto_ktp') border-rose-400 focus:ring-rose-600/20 @else border-slate-300 focus:ring-blue-600/20 @enderror">
+                        <p id="foto_ktp_hint" class="mt-1.5 text-xs text-slate-500">
+                            @if ($pelanggan->foto_ktp)
+                                Pilih file baru hanya jika ingin mengganti foto. JPG, PNG, atau WEBP, maksimal 2 MB.
+                            @else
+                                Opsional. JPG, PNG, atau WEBP, maksimal 2 MB.
+                            @endif
+                        </p>
+                        <p id="foto_ktp_error" role="alert" class="mt-1 hidden text-xs font-medium text-rose-700"></p>
+                        @error('foto_ktp')
+                            <p class="mt-1 text-xs font-medium text-rose-700">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    {{-- Foto saat ini + opsi hapus --}}
+                    @if ($pelanggan->foto_ktp_url)
+                        <div id="foto_saat_ini" class="md:col-span-2">
+                            <p class="text-sm font-semibold text-slate-700">Foto KTP saat ini</p>
+                            <a href="{{ $pelanggan->foto_ktp_url }}" target="_blank" rel="noopener" class="mt-2 inline-block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">
+                                <img src="{{ $pelanggan->foto_ktp_url }}" alt="Foto KTP {{ $pelanggan->nama_pelanggan }}" class="max-h-56 rounded-xl border border-slate-200 object-contain">
+                            </a>
+                            <label class="mt-3 flex items-center gap-2 text-sm text-slate-700">
+                                <input type="checkbox" name="hapus_foto" value="1" @checked(old('hapus_foto')) class="h-4 w-4 rounded border-slate-300 text-rose-600 focus:ring-rose-600">
+                                Hapus foto ini
+                            </label>
+                        </div>
+                    @endif
+
+                    {{-- Pratinjau foto baru yang dipilih --}}
+                    <div id="foto_ktp_preview_box" class="hidden md:col-span-2">
+                        <p class="text-sm font-semibold text-slate-700">Pratinjau foto baru</p>
+                        <img id="foto_ktp_preview" src="" alt="Pratinjau foto KTP baru" class="mt-2 max-h-56 rounded-xl border border-slate-200 object-contain">
+                    </div>
+
                     <div class="md:col-span-2">
                         <label for="alamat" class="block text-sm font-semibold text-slate-700">Alamat</label>
                         <textarea id="alamat" name="alamat" rows="4" required maxlength="255" autocomplete="street-address" class="mt-2 block w-full rounded-xl border bg-white px-3.5 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 @error('alamat') border-rose-400 focus:border-rose-600 focus:ring-rose-600/20 @else border-slate-300 focus:border-blue-600 focus:ring-blue-600/20 @enderror">{{ old('alamat', $pelanggan->alamat) }}</textarea>
@@ -80,4 +119,37 @@
             </form>
         </section>
     </div>
+
+    <script>
+        (function () {
+            const input = document.getElementById('foto_ktp');
+            const box = document.getElementById('foto_ktp_preview_box');
+            const img = document.getElementById('foto_ktp_preview');
+            const error = document.getElementById('foto_ktp_error');
+            const maxBytes = 2 * 1024 * 1024; // 2 MB
+
+            input.addEventListener('change', function () {
+                const file = input.files[0];
+
+                error.classList.add('hidden');
+                error.textContent = '';
+
+                if (!file) {
+                    box.classList.add('hidden');
+                    return;
+                }
+
+                if (file.size > maxBytes) {
+                    input.value = '';
+                    box.classList.add('hidden');
+                    error.textContent = 'Ukuran foto maksimal 2 MB.';
+                    error.classList.remove('hidden');
+                    return;
+                }
+
+                img.src = URL.createObjectURL(file);
+                box.classList.remove('hidden');
+            });
+        })();
+    </script>
 @endsection

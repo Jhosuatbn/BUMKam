@@ -48,10 +48,11 @@
             </div>
 
             <div class="overflow-x-auto">
-                <table class="min-w-[58rem] divide-y divide-slate-200 text-left text-sm">
+                <table class="min-w-[66rem] divide-y divide-slate-200 text-left text-sm">
                     <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-600">
                         <tr>
                             <th scope="col" class="px-4 py-3 font-semibold sm:px-6">ID Pelanggan</th>
+                            <th scope="col" class="px-4 py-3 font-semibold sm:px-6">Foto KTP</th>
                             <th scope="col" class="px-4 py-3 font-semibold sm:px-6">Nama</th>
                             <th scope="col" class="px-4 py-3 font-semibold sm:px-6">NIK</th>
                             <th scope="col" class="px-4 py-3 font-semibold sm:px-6">No. Telepon</th>
@@ -63,6 +64,15 @@
                         @forelse ($pelanggan as $p)
                             <tr class="hover:bg-slate-50/70">
                                 <td class="whitespace-nowrap px-4 py-3.5 font-medium text-slate-900 sm:px-6">{{ $p->id_pelanggan }}</td>
+                                <td class="px-4 py-3.5 sm:px-6">
+                                    @if ($p->foto_ktp_url)
+                                        <a href="{{ $p->foto_ktp_url }}" target="_blank" rel="noopener" class="inline-block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">
+                                            <img src="{{ $p->foto_ktp_url }}" alt="Foto KTP {{ $p->nama_pelanggan }}" loading="lazy" class="h-12 w-16 rounded-lg border border-slate-200 object-cover">
+                                        </a>
+                                    @else
+                                        <span class="text-xs text-slate-400">Belum ada</span>
+                                    @endif
+                                </td>
                                 <td class="px-4 py-3.5 font-medium text-slate-900 sm:px-6">{{ $p->nama_pelanggan }}</td>
                                 <td class="whitespace-nowrap px-4 py-3.5 tabular-nums sm:px-6">{{ $p->nik }}</td>
                                 <td class="whitespace-nowrap px-4 py-3.5 sm:px-6">{{ $p->no_telepon }}</td>
@@ -81,7 +91,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-12 text-center text-sm text-slate-500">
+                                <td colspan="7" class="px-6 py-12 text-center text-sm text-slate-500">
                                     @if (request()->filled('q'))
                                         Tidak ada pelanggan yang cocok dengan "{{ request('q') }}".
                                     @else
