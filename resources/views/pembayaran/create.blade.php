@@ -29,30 +29,38 @@
                 @csrf
                 <div class="grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2">
                     <div>
-                        <label for="id_pembayaran" class="block text-sm font-semibold text-slate-700">ID Pembayaran</label>
-                        <input id="id_pembayaran" type="text" name="id_pembayaran" value="{{ old('id_pembayaran') }}" placeholder="Contoh: BYR-001" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                        <label for="id_pembayaran_display" class="block text-sm font-semibold text-slate-700">ID Pembayaran</label>
+                        <input id="id_pembayaran_display" type="text" value="{{ $idPembayaranPreview }}" readonly class="mt-2 block min-h-11 w-full rounded-xl border border-slate-200 bg-slate-100 px-3.5 py-2.5 text-sm font-semibold text-slate-700">
+                        <p class="mt-1 text-xs text-slate-500">ID dibuat otomatis saat pembayaran disimpan.</p>
                     </div>
                     <div>
                         <label for="tanggal_pembayaran" class="block text-sm font-semibold text-slate-700">Tanggal Pembayaran</label>
                         <input id="tanggal_pembayaran" type="date" name="tanggal_pembayaran" value="{{ old('tanggal_pembayaran', date('Y-m-d')) }}" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                     </div>
                     <div class="md:col-span-2">
-                        <label for="id_pemesanan" class="block text-sm font-semibold text-slate-700">Pemesanan</label>
-                        <select id="id_pemesanan" name="id_pemesanan" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
-                            <option value="">-- Pilih Pemesanan --</option>
-                            @foreach ($pemesanan as $item)
-                                <option value="{{ $item->id_pemesanan }}" {{ old('id_pemesanan') == $item->id_pemesanan ? 'selected' : '' }}>
-                                    {{ $item->id_pemesanan }} - {{ $item->pelanggan->nama_pelanggan ?? '-' }} - Rp {{ number_format($item->total_harga, 0, ',', '.') }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <label for="cari_pemesanan" class="block text-sm font-semibold text-slate-700">Pemesanan</label>
+                        <div class="relative mt-2" data-searchable-select>
+                            <input id="cari_pemesanan" type="search" required role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="daftarPemesanan" autocomplete="off" placeholder="Cari ID pemesanan atau nama pelanggan..." data-searchable-input class="block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                            <div id="daftarPemesanan" role="listbox" class="absolute z-30 mt-1 hidden max-h-60 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-lg" data-searchable-results></div>
+                            <select id="id_pemesanan" name="id_pemesanan" class="hidden" tabindex="-1" aria-hidden="true" data-searchable-options data-installment-select>
+                                <option value="">-- Pilih Pemesanan --</option>
+                                @foreach ($pemesanan as $item)
+                                    @php($labelPemesanan = $item->id_pemesanan . ' - ' . ($item->pelanggan->nama_pelanggan ?? '-') . ' - Angsuran Rp ' . number_format($item->angsuran, 0, ',', '.') . ' - Total Rp ' . number_format($item->total_harga, 0, ',', '.'))
+                                    <option value="{{ $item->id_pemesanan }}" data-search="{{ strtolower($item->id_pemesanan . ' ' . ($item->pelanggan->nama_pelanggan ?? '')) }}" data-angsuran="{{ number_format($item->angsuran, 2, '.', '') }}" {{ old('id_pemesanan') == $item->id_pemesanan ? 'selected' : '' }}>
+                                        {{ $labelPemesanan }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <p class="mt-1 text-xs text-slate-500">Ketik ID atau nama pelanggan, lalu pilih pemesanan dari daftar.</p>
                     </div>
                     <div class="md:col-span-2">
-                        <label for="nominal" class="block text-sm font-semibold text-slate-700">Nominal Pembayaran</label>
-                        <div class="mt-2 flex min-h-11 overflow-hidden rounded-xl border border-slate-300 focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-600/20">
+                        <label for="nominal" class="block text-sm font-semibold text-slate-700">Nominal Angsuran</label>
+                        <div class="mt-2 flex min-h-11 overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
                             <span class="inline-flex items-center border-r border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-600">Rp</span>
-                            <input id="nominal" type="number" name="nominal" value="{{ old('nominal') }}" min="0" placeholder="Contoh: 500000" class="block min-w-0 flex-1 border-0 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-0">
+                            <input id="nominal" type="number" value="{{ old('id_pemesanan') ? number_format((float) $pemesanan->firstWhere('id_pemesanan', old('id_pemesanan'))?->angsuran, 2, '.', '') : '' }}" min="0" step="0.01" readonly data-installment-display aria-describedby="nominal-hint" class="block min-w-0 flex-1 border-0 bg-slate-100 px-3.5 py-2.5 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-0">
                         </div>
+                        <p id="nominal-hint" class="mt-1 text-xs text-slate-500">Nominal diambil otomatis dari angsuran pada pemesanan yang dipilih.</p>
                     </div>
                 </div>
                 <div class="mt-8 flex flex-wrap gap-3 border-t border-slate-200 pt-5">
