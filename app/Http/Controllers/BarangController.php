@@ -22,8 +22,9 @@ class BarangController extends Controller
         }
 
         $barang = $query->latest()->get();
+        $kategoriList = ['Elektronik', 'Pertanian', 'Furniture', 'Kendaraan'];
 
-        return view('barang.index', compact('barang'));
+        return view('barang.index', compact('barang', 'kategoriList'));
     }
 
     public function create()
@@ -50,11 +51,22 @@ class BarangController extends Controller
 
         $prefix = $prefixes[$request->kategori] ?? 'BRG';
 
-        // Generasi ID Barang Otomatis & Cek Agar Tidak Bentrok
-        do {
-            $randomNumber = str_pad(mt_rand(1, 999), 3, '0', STR_PAD_LEFT);
-            $generatedId = $prefix . $randomNumber;
-        } while (Barang::where('id_barang', $generatedId)->exists());
+        // Cari ID terakhir berdasarkan prefix kategori tertentu
+        $lastBarang = Barang::where('id_barang', 'like', $prefix . '%')
+            ->orderBy('id_barang', 'desc')
+            ->first();
+
+        if ($lastBarang) {
+            // Ambil 2 digit angka terakhir lalu tambahkan 1
+            $lastNumber = (int) substr($lastBarang->id_barang, strlen($prefix));
+            $nextNumber = $lastNumber + 1;
+        } else {
+            // Jika belum ada barang pada kategori tersebut, mulai dari 1
+            $nextNumber = 1;
+        }
+
+        // Format angka menjadi 2 digit berurutan (01, 02, dst)
+        $generatedId = $prefix . str_pad($nextNumber, 2, '0', STR_PAD_LEFT);
 
         Barang::create([
             'id_barang'   => $generatedId,
