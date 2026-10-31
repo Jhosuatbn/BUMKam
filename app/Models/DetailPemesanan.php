@@ -21,6 +21,7 @@ class DetailPemesanan extends Model
         'jumlah',
         'harga',
         'subtotal',
+        'stok_dikurangi',
     ];
 
     public function pemesanan()

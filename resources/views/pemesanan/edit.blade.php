@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.sneat-dashboard')
 
 @section('title', 'Edit Pemesanan')
 
@@ -43,12 +43,17 @@
                             <input id="tanggal_pemesanan" type="date" name="tanggal_pemesanan" value="{{ $pemesanan->tanggal_pemesanan }}" required class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                         </div>
                         <div class="md:col-span-2">
-                            <label for="id_pelanggan" class="block text-sm font-semibold text-slate-700">Pelanggan</label>
-                            <select id="id_pelanggan" name="id_pelanggan" required class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                            <label for="cari_pelanggan" class="block text-sm font-semibold text-slate-700">Pelanggan</label>
+                            <div class="relative mt-2" data-searchable-select>
+                                <input id="cari_pelanggan" type="search" required role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="daftarPelanggan" autocomplete="off" placeholder="Cari nama atau ID pelanggan..." data-searchable-input class="block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                                <div id="daftarPelanggan" role="listbox" class="absolute z-30 mt-1 hidden max-h-60 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-lg" data-searchable-results></div>
+                                <select id="id_pelanggan" name="id_pelanggan" class="hidden" tabindex="-1" aria-hidden="true" data-searchable-options>
                                 @foreach ($pelanggan as $item)
-                                    <option value="{{ $item->id_pelanggan }}" {{ $pemesanan->id_pelanggan == $item->id_pelanggan ? 'selected' : '' }}>{{ $item->nama_pelanggan }}</option>
+                                    <option value="{{ $item->id_pelanggan }}" data-search="{{ strtolower($item->id_pelanggan . ' ' . $item->nama_pelanggan) }}" {{ $pemesanan->id_pelanggan == $item->id_pelanggan ? 'selected' : '' }}>{{ $item->nama_pelanggan }} ({{ $item->id_pelanggan }})</option>
                                 @endforeach
-                            </select>
+                                </select>
+                            </div>
+                            <p class="mt-1 text-xs text-slate-500">Ketik nama atau ID, lalu pilih pelanggan dari daftar.</p>
                         </div>
                     </div>
                 </fieldset>
@@ -57,12 +62,17 @@
                     <legend class="text-base font-semibold text-slate-900">Barang</legend>
                     <div class="mt-4 grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2">
                         <div class="md:col-span-2">
-                            <label for="id_barang" class="block text-sm font-semibold text-slate-700">Barang</label>
-                            <select id="id_barang" name="id_barang" required class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                            <label for="cari_barang" class="block text-sm font-semibold text-slate-700">Barang</label>
+                            <div class="relative mt-2" data-searchable-select>
+                                <input id="cari_barang" type="search" required role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="daftarBarang" autocomplete="off" placeholder="Cari nama atau ID barang..." data-searchable-input class="block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                                <div id="daftarBarang" role="listbox" class="absolute z-30 mt-1 hidden max-h-60 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-lg" data-searchable-results></div>
+                                <select id="id_barang" name="id_barang" class="hidden" tabindex="-1" aria-hidden="true" data-searchable-options>
                                 @foreach ($barang as $item)
-                                    <option value="{{ $item->id_barang }}" {{ $detail && $detail->id_barang == $item->id_barang ? 'selected' : '' }}>{{ $item->nama_barang }} - Rp {{ number_format($item->harga, 0, ',', '.') }}</option>
+                                    <option value="{{ $item->id_barang }}" data-search="{{ strtolower($item->id_barang . ' ' . $item->nama_barang) }}" {{ $detail && $detail->id_barang == $item->id_barang ? 'selected' : '' }}>{{ $item->nama_barang }} - Rp {{ number_format($item->harga, 0, ',', '.') }}</option>
                                 @endforeach
-                            </select>
+                                </select>
+                            </div>
+                            <p class="mt-1 text-xs text-slate-500">Ketik nama atau ID, lalu pilih barang dari daftar.</p>
                         </div>
                         <div>
                             <label for="jumlah" class="block text-sm font-semibold text-slate-700">Jumlah</label>
@@ -84,11 +94,23 @@
                         </div>
                         <div>
                             <label for="dp" class="block text-sm font-semibold text-slate-700">Jumlah DP</label>
-                            <input id="dp" type="number" name="dp" value="{{ $pemesanan->dp }}" min="0" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                            <input id="dp" type="text" inputmode="numeric" data-rupiah-input name="dp" value="{{ $pemesanan->dp }}" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                         </div>
                         <div>
                             <label for="tenor" class="block text-sm font-semibold text-slate-700">Tenor (bulan)</label>
-                            <input id="tenor" type="number" name="tenor" value="{{ $pemesanan->tenor }}" min="1" required class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                            @php($tenorDipilih = (int) old('tenor', $pemesanan->tenor))
+                            <select id="tenor" name="tenor" required class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                                <option value="" disabled @selected(! in_array($tenorDipilih, [12, 24, 36], true))>
+                                    @if (in_array($tenorDipilih, [12, 24, 36], true))
+                                        Pilih tenor
+                                    @else
+                                        Tenor lama {{ $tenorDipilih }} bulan — pilih tenor baru
+                                    @endif
+                                </option>
+                                @foreach ([12, 24, 36] as $pilihanTenor)
+                                    <option value="{{ $pilihanTenor }}" @selected($tenorDipilih === $pilihanTenor)>{{ $pilihanTenor }} bulan</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div>
                             <label for="bunga" class="block text-sm font-semibold text-slate-700">Bunga</label>

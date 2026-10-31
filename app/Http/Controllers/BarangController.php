@@ -21,9 +21,14 @@ class BarangController extends Controller
             });
         }
 
-        $barang = $query->latest()->get();
+        $barang = $query
+            ->orderBy('kategori')
+            ->orderByRaw('CAST(SUBSTRING(id_barang, 4) AS UNSIGNED)')
+            ->orderBy('id_barang')
+            ->get();
+        $kategoriList = ['Elektronik', 'Pertanian', 'Furniture', 'Kendaraan'];
 
-        return view('barang.index', compact('barang'));
+        return view('barang.index', compact('barang', 'kategoriList'));
     }
 
     public function create()
@@ -38,6 +43,7 @@ class BarangController extends Controller
             'kategori' => 'required|string|in:Elektronik,Pertanian,Furniture,Kendaraan',
             'nama_barang' => 'required|string|max:100',
             'harga' => 'required|numeric|min:0',
+            'stok' => 'nullable|integer|min:0',
         ]);
 
         // Pemetaan Prefix ID berdasarkan Kategori
@@ -50,17 +56,22 @@ class BarangController extends Controller
 
         $prefix = $prefixes[$request->kategori] ?? 'BRG';
 
-        // Generasi ID Barang Otomatis & Cek Agar Tidak Bentrok
-        do {
-            $randomNumber = str_pad(mt_rand(1, 999), 3, '0', STR_PAD_LEFT);
-            $generatedId = $prefix . $randomNumber;
-        } while (Barang::where('id_barang', $generatedId)->exists());
+        // Urutkan berdasarkan angka setelah prefix (jadi ELE100 tidak dikira
+        // lebih kecil daripada ELE99 hanya karena urutan teks).
+        $lastNumber = Barang::where('id_barang', 'like', $prefix . '%')
+            ->selectRaw('MAX(CAST(SUBSTRING(id_barang, 4) AS UNSIGNED)) as nomor_terakhir')
+            ->value('nomor_terakhir');
+        $nextNumber = ((int) $lastNumber) + 1;
+
+        // Format angka menjadi 2 digit berurutan (01, 02, dst)
+        $generatedId = $prefix . str_pad($nextNumber, 2, '0', STR_PAD_LEFT);
 
         Barang::create([
             'id_barang'   => $generatedId,
             'nama_barang' => $request->nama_barang,
             'kategori'    => $request->kategori,
             'harga'       => $request->harga,
+            'stok'        => $request->input('stok'),
         ]);
 
         return redirect()
@@ -85,12 +96,14 @@ class BarangController extends Controller
             'kategori' => 'required|string|in:Elektronik,Pertanian,Furniture,Kendaraan',
             'nama_barang' => 'required|string|max:100',
             'harga' => 'required|numeric|min:0',
+            'stok' => 'nullable|integer|min:0',
         ]);
 
         $barang->update([
             'kategori' => $request->kategori,
             'nama_barang' => $request->nama_barang,
             'harga' => $request->harga,
+            'stok' => $request->input('stok'),
         ]);
 
         return redirect()

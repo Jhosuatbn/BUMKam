@@ -19,6 +19,7 @@ class Barang extends Model
         'nama_barang',
         'kategori',
         'harga',
+        'stok',
     ];
 
     public function detailPemesanan()

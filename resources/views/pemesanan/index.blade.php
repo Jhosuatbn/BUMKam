@@ -1,28 +1,25 @@
-@extends('layouts.app')
+@extends('layouts.sneat-dashboard')
 
 @section('title', 'Pemesanan')
 
 @section('content')
     <div class="space-y-6">
-        <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-            <div>
-                <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Data Pemesanan</h1>
-                <p class="mt-2 text-sm text-slate-600">Pantau pesanan, nilai, dan status pembayaran.</p>
-            </div>
-            <a href="{{ route('pemesanan.create') }}" class="inline-flex min-h-11 items-center justify-center rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Tambah Pemesanan</a>
-        </header>
-
         @if (session('success'))
             <div role="status" class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900">{{ session('success') }}</div>
         @endif
 
         <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-labelledby="pemesanan-list-heading">
-            <div class="border-b border-slate-200 px-5 py-4 sm:px-6">
-                <h2 id="pemesanan-list-heading" class="text-base font-semibold text-slate-900">Daftar Pemesanan</h2>
-                <p class="mt-1 text-sm text-slate-500">Rincian nilai dan skema setiap pemesanan.</p>
+            <div class="flex flex-col gap-3 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                <div>
+                    <h2 id="pemesanan-list-heading" class="text-base font-semibold text-slate-900">Daftar Pemesanan</h2>
+                    <p class="mt-1 text-sm text-slate-500">Rincian nilai dan skema setiap pemesanan.</p>
+                </div>
+                @if (auth()->user()?->peran !== 'Pimpinan')
+                    <a href="{{ route('pemesanan.create') }}" class="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"><i class="icon-base bx bx-plus" aria-hidden="true"></i>Tambah Pemesanan</a>
+                @endif
             </div>
             <div class="overflow-x-auto">
-                <table class="min-w-[60rem] divide-y divide-slate-200 text-left text-sm">
+                <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
                     <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-600">
                         <tr>
                             <th scope="col" class="px-4 py-3 font-semibold sm:px-6">ID</th>
@@ -32,7 +29,7 @@
                             <th scope="col" class="px-4 py-3 font-semibold sm:px-6">Total Harga</th>
                             <th scope="col" class="px-4 py-3 font-semibold sm:px-6">Angsuran</th>
                             <th scope="col" class="px-4 py-3 font-semibold sm:px-6">Status</th>
-                            <th scope="col" class="px-4 py-3 font-semibold sm:px-6">Aksi</th>
+                            <th scope="col" class="whitespace-nowrap px-4 py-3 text-center font-semibold sm:px-6">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 text-slate-700">
@@ -51,14 +48,17 @@
                                         <span class="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-950">{{ $item->status_pemesanan }}</span>
                                     @endif
                                 </td>
-                                <td class="px-4 py-3.5 sm:px-6">
-                                    <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
-                                        <a href="{{ route('pemesanan.show', $item->id_pemesanan) }}" class="font-semibold text-blue-800 underline-offset-4 hover:underline">Detail</a>
-                                        <a href="{{ route('pemesanan.edit', $item->id_pemesanan) }}" class="font-semibold text-blue-800 underline-offset-4 hover:underline">Edit</a>
-                                        <form action="{{ route('pemesanan.destroy', $item->id_pemesanan) }}" method="POST">
+                                <td class="px-4 py-3.5 text-center sm:px-6">
+                                    <div class="inline-flex items-center justify-center gap-3">
+                                        <a href="{{ route('pemesanan.edit', $item->id_pemesanan) }}" class="text-amber-600 transition hover:text-amber-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700" title="Edit pemesanan {{ $item->id_pemesanan }}" aria-label="Edit pemesanan {{ $item->id_pemesanan }}">
+                                            <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 0 1 2.828 2.828L11.828 15H9v-2.828z"/></svg>
+                                        </a>
+                                        <form action="{{ route('pemesanan.destroy', $item->id_pemesanan) }}" method="POST" class="inline-block" data-confirm-delete="Yakin ingin menghapus pemesanan ini?">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="min-h-9 rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-800 transition hover:bg-rose-100" onclick="return confirm('Yakin ingin menghapus pemesanan ini?')">Hapus</button>
+                                            <button type="submit" class="text-rose-600 transition hover:text-rose-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-700" title="Hapus pemesanan {{ $item->id_pemesanan }}" aria-label="Hapus pemesanan {{ $item->id_pemesanan }}">
+                                                <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16"/></svg>
+                                            </button>
                                         </form>
                                     </div>
                                 </td>

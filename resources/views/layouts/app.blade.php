@@ -7,19 +7,34 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-slate-100 font-sans text-slate-900 antialiased">
-    @php
+    
+@php
+    $authenticatedUser = auth()->user();
+
+    $navigationItems = [
+        ['label' => 'Dashboard', 'route' => 'dashboard', 'active' => 'dashboard', 'icon' => 'dashboard'],
+        ['label' => 'Pelanggan', 'route' => 'pelanggan.index', 'active' => 'pelanggan.*', 'icon' => 'users'],
+        ['label' => 'Barang', 'route' => 'barang.index', 'active' => 'barang.*', 'icon' => 'box'],
+        ['label' => 'Laporan', 'route' => 'laporan.index', 'active' => 'laporan.*', 'icon' => 'report'],
+    ];
+
+    if ($authenticatedUser?->peran !== 'Pimpinan') {
         $navigationItems = [
-            ['label' => 'Dashboard', 'route' => 'dashboard', 'active' => 'dashboard'],
-            ['label' => 'Pelanggan', 'route' => 'pelanggan.index', 'active' => 'pelanggan.*'],
-            ['label' => 'Barang', 'route' => 'barang.index', 'active' => 'barang.*'],
-            ['label' => 'Pemesanan', 'route' => 'pemesanan.index', 'active' => 'pemesanan.*'],
-            ['label' => 'Pembayaran', 'route' => 'pembayaran.index', 'active' => 'pembayaran.*'],
-            ['label' => 'Laporan', 'route' => 'laporan.index', 'active' => 'laporan.*'],
-            ['label' => 'Pengguna', 'route' => 'pengguna.index', 'active' => 'pengguna.*'],
+            ['label' => 'Dashboard', 'route' => 'dashboard', 'active' => 'dashboard', 'icon' => 'dashboard'],
+            ['label' => 'Pelanggan', 'route' => 'pelanggan.index', 'active' => 'pelanggan.*', 'icon' => 'users'],
+            ['label' => 'Barang', 'route' => 'barang.index', 'active' => 'barang.*', 'icon' => 'box'],
+            ['label' => 'Pemesanan', 'route' => 'pemesanan.index', 'active' => 'pemesanan.*', 'icon' => 'cart'],
+            ['label' => 'Pembayaran', 'route' => 'pembayaran.index', 'active' => 'pembayaran.*', 'icon' => 'payment'],
+            ['label' => 'Laporan', 'route' => 'laporan.index', 'active' => 'laporan.*', 'icon' => 'report'],
+            ['label' => 'Pengguna', 'route' => 'pengguna.index', 'active' => 'pengguna.*', 'icon' => 'user'],
         ];
-        $authenticatedUser = auth()->user();
-        $displayName = $authenticatedUser?->nama_lengkap ?? $authenticatedUser?->username ?? 'Admin';
-    @endphp
+    }
+
+    $displayName = $authenticatedUser?->nama_lengkap
+        ?? $authenticatedUser?->username
+        ?? 'Admin';
+@endphp
+
 
     <div class="min-h-screen lg:grid lg:grid-cols-[16rem_minmax(0,1fr)]">
         <aside class="hidden min-h-screen flex-col bg-[#0b1f3a] text-white lg:sticky lg:top-0 lg:flex lg:h-screen">
@@ -41,11 +56,17 @@
                            'text-slate-200 hover:bg-white/10 hover:text-white' => ! $isActive,
                        ])
                        @if ($isActive) aria-current="page" @endif>
-                        <span @class([
-                            'size-2 shrink-0 rounded-full',
-                            'bg-white' => $isActive,
-                            'bg-slate-500 group-hover:bg-blue-300' => ! $isActive,
-                        ]) aria-hidden="true"></span>
+                        <svg class="size-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                            @switch($navigationItem['icon'])
+                                @case('dashboard')<rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="11" width="7" height="10" rx="1.5"/><rect x="3" y="14" width="8" height="7" rx="1.5"/>@break
+                                @case('users')<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm13 10v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>@break
+                                @case('box')<path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="M3 8v9l9 5 9-5V8M12 13v9"/>@break
+                                @case('cart')<circle cx="9" cy="20" r="1"/><circle cx="19" cy="20" r="1"/><path d="M2 3h2l2.4 12.2a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6L22 8H5"/>@break
+                                @case('payment')<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20m-15 5h4"/>@break
+                                @case('report')<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/><path d="M8 7h8m-8 4h8"/>@break
+                                @default<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>
+                            @endswitch
+                        </svg>
                         <span>{{ $navigationItem['label'] }}</span>
                     </a>
                 @endforeach
@@ -85,11 +106,17 @@
                                            'text-slate-700 hover:bg-slate-50' => ! $isActive,
                                        ])
                                        @if ($isActive) aria-current="page" @endif>
-                                        <span @class([
-                                            'size-2 shrink-0 rounded-full',
-                                            'bg-blue-600' => $isActive,
-                                            'bg-slate-300' => ! $isActive,
-                                        ]) aria-hidden="true"></span>
+                                        <svg class="size-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                                            @switch($navigationItem['icon'])
+                                                @case('dashboard')<rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="11" width="7" height="10" rx="1.5"/><rect x="3" y="14" width="8" height="7" rx="1.5"/>@break
+                                                @case('users')<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm13 10v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>@break
+                                                @case('box')<path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="M3 8v9l9 5 9-5V8M12 13v9"/>@break
+                                                @case('cart')<circle cx="9" cy="20" r="1"/><circle cx="19" cy="20" r="1"/><path d="M2 3h2l2.4 12.2a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6L22 8H5"/>@break
+                                                @case('payment')<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20m-15 5h4"/>@break
+                                                @case('report')<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/><path d="M8 7h8m-8 4h8"/>@break
+                                                @default<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>
+                                            @endswitch
+                                        </svg>
                                         <span>{{ $navigationItem['label'] }}</span>
                                     </a>
                                 @endforeach
@@ -103,6 +130,7 @@
                     </div>
 
                     <div class="flex shrink-0 items-center gap-3 sm:gap-4">
+                        <button type="button" data-theme-toggle aria-label="Ganti tema" title="Ganti tema" class="grid size-10 place-items-center rounded-lg border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg></button>
                         <div class="flex min-w-0 items-center gap-2 sm:gap-3">
                             <span class="grid size-9 place-items-center rounded-full bg-blue-100 text-sm font-semibold text-blue-800" aria-hidden="true">
                                 {{ strtoupper(substr($displayName, 0, 1)) }}

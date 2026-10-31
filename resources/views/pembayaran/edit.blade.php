@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.sneat-dashboard')
 
 @section('title', 'Edit Pembayaran')
 
@@ -25,7 +25,7 @@
 
         <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6" aria-labelledby="pembayaran-form-heading">
             <h2 id="pembayaran-form-heading" class="text-base font-semibold text-slate-900">Informasi Pembayaran</h2>
-            <form action="{{ route('pembayaran.update', $pembayaran->id_pembayaran) }}" method="POST" class="mt-6">
+            <form action="{{ route('pembayaran.update', $pembayaran->id_pembayaran) }}" method="POST" enctype="multipart/form-data" class="mt-6">
                 @csrf
                 @method('PUT')
                 <div class="grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2">
@@ -38,21 +38,36 @@
                         <input id="tanggal_pembayaran" type="date" name="tanggal_pembayaran" value="{{ $pembayaran->tanggal_pembayaran }}" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                     </div>
                     <div class="md:col-span-2">
-                        <label for="id_pemesanan" class="block text-sm font-semibold text-slate-700">Pemesanan</label>
-                        <select id="id_pemesanan" name="id_pemesanan" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                        <label for="cari_pemesanan" class="block text-sm font-semibold text-slate-700">Pemesanan</label>
+                        <div class="relative mt-2" data-searchable-select>
+                            <input id="cari_pemesanan" type="search" required role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="daftarPemesanan" autocomplete="off" placeholder="Cari ID pemesanan atau nama pelanggan..." data-searchable-input class="block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                            <div id="daftarPemesanan" role="listbox" class="absolute z-30 mt-1 hidden max-h-60 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-lg" data-searchable-results></div>
+                            <select id="id_pemesanan" name="id_pemesanan" class="hidden" tabindex="-1" aria-hidden="true" data-searchable-options data-installment-select>
                             @foreach ($pemesanan as $item)
-                                <option value="{{ $item->id_pemesanan }}" {{ $pembayaran->id_pemesanan == $item->id_pemesanan ? 'selected' : '' }}>
-                                    {{ $item->id_pemesanan }} - {{ $item->pelanggan->nama_pelanggan ?? '-' }} - Rp {{ number_format($item->total_harga, 0, ',', '.') }}
+                                @php($labelPemesanan = $item->id_pemesanan . ' - ' . ($item->pelanggan->nama_pelanggan ?? '-') . ' - Angsuran Rp ' . number_format($item->angsuran, 0, ',', '.') . ' - Total Rp ' . number_format($item->total_harga, 0, ',', '.'))
+                                <option value="{{ $item->id_pemesanan }}" data-search="{{ strtolower($item->id_pemesanan . ' ' . ($item->pelanggan->nama_pelanggan ?? '')) }}" data-angsuran="{{ number_format($item->angsuran, 2, '.', '') }}" {{ $pembayaran->id_pemesanan == $item->id_pemesanan ? 'selected' : '' }}>
+                                    {{ $labelPemesanan }}
                                 </option>
                             @endforeach
-                        </select>
+                            </select>
+                        </div>
+                        <p class="mt-1 text-xs text-slate-500">Ketik ID atau nama pelanggan, lalu pilih pemesanan dari daftar.</p>
                     </div>
                     <div class="md:col-span-2">
-                        <label for="nominal" class="block text-sm font-semibold text-slate-700">Nominal Pembayaran</label>
-                        <div class="mt-2 flex min-h-11 overflow-hidden rounded-xl border border-slate-300 focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-600/20">
+                        <label for="nominal" class="block text-sm font-semibold text-slate-700">Nominal Angsuran</label>
+                        <div class="mt-2 flex min-h-11 overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
                             <span class="inline-flex items-center border-r border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-600">Rp</span>
-                            <input id="nominal" type="number" name="nominal" value="{{ $pembayaran->nominal }}" min="1" class="block min-w-0 flex-1 border-0 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-0">
+                            <input id="nominal" type="text" value="{{ number_format($pemesanan->firstWhere('id_pemesanan', $pembayaran->id_pemesanan)?->angsuran ?? 0, 0, ',', '.') }}" readonly data-installment-display aria-describedby="nominal-hint" class="block min-w-0 flex-1 border-0 bg-slate-100 px-3.5 py-2.5 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-0">
                         </div>
+                        <p id="nominal-hint" class="mt-1 text-xs text-slate-500">Nominal diambil otomatis dari angsuran pada pemesanan yang dipilih.</p>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="bukti_pembayaran" class="block text-sm font-semibold text-slate-700">Bukti Pembayaran</label>
+                        @if ($pembayaran->bukti_pembayaran)
+                            <a href="{{ asset('storage/' . $pembayaran->bukti_pembayaran) }}" target="_blank" rel="noopener" class="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-blue-800 underline">Lihat bukti saat ini</a>
+                        @endif
+                        <input id="bukti_pembayaran" type="file" name="bukti_pembayaran" accept="image/jpeg,image/png,image/webp,application/pdf" class="mt-2 block w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-700 file:mr-3 file:rounded-lg file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:font-semibold file:text-blue-800">
+                        <p class="mt-1 text-xs text-slate-500">Pilih file baru untuk mengganti bukti lama. JPG, PNG, WEBP, atau PDF; maksimal 5 MB.</p>
                     </div>
                 </div>
                 <div class="mt-8 flex flex-wrap gap-3 border-t border-slate-200 pt-5">

@@ -1,72 +1,211 @@
-@extends('layouts.app')
+@extends('layouts.sneat-dashboard')
 
 @section('title', 'Laporan')
 
 @section('content')
-    <div class="space-y-8">
-        <header>
-            <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Laporan</h1>
-            <p class="mt-2 text-sm text-slate-600">Ringkasan pemesanan dan pembayaran BUMKam.</p>
-        </header>
+    @php
+        $tabAktif = request('tab', 'pemesanan');
+    @endphp
 
-        <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6" aria-labelledby="filter-heading">
-            <div class="mb-5">
-                <h2 id="filter-heading" class="text-base font-semibold text-slate-900">Filter Periode</h2>
-                <p class="mt-1 text-sm text-slate-500">Pilih rentang tanggal untuk menyaring laporan.</p>
+    <div>
+        @if ($errors->any())
+            <div class="alert alert-danger" role="alert">
+                <i class="icon-base bx bx-error-circle me-1" aria-hidden="true"></i>
+                {{ $errors->first() }}
             </div>
-            <form method="GET" action="{{ route('laporan.index') }}" class="grid grid-cols-1 items-end gap-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto_auto]">
-                <div>
-                    <label for="start_date" class="block text-sm font-semibold text-slate-700">Mulai</label>
-                    <input type="date" name="start_date" id="start_date" value="{{ request('start_date') }}" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+        @endif
+
+        <section class="card mb-4 laporan-tabs-card" aria-label="Jenis laporan">
+            <div class="card-body p-2">
+                <ul class="nav nav-pills gap-2">
+                    <li class="nav-item">
+                        <a href="{{ route('laporan.index', array_merge(request()->except('tab', 'pelanggan'), ['tab' => 'pemesanan'])) }}"
+                           class="nav-link {{ $tabAktif === 'pemesanan' ? 'active' : '' }}">
+                            <i class="icon-base bx bx-receipt me-1" aria-hidden="true"></i>Laporan Pemesanan
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('laporan.index', array_merge(request()->except('tab'), ['tab' => 'kredit'])) }}"
+                           class="nav-link {{ $tabAktif === 'kredit' ? 'active' : '' }}">
+                            <i class="icon-base bx bx-wallet me-1" aria-hidden="true"></i>Laporan Kredit
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="card mb-4" aria-labelledby="filter-laporan-heading">
+            <div class="card-header border-bottom">
+                <h2 id="filter-laporan-heading" class="card-title mb-1">Filter Laporan</h2>
+                <p class="mb-0 text-body-secondary">Pilih rentang tanggal untuk mempersempit data laporan.</p>
+            </div>
+            <div class="card-body">
+                <form action="{{ route('laporan.index') }}" method="GET" class="row g-3 align-items-end">
+                    <input type="hidden" name="tab" value="{{ $tabAktif }}">
+                    <div class="col-12 col-md-6 {{ $tabAktif === 'kredit' ? 'col-xl-3' : 'col-xl-4' }}">
+                        <label for="start_date" class="form-label">Dari tanggal</label>
+                        <input type="date" id="start_date" name="start_date" value="{{ request('start_date') }}" class="form-control">
+                    </div>
+                    <div class="col-12 col-md-6 {{ $tabAktif === 'kredit' ? 'col-xl-3' : 'col-xl-4' }}">
+                        <label for="end_date" class="form-label">Sampai tanggal</label>
+                        <input type="date" id="end_date" name="end_date" value="{{ request('end_date') }}" class="form-control">
+                    </div>
+                    @if ($tabAktif === 'kredit')
+                        <div class="col-12 col-md-6 col-xl-3">
+                            <label for="pelanggan" class="form-label">Pelanggan <span class="text-body-secondary">(opsional)</span></label>
+                            <input type="text" id="pelanggan" name="pelanggan" value="{{ request('pelanggan') }}" class="form-control" placeholder="Nama atau ID pelanggan">
+                        </div>
+                    @endif
+                    <div class="col-12 {{ $tabAktif === 'kredit' ? 'col-md-6 col-xl-3' : 'col-xl-4' }} d-flex flex-wrap gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="icon-base bx bx-filter-alt me-1" aria-hidden="true"></i>Tampilkan
+                        </button>
+                        @if (request('start_date') || request('end_date') || request('pelanggan'))
+                            <a href="{{ route('laporan.index', ['tab' => $tabAktif]) }}" class="btn btn-outline-secondary">
+                                <i class="icon-base bx bx-reset me-1" aria-hidden="true"></i>Reset
+                            </a>
+                        @endif
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        @if ($tabAktif === 'pemesanan')
+            <section class="card laporan-print-area" aria-labelledby="daftar-pemesanan-heading">
+                <div class="card-header d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2 border-bottom">
+                    <div>
+                        <h2 id="daftar-pemesanan-heading" class="card-title mb-1">Daftar Pemesanan</h2>
+                        <p class="mb-0 text-body-secondary">Transaksi pemesanan barang BUMKam.</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-label-primary">{{ $pemesananTerbaru->count() }} data ditampilkan</span>
+                        <button type="button" class="btn btn-outline-primary btn-sm laporan-print-action" onclick="window.print()"><i class="icon-base bx bx-printer me-1" aria-hidden="true"></i>Cetak</button>
+                    </div>
                 </div>
-                <div>
-                    <label for="end_date" class="block text-sm font-semibold text-slate-700">Sampai</label>
-                    <input type="date" name="end_date" id="end_date" value="{{ request('end_date') }}" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 laporan-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">No.</th><th scope="col">Tanggal</th><th scope="col">Pelanggan</th><th scope="col">Barang</th>
+                                <th scope="col">Total Harga</th><th scope="col">Skema</th><th scope="col">DP</th><th scope="col">Tenor</th><th scope="col">Angsuran</th><th scope="col">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($pemesananTerbaru as $pemesanan)
+                                @php
+                                    $status = strtolower(trim($pemesanan->status_pemesanan ?? ''));
+                                    $statusClass = in_array($status, ['lunas', 'selesai', 'paid']) ? 'success' : (in_array($status, ['berjalan', 'proses', 'diproses']) ? 'warning' : 'secondary');
+                                @endphp
+                                <tr>
+                                    <td class="text-body-secondary">{{ $loop->iteration }}</td>
+                                    <td class="text-nowrap">{{ $pemesanan->tanggal_pemesanan ? \Illuminate\Support\Carbon::parse($pemesanan->tanggal_pemesanan)->format('d/m/Y') : '—' }}</td>
+                                    <td class="fw-semibold">{{ $pemesanan->pelanggan->nama_pelanggan ?? '—' }}</td>
+                                    <td>
+                                        @forelse ($pemesanan->detailPemesanan as $detail)
+                                            {{ $detail->barang->nama_barang ?? '—' }}@if (!$loop->last), @endif
+                                        @empty
+                                            —
+                                        @endforelse
+                                    </td>
+                                    <td class="text-nowrap fw-semibold">Rp {{ number_format($pemesanan->total_harga ?? 0, 0, ',', '.') }}</td>
+                                    <td>{{ $pemesanan->skema_pembayaran ?: '—' }}</td>
+                                    <td class="text-nowrap">{{ ($pemesanan->dp ?? 0) > 0 ? 'Rp ' . number_format($pemesanan->dp, 0, ',', '.') : '—' }}</td>
+                                    <td class="text-nowrap">{{ ($pemesanan->tenor ?? 0) > 0 ? $pemesanan->tenor . ' bln' : '—' }}</td>
+                                    <td class="text-nowrap">{{ ($pemesanan->angsuran ?? 0) > 0 ? 'Rp ' . number_format($pemesanan->angsuran, 0, ',', '.') : '—' }}</td>
+                                    <td><span class="badge bg-label-{{ $statusClass }}">{{ $status !== '' ? ucfirst($status) : '—' }}</span></td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="10" class="py-5 text-center text-body-secondary">Belum ada data pemesanan untuk filter ini.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
-                <button type="submit" class="inline-flex min-h-11 items-center justify-center rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Terapkan Filter</button>
-                @if (request('start_date') || request('end_date'))
-                    <a href="{{ route('laporan.index') }}" class="inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Reset</a>
-                @endif
-            </form>
-        </section>
+                <div class="card-footer d-flex flex-column flex-sm-row justify-content-between gap-2 text-body-secondary">
+                    <span>Menampilkan {{ $pemesananTerbaru->count() }} data pemesanan terbaru.</span>
+                    <span>Total nilai pada daftar: <strong class="text-heading">Rp {{ number_format($pemesananTerbaru->sum('total_harga'), 0, ',', '.') }}</strong></span>
+                </div>
+            </section>
+        @elseif ($tabAktif === 'kredit')
+            <section class="card laporan-print-area" aria-labelledby="daftar-kredit-heading">
+                <div class="card-header d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2 border-bottom">
+                    <div>
+                        <h2 id="daftar-kredit-heading" class="card-title mb-1">Daftar Kredit</h2>
+                        <p class="mb-0 text-body-secondary">Rincian pembiayaan, angsuran, sisa tagihan, dan jaminan pelanggan.</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-label-primary">{{ $daftarKredit->count() }} data</span>
+                        <button type="button" class="btn btn-outline-primary btn-sm laporan-print-action" onclick="window.print()"><i class="icon-base bx bx-printer me-1" aria-hidden="true"></i>Cetak</button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 laporan-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">No.</th><th scope="col">Barang</th><th scope="col">Total Harga</th><th scope="col">DP</th><th scope="col">Nominal Angsuran</th>
+                                <th scope="col">Tenor</th><th scope="col">Angsuran Tercatat</th><th scope="col">Sisa Tagihan</th><th scope="col">Status</th><th scope="col">Jaminan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($daftarKredit as $kredit)
+                                @php
+                                    $totalDibayar = (float) $kredit->pembayaran->sum('nominal');
+                                    $sisaTagihan = max(0, (float) $kredit->total_harga + (float) $kredit->bunga - (float) $kredit->dp - $totalDibayar);
+                                    $jumlahJatuhTempo = 0;
+                                    $tanggalMulaiAngsuran = \Illuminate\Support\Carbon::parse($kredit->tanggal_pemesanan);
+                                    for ($bulanJatuhTempo = 1; $bulanJatuhTempo <= (int) $kredit->tenor; $bulanJatuhTempo++) {
+                                        if ($tanggalMulaiAngsuran->copy()->addMonthsNoOverflow($bulanJatuhTempo)->startOfDay()->lte(now()->startOfDay())) $jumlahJatuhTempo++;
+                                    }
+                                    $statusKredit = $sisaTagihan <= 0 ? 'Lunas' : ($jumlahJatuhTempo > $kredit->pembayaran->count() ? 'Menunggak' : 'Berjalan');
+                                    $statusKreditClass = $statusKredit === 'Lunas' ? 'success' : ($statusKredit === 'Menunggak' ? 'danger' : 'warning');
+                                @endphp
+                                <tr>
+                                    <td class="text-body-secondary">{{ $loop->iteration }}</td>
+                                    <td class="fw-semibold">
+                                        @forelse ($kredit->detailPemesanan as $detail)
+                                            {{ $detail->barang->nama_barang ?? '—' }}@if (!$loop->last), @endif
+                                        @empty
+                                            —
+                                        @endforelse
+                                    </td>
+                                    <td class="text-nowrap">Rp {{ number_format($kredit->total_harga ?? 0, 0, ',', '.') }}</td>
+                                    <td class="text-nowrap">Rp {{ number_format($kredit->dp ?? 0, 0, ',', '.') }}</td>
+                                    <td class="text-nowrap">Rp {{ number_format($kredit->angsuran ?? 0, 0, ',', '.') }}</td>
+                                    <td class="text-nowrap">{{ $kredit->tenor ?? '—' }} bln</td>
+                                    <td class="text-nowrap">{{ $kredit->pembayaran->count() }} / {{ $kredit->tenor ?? 0 }}</td>
+                                    <td class="text-nowrap fw-semibold">Rp {{ number_format($sisaTagihan, 0, ',', '.') }}</td>
+                                    <td><span class="badge bg-label-{{ $statusKreditClass }}">{{ $statusKredit }}</span></td>
+                                    <td>{{ $kredit->jaminan ?: '—' }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="10" class="py-5 text-center text-body-secondary">Belum ada data kredit untuk filter ini.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer d-flex flex-column flex-sm-row justify-content-between gap-2 text-body-secondary">
+                    <span>Menampilkan {{ $daftarKredit->count() }} data kredit.</span>
+                    <span>Total angsuran per bulan: <strong class="text-heading">Rp {{ number_format($totalAngsuranBulanan ?? 0, 0, ',', '.') }}</strong></span>
+                </div>
+            </section>
 
-        <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Ringkasan laporan">
-            <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><h2 class="text-sm font-semibold text-slate-600">Total Pemesanan</h2><p class="mt-4 tabular-nums text-3xl font-bold text-slate-900">{{ $totalPemesanan }}</p></article>
-            <article class="rounded-2xl border border-blue-200 bg-blue-50/70 p-5 shadow-sm"><h2 class="text-sm font-semibold text-blue-900">Total Pembayaran</h2><p class="mt-4 tabular-nums text-2xl font-bold text-blue-950">Rp {{ number_format($totalPembayaran ?? 0, 0, ',', '.') }}</p></article>
-            <article class="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm"><h2 class="text-sm font-semibold text-emerald-900">Lunas</h2><p class="mt-4 tabular-nums text-3xl font-bold text-emerald-950">{{ $pemesananLunas }}</p></article>
-            <article class="rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm"><h2 class="text-sm font-semibold text-amber-950">Belum Lunas</h2><p class="mt-4 tabular-nums text-3xl font-bold text-amber-950">{{ $pemesananBelumLunas }}</p></article>
-        </section>
-
-        <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-labelledby="latest-orders-heading">
-            <div class="border-b border-slate-200 px-5 py-4 sm:px-6"><h2 id="latest-orders-heading" class="text-base font-semibold text-slate-900">Pemesanan Terbaru</h2></div>
-            <div class="overflow-x-auto">
-                <table class="min-w-[48rem] divide-y divide-slate-200 text-left text-sm">
-                    <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-600"><tr><th scope="col" class="px-4 py-3 font-semibold sm:px-6">ID Pemesanan</th><th scope="col" class="px-4 py-3 font-semibold sm:px-6">Pelanggan</th><th scope="col" class="px-4 py-3 font-semibold sm:px-6">Tanggal</th><th scope="col" class="px-4 py-3 font-semibold sm:px-6">Status</th><th scope="col" class="px-4 py-3 font-semibold sm:px-6">Total</th></tr></thead>
-                    <tbody class="divide-y divide-slate-100 text-slate-700">
-                        @forelse ($pemesananTerbaru as $pemesanan)
-                            <tr class="hover:bg-slate-50/70"><td class="whitespace-nowrap px-4 py-3.5 font-medium text-slate-900 sm:px-6">{{ $pemesanan->id_pemesanan }}</td><td class="px-4 py-3.5 sm:px-6">{{ $pemesanan->pelanggan->nama_pelanggan ?? '-' }}</td><td class="whitespace-nowrap px-4 py-3.5 sm:px-6">{{ $pemesanan->tanggal_pemesanan }}</td><td class="px-4 py-3.5 sm:px-6">{{ $pemesanan->status_pemesanan }}</td><td class="whitespace-nowrap px-4 py-3.5 tabular-nums sm:px-6">Rp {{ number_format($pemesanan->total_harga, 0, ',', '.') }}</td></tr>
-                        @empty
-                            <tr><td colspan="5" class="px-6 py-10 text-center text-sm text-slate-500">Belum ada data pemesanan.</td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
+            <div class="alert alert-primary mt-4 mb-0 d-flex align-items-start gap-2" role="note">
+                <i class="icon-base bx bx-info-circle mt-1" aria-hidden="true"></i>
+                <span>Data kredit menampilkan transaksi dengan skema angsuran beserta dokumen jaminan yang tercatat.</span>
             </div>
-        </section>
-
-        <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-labelledby="latest-payments-heading">
-            <div class="border-b border-slate-200 px-5 py-4 sm:px-6"><h2 id="latest-payments-heading" class="text-base font-semibold text-slate-900">Pembayaran Terbaru</h2></div>
-            <div class="overflow-x-auto">
-                <table class="min-w-[48rem] divide-y divide-slate-200 text-left text-sm">
-                    <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-600"><tr><th scope="col" class="px-4 py-3 font-semibold sm:px-6">ID Pembayaran</th><th scope="col" class="px-4 py-3 font-semibold sm:px-6">Pemesanan</th><th scope="col" class="px-4 py-3 font-semibold sm:px-6">Pelanggan</th><th scope="col" class="px-4 py-3 font-semibold sm:px-6">Tanggal</th><th scope="col" class="px-4 py-3 font-semibold sm:px-6">Nominal</th></tr></thead>
-                    <tbody class="divide-y divide-slate-100 text-slate-700">
-                        @forelse ($pembayaranTerbaru as $pembayaran)
-                            <tr class="hover:bg-slate-50/70"><td class="whitespace-nowrap px-4 py-3.5 font-medium text-slate-900 sm:px-6">{{ $pembayaran->id_pembayaran }}</td><td class="px-4 py-3.5 sm:px-6">{{ $pembayaran->pemesanan->id_pemesanan ?? '-' }}</td><td class="px-4 py-3.5 sm:px-6">{{ $pembayaran->pemesanan->pelanggan->nama_pelanggan ?? '-' }}</td><td class="whitespace-nowrap px-4 py-3.5 sm:px-6">{{ $pembayaran->tanggal_pembayaran }}</td><td class="whitespace-nowrap px-4 py-3.5 tabular-nums sm:px-6">Rp {{ number_format($pembayaran->nominal, 0, ',', '.') }}</td></tr>
-                        @empty
-                            <tr><td colspan="5" class="px-6 py-10 text-center text-sm text-slate-500">Belum ada data pembayaran.</td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </section>
+        @endif
     </div>
+
+    <style>
+        .laporan-table { min-width: 980px; }
+        .laporan-table th { white-space: nowrap; font-size: .75rem; }
+        @media print {
+            body * { visibility: hidden !important; }
+            .laporan-print-area, .laporan-print-area * { visibility: visible !important; }
+            .laporan-print-area { position: absolute; inset: 0; width: 100%; border: 0 !important; box-shadow: none !important; }
+            .laporan-tabs-card, #filter-laporan-heading, .laporan-print-area .card-footer { break-inside: avoid; }
+            .laporan-print-action { display: none !important; }
+            .table-responsive { overflow: visible !important; }
+            .laporan-table { min-width: 0; font-size: 9px; }
+        }
+    </style>
 @endsection

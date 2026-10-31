@@ -22,6 +22,11 @@ class Pembayaran extends Model
         'total_pembayaran',
         'sisa_pembayaran',
         'status_pembayaran',
+        'metode_pembayaran',
+        'status_gateway',
+        'snap_token',
+        'gateway_redirect_url',
+        'bukti_pembayaran',
     ];
 
     public function pemesanan()
