@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.sneat-dashboard')
 
 @section('title', 'Detail Pembayaran')
 
@@ -23,9 +23,28 @@
                 <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Total Pembayaran</dt><dd class="mt-1 tabular-nums text-sm font-semibold text-slate-900">Rp {{ number_format($pembayaran->total_pembayaran, 0, ',', '.') }}</dd></div>
                 <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Sisa Pembayaran</dt><dd class="mt-1 tabular-nums text-sm font-semibold text-slate-900">Rp {{ number_format($pembayaran->sisa_pembayaran, 0, ',', '.') }}</dd></div>
                 <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Status</dt><dd class="mt-1 text-sm font-semibold text-slate-900">{{ $pembayaran->status_pembayaran }}</dd></div>
+                <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Metode Pembayaran</dt><dd class="mt-1 text-sm font-semibold text-slate-900">{{ $pembayaran->metode_pembayaran === 'online' ? 'Online · Midtrans' : 'Tunai / di tempat' }}</dd></div>
+                @if ($pembayaran->metode_pembayaran === 'online')
+                    <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Status Gateway</dt><dd class="mt-1 text-sm font-semibold text-slate-900">{{ ucfirst($pembayaran->status_gateway) }}</dd></div>
+                @endif
+                <div class="border-b border-slate-100 py-4">
+                    <dt class="text-sm font-medium text-slate-500">Bukti Pembayaran</dt>
+                    <dd class="mt-1 text-sm font-semibold text-slate-900">
+                        @if ($pembayaran->bukti_pembayaran)
+                            <a href="{{ asset('storage/' . $pembayaran->bukti_pembayaran) }}" target="_blank" rel="noopener" class="text-blue-800 underline">Buka bukti pembayaran</a>
+                        @else
+                            Belum diunggah
+                        @endif
+                    </dd>
+                </div>
             </dl>
             <div class="flex flex-wrap gap-3 border-t border-slate-200 px-5 py-4 sm:px-6">
-                <a href="{{ route('pembayaran.edit', $pembayaran->id_pembayaran) }}" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Edit</a>
+                @if ($pembayaran->metode_pembayaran !== 'online')
+                    <a href="{{ route('pembayaran.edit', $pembayaran->id_pembayaran) }}" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Edit</a>
+                @endif
+                @if ($pembayaran->metode_pembayaran === 'online' && $pembayaran->status_gateway === 'pending' && $pembayaran->snap_token)
+                    <a href="{{ route('pembayaran.online', $pembayaran->id_pembayaran) }}" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-800">Lanjut Bayar</a>
+                @endif
                 <a href="{{ route('pembayaran.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Daftar Pembayaran</a>
             </div>
         </section>

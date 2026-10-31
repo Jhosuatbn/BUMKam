@@ -17,6 +17,7 @@ class LaporanController extends Controller
             'start_date' => ['nullable', 'date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
             'tab' => ['nullable', 'in:pemesanan,kredit'],
+            'pelanggan' => ['nullable', 'string', 'max:100'],
         ]);
 
         /*
@@ -26,7 +27,8 @@ class LaporanController extends Controller
         */
 
         $pemesananQuery = Pemesanan::query();
-        $pembayaranQuery = Pembayaran::query();
+        $pembayaranQuery = Pembayaran::query()
+            ->where('status_gateway', 'settlement');
 
         /*
         |--------------------------------------------------------------------------
@@ -124,9 +126,18 @@ class LaporanController extends Controller
             ->with([
                 'pelanggan',
                 'detailPemesanan.barang',
+                'pembayaran' => fn ($query) => $query->where('status_gateway', 'settlement'),
             ])
             ->whereNotNull('tenor')
             ->where('tenor', '>', 0);
+
+        if (!empty($validated['pelanggan'])) {
+            $term = trim($validated['pelanggan']);
+            $kreditQuery->whereHas('pelanggan', function ($query) use ($term) {
+                $query->where('nama_pelanggan', 'like', '%' . $term . '%')
+                    ->orWhere('id_pelanggan', 'like', '%' . $term . '%');
+            });
+        }
 
         if (!empty($validated['start_date'])) {
             $kreditQuery->whereDate(

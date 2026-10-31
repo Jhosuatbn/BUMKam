@@ -1,59 +1,167 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# BUMKam Tuah Rezeki
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi informasi untuk membantu operasional BUMKam Tuah Rezeki: data pelanggan dan barang, pemesanan, pembayaran, pemantauan kredit, serta laporan.
 
-## About Laravel
+## Teknologi
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Laravel 12 dan PHP 8.2+
+- MySQL (atau database lain yang didukung Laravel dan dikonfigurasi di `.env`)
+- Blade, Tailwind CSS 4, Bootstrap 5, Vite
+- ApexCharts untuk visualisasi dashboard
+- Midtrans Snap untuk pembayaran online (opsional; Sandbox untuk uji coba)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Persiapan lokal (Windows/XAMPP)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Pastikan PHP, Composer, Node.js/npm dan MySQL tersedia. Jalankan perintah dari folder proyek, misalnya `C:\xampp\htdocs\BUMKam`.
 
-## Learning Laravel
+1. Pasang dependensi:
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+   ```powershell
+   composer install
+   npm install
+   ```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+2. Buat `.env` jika belum ada, lalu buat application key:
 
-## Laravel Sponsors
+   ```powershell
+   Copy-Item .env.example .env
+   php artisan key:generate
+   ```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+   Jika `.env` sudah ada, jangan menimpanya; cukup pastikan `APP_KEY` sudah terisi.
 
-### Premium Partners
+3. Buat database kosong di MySQL (contoh: `bumkam`), lalu atur koneksi `.env`:
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+   ```dotenv
+   APP_NAME="BUMKam Tuah Rezeki"
+   APP_ENV=local
+   APP_DEBUG=true
+   APP_URL=http://127.0.0.1:8000
 
-## Contributing
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=bumkam
+   DB_USERNAME=root
+   DB_PASSWORD=
+   ```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+   Sesuaikan nama database dan kredensial dengan instalasi lokal. Jangan membagikan `.env` atau memasukkan key Midtrans ke Git.
 
-## Code of Conduct
+4. Jalankan migrasi dan siapkan tautan file publik:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+   ```powershell
+   php artisan migrate
+   php artisan storage:link
+   ```
 
-## Security Vulnerabilities
+5. (Opsional, untuk akun demo) Buat akun Staff dan Pimpinan:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+   ```powershell
+   php artisan db:seed
+   ```
 
-## License
+   Seeder lokal saat ini membuat `admin` / `admin123` (Staff) dan `pimpinan` / `pimpinan123` (Pimpinan). Ini kredensial demo; ganti sebelum aplikasi dipakai di lingkungan nyata.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+6. (Opsional, hanya database demo) Tambahkan data contoh dashboard:
+
+   ```powershell
+   php artisan db:seed --class=DemoDashboardSeeder
+   ```
+
+   Seeder ini membuat data contoh pelanggan, barang, pesanan, dan pembayaran. Jangan jalankan pada database produksi.
+
+7. Jalankan Laravel dan Vite di dua terminal:
+
+   ```powershell
+   php artisan serve
+   ```
+
+   ```powershell
+   npm run dev
+   ```
+
+   Buka `http://127.0.0.1:8000`. Untuk membuat aset siap deploy, gunakan `npm run build`.
+
+> Perintah `migrate:fresh` menghapus seluruh tabel dan datanya. Jangan gunakan kecuali memang ingin menghapus dan membuat ulang database lokal.
+
+## Bagian utama aplikasi
+
+| Bagian | File penting |
+| --- | --- |
+| Route dan nama endpoint | `routes/web.php` |
+| Dashboard Staff dan pemilihan dashboard | `app/Http/Controllers/DashboardController.php`, `resources/views/dashboard.blade.php`, `resources/views/dashboard-staff.blade.php` |
+| Dashboard Pimpinan | `resources/views/dashboard-pimpinan.blade.php` |
+| Layout navigasi utama | `resources/views/layouts/sneat-dashboard.blade.php` |
+| Sidebar/layout lama atau pendukung | `resources/views/dashboard-layout.blade.php`, `resources/views/layouts/app.blade.php` |
+| Pelanggan | `app/Http/Controllers/PelangganController.php`, `resources/views/pelanggan/` |
+| Barang dan stok | `app/Http/Controllers/BarangController.php`, `resources/views/barang/` |
+| Pemesanan | `app/Http/Controllers/PemesananController.php`, `resources/views/pemesanan/` |
+| Pembayaran dan Midtrans | `app/Http/Controllers/PembayaranController.php`, `resources/views/pembayaran/` |
+| Monitoring kredit | `app/Http/Controllers/MonitoringKreditController.php`, `app/Services/MonitoringKreditService.php`, `resources/views/monitoring-kredit/` |
+| Laporan | `app/Http/Controllers/LaporanController.php`, `resources/views/laporan/index.blade.php` |
+| Middleware akses Pimpinan | `app/Http/Middleware/PimpinanAccess.php`, didaftarkan di `bootstrap/app.php` |
+| Skema database | `database/migrations/` |
+
+Model utama menggunakan nama tabel dan primary key khusus (misalnya `Pelanggan` memakai tabel `pelanggan` dan primary key string `id_pelanggan`). Periksa model serta migration sebelum mengubah query atau struktur data.
+
+## Hak akses
+
+- Route operasional dilindungi oleh middleware `auth` dan `pimpinan.access`.
+- Pimpinan hanya diizinkan membuka Dashboard, laporan, daftar/detail Pelanggan dan Barang (mode lihat), Monitoring Kredit, dan Logout.
+- Tindakan menambah, mengubah, atau menghapus Pelanggan/Barang serta modul operasional lain tetap dilarang untuk Pimpinan di backend.
+- Menu yang disembunyikan di Blade bukan pengganti pemeriksaan akses backend. Periksa `PimpinanAccess` dan validasi/otorisasi controller ketika mengubah hak akses.
+- Role yang dipakai adalah nilai `peran` pada pengguna, antara lain `Staff` dan `Pimpinan`.
+
+## Pembayaran Midtrans (opsional)
+
+Pembayaran online menggunakan Midtrans Snap. Pembayaran tunai/lokal tetap dikelola melalui modul Pembayaran. Untuk Sandbox, isi key di `.env` (jangan tempel key ke README, source code, atau chat publik):
+
+```dotenv
+MIDTRANS_SERVER_KEY=isi_server_key_sandbox
+MIDTRANS_CLIENT_KEY=isi_client_key_sandbox
+MIDTRANS_IS_PRODUCTION=false
+```
+
+Setelah mengubah `.env`, jalankan:
+
+```powershell
+php artisan config:clear
+```
+
+Callback notifikasi terdaftar di `POST /pembayaran/midtrans/notification` dengan nama route `pembayaran.midtrans.notification`. Endpoint ini dikecualikan dari CSRF dan harus tetap memvalidasi signature Midtrans. Daftarkan URL publik yang dapat dijangkau Midtrans di pengaturan Notification URL, contohnya:
+
+```text
+https://<alamat-ngrok-aktif>/pembayaran/midtrans/notification
+```
+
+Alamat ngrok berubah atau tidak dapat dijangkau jika tunnel/server lokal mati. Pastikan tunnel meneruskan ke web server Laravel yang benar, dan untuk Apache/XAMPP arahkan document root ke folder `public` proyek. URL redirect setelah pembayaran hanya untuk navigasi; status pembayaran harus disinkronkan dari callback Midtrans yang valid. Cek endpoint dengan:
+
+```powershell
+php artisan route:list --path=pembayaran/midtrans/notification
+```
+
+Jika Midtrans menerima callback tetapi aplikasi tidak, periksa URL tunnel, tujuan forwarding, Apache/Laravel access log, dan halaman ngrok Inspector. Jangan menganggap redirect browser sebagai bukti pembayaran berhasil.
+
+## Petunjuk untuk Codex atau kontributor berikutnya
+
+Sebelum mengerjakan perubahan:
+
+1. Baca README ini, cek `git status`, lalu periksa file terkait dan route/controller/model/migration yang benar-benar ada.
+2. Jangan menghapus atau menimpa perubahan lokal yang belum di-commit. Jangan membaca atau menampilkan rahasia dari `.env`.
+3. Pertahankan pola UI Sneat yang sudah dipakai oleh layout dan halaman aplikasi. Hindari memasang ulang template atau mengganti framework tanpa permintaan eksplisit.
+4. Pastikan perubahan menu/hak akses memiliki pemeriksaan backend; jangan hanya menyembunyikan tombol di tampilan.
+5. Ubah file yang berhubungan langsung dengan permintaan. Hindari mengubah dashboard Staff saat tugas hanya menyebut dashboard Pimpinan.
+6. Jangan menebak nama kolom, route, relasi, atau variabel. Verifikasi dari kode dan migration sebelum menggunakannya.
+7. Setelah perubahan, jelaskan file yang diubah dan dampaknya. Jalankan pemeriksaan yang sesuai dengan permintaan; hindari migrasi destruktif.
+
+## Perintah bantu
+
+```powershell
+php artisan route:list
+php artisan view:clear
+php artisan config:clear
+npm run build
+```
+
+Gunakan `php artisan view:cache` untuk memeriksa kompilasi Blade; bersihkan cache dengan `php artisan view:clear` jika tampilan lama masih muncul. Peringatan PHP atau Vite perlu dibedakan dari error yang benar-benar menghentikan proses.

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.sneat-dashboard')
 
 @section('title', 'Edit Pelanggan')
 
@@ -41,7 +41,7 @@
 
                     <div>
                         <label for="no_telepon" class="block text-sm font-semibold text-slate-700">No. Telepon</label>
-                        <input id="no_telepon" type="text" name="no_telepon" value="{{ old('no_telepon', $pelanggan->no_telepon) }}" required inputmode="numeric" maxlength="13" pattern="[0-9]{10,13}" autocomplete="tel" placeholder="08xxxxxxxxxx" aria-describedby="no_telepon_hint" oninput="this.value = this.value.replace(/\D/g, '')" class="mt-2 block min-h-11 w-full rounded-xl border bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 @error('no_telepon') border-rose-400 focus:border-rose-600 focus:ring-rose-600/20 @else border-slate-300 focus:border-blue-600 focus:ring-blue-600/20 @enderror">
+                        <input id="no_telepon" type="text" name="no_telepon" value="{{ old('no_telepon', $pelanggan->no_telepon) }}" required inputmode="numeric" minlength="10" maxlength="13" pattern="[0-9]{10,13}" autocomplete="tel" placeholder="08xxxxxxxxxx" aria-describedby="no_telepon_hint" oninput="this.value = this.value.replace(/\D/g, '')" class="mt-2 block min-h-11 w-full rounded-xl border bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 @error('no_telepon') border-rose-400 focus:border-rose-600 focus:ring-rose-600/20 @else border-slate-300 focus:border-blue-600 focus:ring-blue-600/20 @enderror">
                         <p id="no_telepon_hint" class="mt-1.5 text-xs text-slate-500">Hanya angka, 10 sampai 13 digit.</p>
                         @error('no_telepon')
                             <p class="mt-1 text-xs font-medium text-rose-700">{{ $message }}</p>
@@ -59,7 +59,7 @@
 
                     <div>
                         <label for="nik" class="block text-sm font-semibold text-slate-700">NIK</label>
-                        <input id="nik" type="text" name="nik" value="{{ old('nik', $pelanggan->nik) }}" required inputmode="numeric" maxlength="16" pattern="[0-9]{16}" aria-describedby="nik_hint" oninput="this.value = this.value.replace(/\D/g, '')" class="mt-2 block min-h-11 w-full rounded-xl border bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 @error('nik') border-rose-400 focus:border-rose-600 focus:ring-rose-600/20 @else border-slate-300 focus:border-blue-600 focus:ring-blue-600/20 @enderror">
+                        <input id="nik" type="text" name="nik" value="{{ old('nik', $pelanggan->nik) }}" required inputmode="numeric" minlength="16" maxlength="16" pattern="[0-9]{16}" aria-describedby="nik_hint" oninput="this.value = this.value.replace(/\D/g, '')" class="mt-2 block min-h-11 w-full rounded-xl border bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 @error('nik') border-rose-400 focus:border-rose-600 focus:ring-rose-600/20 @else border-slate-300 focus:border-blue-600 focus:ring-blue-600/20 @enderror">
                         <p id="nik_hint" class="mt-1.5 text-xs text-slate-500">Hanya angka, tepat 16 digit.</p>
                         @error('nik')
                             <p class="mt-1 text-xs font-medium text-rose-700">{{ $message }}</p>
@@ -69,7 +69,19 @@
                     {{-- Foto KTP --}}
                     <div>
                         <label for="foto_ktp" class="block text-sm font-semibold text-slate-700">Foto KTP</label>
-                        <input id="foto_ktp" type="file" name="foto_ktp" accept="image/jpeg,image/png,image/webp" aria-describedby="foto_ktp_hint" class="mt-2 block w-full cursor-pointer rounded-xl border bg-white text-sm text-slate-700 file:mr-4 file:min-h-11 file:cursor-pointer file:border-0 file:bg-blue-50 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-blue-800 hover:file:bg-blue-100 focus:outline-none focus:ring-2 @error('foto_ktp') border-rose-400 focus:ring-rose-600/20 @else border-slate-300 focus:ring-blue-600/20 @enderror">
+                        <div class="relative mt-2 h-48 overflow-hidden rounded-xl border bg-white @error('foto_ktp') border-rose-400 @else border-slate-300 @enderror">
+                            <label data-upload-preview-placeholder for="foto_ktp" class="absolute inset-0 flex h-full cursor-pointer flex-col items-center justify-center gap-3 px-5 py-6 text-center transition hover:bg-blue-50/70 focus-within:outline focus-within:outline-2 focus-within:outline-blue-600">
+                                <input id="foto_ktp" type="file" name="foto_ktp" accept="image/jpeg,image/png,image/webp" data-upload-preview-input aria-describedby="foto_ktp_hint" class="sr-only">
+                                <svg class="size-10 text-blue-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+                                <span><span class="block text-sm font-semibold text-slate-800">Pilih foto KTP</span><span class="mt-1 block text-xs text-slate-500">JPG, PNG, atau WEBP · Maksimal 2 MB</span></span>
+                            </label>
+                            <div id="foto_ktp_preview_box" data-upload-preview-box class="absolute inset-0 hidden h-full bg-slate-50 p-3" aria-live="polite">
+                                <div class="relative grid h-full place-items-center overflow-hidden rounded-lg bg-slate-100 p-2">
+                                    <img id="foto_ktp_preview" data-upload-preview-image src="" alt="Pratinjau foto KTP baru" class="max-h-full max-w-full rounded-lg object-contain">
+                                    <button type="button" data-clear-upload-preview class="absolute right-2 top-2 inline-flex size-9 items-center justify-center rounded-full bg-slate-950/80 text-2xl leading-none text-white shadow-lg transition hover:bg-rose-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white" aria-label="Hapus foto yang dipilih" title="Hapus foto yang dipilih">&times;</button>
+                                </div>
+                            </div>
+                        </div>
                         <p id="foto_ktp_hint" class="mt-1.5 text-xs text-slate-500">
                             @if ($pelanggan->foto_ktp)
                                 Pilih file baru hanya jika ingin mengganti foto. JPG, PNG, atau WEBP, maksimal 2 MB.
@@ -77,31 +89,21 @@
                                 Opsional. JPG, PNG, atau WEBP, maksimal 2 MB.
                             @endif
                         </p>
-                        <p id="foto_ktp_error" role="alert" class="mt-1 hidden text-xs font-medium text-rose-700"></p>
+                        <p id="foto_ktp_error" data-upload-preview-error role="alert" class="mt-1 hidden text-xs font-medium text-rose-700"></p>
                         @error('foto_ktp')
                             <p class="mt-1 text-xs font-medium text-rose-700">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    {{-- Foto saat ini + opsi hapus --}}
+                    {{-- Foto tersimpan tidak ditampilkan di halaman ini. --}}
                     @if ($pelanggan->foto_ktp_url)
-                        <div id="foto_saat_ini" class="md:col-span-2">
-                            <p class="text-sm font-semibold text-slate-700">Foto KTP saat ini</p>
-                            <a href="{{ $pelanggan->foto_ktp_url }}" target="_blank" rel="noopener" class="mt-2 inline-block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">
-                                <img src="{{ $pelanggan->foto_ktp_url }}" alt="Foto KTP {{ $pelanggan->nama_pelanggan }}" class="max-h-56 rounded-xl border border-slate-200 object-contain">
-                            </a>
+                        <div class="md:col-span-2">
                             <label class="mt-3 flex items-center gap-2 text-sm text-slate-700">
                                 <input type="checkbox" name="hapus_foto" value="1" @checked(old('hapus_foto')) class="h-4 w-4 rounded border-slate-300 text-rose-600 focus:ring-rose-600">
-                                Hapus foto ini
+                                Hapus foto KTP yang tersimpan
                             </label>
                         </div>
                     @endif
-
-                    {{-- Pratinjau foto baru yang dipilih --}}
-                    <div id="foto_ktp_preview_box" class="hidden md:col-span-2">
-                        <p class="text-sm font-semibold text-slate-700">Pratinjau foto baru</p>
-                        <img id="foto_ktp_preview" src="" alt="Pratinjau foto KTP baru" class="mt-2 max-h-56 rounded-xl border border-slate-200 object-contain">
-                    </div>
 
                     <div class="md:col-span-2">
                         <label for="alamat" class="block text-sm font-semibold text-slate-700">Alamat</label>
@@ -120,36 +122,4 @@
         </section>
     </div>
 
-    <script>
-        (function () {
-            const input = document.getElementById('foto_ktp');
-            const box = document.getElementById('foto_ktp_preview_box');
-            const img = document.getElementById('foto_ktp_preview');
-            const error = document.getElementById('foto_ktp_error');
-            const maxBytes = 2 * 1024 * 1024; // 2 MB
-
-            input.addEventListener('change', function () {
-                const file = input.files[0];
-
-                error.classList.add('hidden');
-                error.textContent = '';
-
-                if (!file) {
-                    box.classList.add('hidden');
-                    return;
-                }
-
-                if (file.size > maxBytes) {
-                    input.value = '';
-                    box.classList.add('hidden');
-                    error.textContent = 'Ukuran foto maksimal 2 MB.';
-                    error.classList.remove('hidden');
-                    return;
-                }
-
-                img.src = URL.createObjectURL(file);
-                box.classList.remove('hidden');
-            });
-        })();
-    </script>
 @endsection

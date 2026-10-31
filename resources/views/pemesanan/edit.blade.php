@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.sneat-dashboard')
 
 @section('title', 'Edit Pemesanan')
 
@@ -94,11 +94,23 @@
                         </div>
                         <div>
                             <label for="dp" class="block text-sm font-semibold text-slate-700">Jumlah DP</label>
-                            <input id="dp" type="number" name="dp" value="{{ $pemesanan->dp }}" min="0" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                            <input id="dp" type="text" inputmode="numeric" data-rupiah-input name="dp" value="{{ $pemesanan->dp }}" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                         </div>
                         <div>
                             <label for="tenor" class="block text-sm font-semibold text-slate-700">Tenor (bulan)</label>
-                            <input id="tenor" type="number" name="tenor" value="{{ $pemesanan->tenor }}" min="1" required class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                            @php($tenorDipilih = (int) old('tenor', $pemesanan->tenor))
+                            <select id="tenor" name="tenor" required class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                                <option value="" disabled @selected(! in_array($tenorDipilih, [12, 24, 36], true))>
+                                    @if (in_array($tenorDipilih, [12, 24, 36], true))
+                                        Pilih tenor
+                                    @else
+                                        Tenor lama {{ $tenorDipilih }} bulan — pilih tenor baru
+                                    @endif
+                                </option>
+                                @foreach ([12, 24, 36] as $pilihanTenor)
+                                    <option value="{{ $pilihanTenor }}" @selected($tenorDipilih === $pilihanTenor)>{{ $pilihanTenor }} bulan</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div>
                             <label for="bunga" class="block text-sm font-semibold text-slate-700">Bunga</label>

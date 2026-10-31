@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.sneat-dashboard')
 
 @section('title', 'Tambah Barang')
 
@@ -49,8 +49,12 @@
                         <label for="harga" class="block text-sm font-semibold text-slate-700">Harga</label>
                         <div class="mt-2 flex min-h-11 overflow-hidden rounded-xl border border-slate-300 focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-600/20">
                             <span class="inline-flex items-center border-r border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-600">Rp</span>
-                            <input id="harga" type="number" name="harga" value="{{ old('harga') }}" min="0" placeholder="Contoh: 1500000" required class="block min-w-0 flex-1 border-0 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-0">
+                            <input id="harga" type="text" inputmode="numeric" data-rupiah-input name="harga" value="{{ old('harga') }}" placeholder="Contoh: 1.500.000" required class="block min-w-0 flex-1 border-0 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-0">
                         </div>
+                    </div>
+                    <div>
+                        <label for="stok" class="block text-sm font-semibold text-slate-700">Stok awal (opsional)</label>
+                        <input id="stok" type="number" name="stok" value="{{ old('stok') }}" min="0" step="1" placeholder="Kosongkan jika belum diketahui" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                     </div>
                 </div>
                 <div class="mt-8 flex flex-wrap gap-3 border-t border-slate-200 pt-5">

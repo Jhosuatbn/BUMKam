@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.sneat-dashboard')
 
 @section('title', 'Tambah Pemesanan')
 
@@ -83,7 +83,7 @@
                                         data-harga="{{ $item->harga }}"
                                         data-search="{{ strtolower($item->id_barang . ' ' . $item->nama_barang) }}"
                                         {{ old('id_barang') == $item->id_barang ? 'selected' : '' }}>
-                                    {{ $item->nama_barang }} - Rp {{ number_format($item->harga, 0, ',', '.') }}
+                                    {{ $item->nama_barang }} - Rp {{ number_format($item->harga, 0, ',', '.') }} — @if (is_null($item->stok)) stok belum diatur @else stok {{ number_format($item->stok, 0, ',', '.') }} @endif
                                 </option>
                             @endforeach
                         </select>
@@ -122,7 +122,7 @@
                         <label for="dp" class="block text-sm font-semibold text-slate-700">Nominal DP (Rupiah)</label>
                         <div class="mt-2 flex min-h-11 overflow-hidden rounded-xl border border-slate-300 focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-600/20">
                             <span class="inline-flex items-center bg-slate-100 px-3 text-sm font-semibold text-slate-600">Rp</span>
-                            <input id="dp" type="number" name="dp" value="{{ old('dp', 0) }}" min="0" step="1"
+                            <input id="dp" type="text" inputmode="numeric" data-rupiah-input name="dp" value="{{ old('dp', 0) }}"
                                    inputmode="numeric" placeholder="Masukkan nominal DP"
                                    class="min-w-0 flex-1 border-0 bg-white px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-0">
                         </div>
@@ -131,9 +131,13 @@
 
                     <div>
                         <label for="tenor" class="block text-sm font-semibold text-slate-700">Tenor (bulan)</label>
-                        <input id="tenor" type="number" name="tenor" value="{{ old('tenor') }}" min="1" step="1"
-                               required placeholder="Contoh: 12"
-                               class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                        <select id="tenor" name="tenor" required
+                                class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                            <option value="">Pilih tenor</option>
+                            @foreach ([12, 24, 36] as $pilihanTenor)
+                                <option value="{{ $pilihanTenor }}" @selected((string) old('tenor') === (string) $pilihanTenor)>{{ $pilihanTenor }} bulan</option>
+                            @endforeach
+                        </select>
                     </div>
 
                     <div class="md:col-span-2">
@@ -303,7 +307,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const gunakanDP = pakaiDP();
         const totalHarga = harga * jumlah;
         const bunga = totalHarga * PERSENTASE_BUNGA;
-        const dp = gunakanDP ? Number(dpInput.value) : 0;
+        const dp = gunakanDP ? Number(dpInput.value.replace(/\D/g, '') || 0) : 0;
         const totalPembayaran = totalHarga + bunga;
 
         hargaSatuan.textContent = harga > 0 ? 'Harga satuan: ' + formatRupiah(harga) : 'Harga satuan: -';
@@ -365,7 +369,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const jumlah = Number(jumlahInput.value);
         const totalHarga = harga * jumlah;
         const gunakanDP = pakaiDP();
-        const dp = gunakanDP ? Number(dpInput.value) : 0;
+        const dp = gunakanDP ? Number(dpInput.value.replace(/\D/g, '') || 0) : 0;
 
         if (!Number.isInteger(jumlah) || jumlah < 1) {
             event.preventDefault();

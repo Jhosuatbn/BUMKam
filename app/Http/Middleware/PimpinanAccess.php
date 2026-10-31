@@ -25,6 +25,8 @@ class PimpinanAccess
             'pelanggan.show',
             'barang.index',
             'barang.show',
+            'monitoring-kredit.index',
+            'monitoring-kredit.show',
             'logout',
         ];
 

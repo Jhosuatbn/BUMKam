@@ -74,12 +74,25 @@ class PemesananController extends Controller
             'jumlah' => 'required|integer|min:1',
             'skema_pembayaran' => 'required|in:DP,Sebagian,Tanpa DP',
             'dp' => 'required_if:skema_pembayaran,DP,Sebagian|nullable|numeric|min:0',
-            'tenor' => 'required|integer|min:1',
+            'tenor' => 'required|integer|in:12,24,36',
             'jaminan' => 'nullable|string',
         ]);
 
         DB::transaction(function () use ($validated) {
-            $barang = Barang::findOrFail($validated['id_barang']);
+            $barang = Barang::whereKey($validated['id_barang'])->lockForUpdate()->firstOrFail();
+            $jumlah = (int) $validated['jumlah'];
+
+            if ($barang->stok === null) {
+                throw ValidationException::withMessages([
+                    'id_barang' => 'Stok barang ini belum diatur. Minta Staff memasukkan stok terlebih dahulu.',
+                ]);
+            }
+
+            if ($barang->stok < $jumlah) {
+                throw ValidationException::withMessages([
+                    'jumlah' => 'Stok tidak mencukupi. Stok tersedia: ' . $barang->stok . ' unit.',
+                ]);
+            }
 
             $totalHarga = (float) $barang->harga * (int) $validated['jumlah'];
             $pakaiDP = in_array(
@@ -117,10 +130,13 @@ class PemesananController extends Controller
                 'id_detail' => 'DTL-' . Str::upper(Str::random(10)),
                 'id_pemesanan' => $pemesanan->id_pemesanan,
                 'id_barang' => $barang->id_barang,
-                'jumlah' => (int) $validated['jumlah'],
+                'jumlah' => $jumlah,
                 'harga' => $barang->harga,
                 'subtotal' => $totalHarga,
+                'stok_dikurangi' => true,
             ]);
+
+            $barang->decrement('stok', $jumlah);
         });
 
         return redirect()
@@ -162,12 +178,38 @@ class PemesananController extends Controller
             'jumlah' => 'required|integer|min:1',
             'skema_pembayaran' => 'required|in:DP,Sebagian,Tanpa DP',
             'dp' => 'required_if:skema_pembayaran,DP,Sebagian|nullable|numeric|min:0',
-            'tenor' => 'required|integer|min:1',
+            'tenor' => 'required|integer|in:12,24,36',
             'jaminan' => 'nullable|string',
         ]);
 
         DB::transaction(function () use ($validated, $pemesanan) {
-            $barang = Barang::findOrFail($validated['id_barang']);
+            $detail = DetailPemesanan::where('id_pemesanan', $pemesanan->id_pemesanan)
+                ->lockForUpdate()
+                ->first();
+            $barangLama = $detail
+                ? Barang::whereKey($detail->id_barang)->lockForUpdate()->first()
+                : null;
+            $barang = Barang::whereKey($validated['id_barang'])->lockForUpdate()->firstOrFail();
+            $jumlahBaru = (int) $validated['jumlah'];
+            $jumlahLama = (int) ($detail?->jumlah ?? 0);
+
+            if ($barang->stok === null) {
+                throw ValidationException::withMessages([
+                    'id_barang' => 'Stok barang ini belum diatur. Minta Staff memasukkan stok terlebih dahulu.',
+                ]);
+            }
+
+            $stokBisaDipakai = (int) $barang->stok;
+            $stokLamaSudahDikurangi = (bool) ($detail?->stok_dikurangi ?? false);
+            if ($stokLamaSudahDikurangi && $barangLama?->id_barang === $barang->id_barang && $barangLama->stok !== null) {
+                $stokBisaDipakai += $jumlahLama;
+            }
+
+            if ($stokBisaDipakai < $jumlahBaru) {
+                throw ValidationException::withMessages([
+                    'jumlah' => 'Stok tidak mencukupi. Stok tersedia: ' . $stokBisaDipakai . ' unit.',
+                ]);
+            }
 
             $totalHarga = (float) $barang->harga * (int) $validated['jumlah'];
             $pakaiDP = in_array(
@@ -198,13 +240,12 @@ class PemesananController extends Controller
                 'angsuran' => $angsuran,
             ]);
 
-            $detail = $pemesanan->detailPemesanan()->first();
-
             $dataDetail = [
                 'id_barang' => $barang->id_barang,
-                'jumlah' => (int) $validated['jumlah'],
+                'jumlah' => $jumlahBaru,
                 'harga' => $barang->harga,
                 'subtotal' => $totalHarga,
+                'stok_dikurangi' => true,
             ];
 
             if ($detail) {
@@ -215,6 +256,11 @@ class PemesananController extends Controller
                     'id_pemesanan' => $pemesanan->id_pemesanan,
                 ]));
             }
+
+            if ($stokLamaSudahDikurangi && $barangLama && $barangLama->stok !== null) {
+                $barangLama->increment('stok', $jumlahLama);
+            }
+            $barang->decrement('stok', $jumlahBaru);
         });
 
         return redirect()
@@ -225,6 +271,13 @@ class PemesananController extends Controller
     public function destroy(Pemesanan $pemesanan)
     {
         DB::transaction(function () use ($pemesanan) {
+            $details = $pemesanan->detailPemesanan()->get();
+            foreach ($details as $detail) {
+                $barang = Barang::whereKey($detail->id_barang)->lockForUpdate()->first();
+                if ($detail->stok_dikurangi && $barang && $barang->stok !== null) {
+                    $barang->increment('stok', (int) $detail->jumlah);
+                }
+            }
             $pemesanan->detailPemesanan()->delete();
             $pemesanan->delete();
         });

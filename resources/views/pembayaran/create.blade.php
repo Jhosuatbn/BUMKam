@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.sneat-dashboard')
 
 @section('title', 'Tambah Pembayaran')
 
@@ -25,7 +25,10 @@
 
         <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6" aria-labelledby="pembayaran-form-heading">
             <h2 id="pembayaran-form-heading" class="text-base font-semibold text-slate-900">Informasi Pembayaran</h2>
-            <form action="{{ route('pembayaran.store') }}" method="POST" class="mt-6">
+            @if ($pemesanan->isEmpty())
+                <div class="mt-4 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">Tidak ada pemesanan yang dapat dibayar saat ini. Pemesanan lunas dan transaksi online yang masih menunggu tidak ditampilkan.</div>
+            @endif
+            <form action="{{ route('pembayaran.store') }}" method="POST" enctype="multipart/form-data" class="mt-6">
                 @csrf
                 <div class="grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2">
                     <div>
@@ -36,6 +39,14 @@
                     <div>
                         <label for="tanggal_pembayaran" class="block text-sm font-semibold text-slate-700">Tanggal Pembayaran</label>
                         <input id="tanggal_pembayaran" type="date" name="tanggal_pembayaran" value="{{ old('tanggal_pembayaran', date('Y-m-d')) }}" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                    </div>
+                    <div>
+                        <label for="metode_pembayaran" class="block text-sm font-semibold text-slate-700">Metode Pembayaran</label>
+                        <select id="metode_pembayaran" name="metode_pembayaran" required data-payment-method class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                            <option value="tunai" {{ old('metode_pembayaran', 'tunai') === 'tunai' ? 'selected' : '' }}>Tunai / Bayar di Tempat</option>
+                            <option value="online" {{ old('metode_pembayaran') === 'online' ? 'selected' : '' }}>Online (Midtrans)</option>
+                        </select>
+                        <p class="mt-1 text-xs text-slate-500">Tunai dicatat Staff. Online dilanjutkan melalui halaman Midtrans.</p>
                     </div>
                     <div class="md:col-span-2">
                         <label for="cari_pemesanan" class="block text-sm font-semibold text-slate-700">Pemesanan</label>
@@ -58,9 +69,14 @@
                         <label for="nominal" class="block text-sm font-semibold text-slate-700">Nominal Angsuran</label>
                         <div class="mt-2 flex min-h-11 overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
                             <span class="inline-flex items-center border-r border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-600">Rp</span>
-                            <input id="nominal" type="number" value="{{ old('id_pemesanan') ? number_format((float) $pemesanan->firstWhere('id_pemesanan', old('id_pemesanan'))?->angsuran, 2, '.', '') : '' }}" min="0" step="0.01" readonly data-installment-display aria-describedby="nominal-hint" class="block min-w-0 flex-1 border-0 bg-slate-100 px-3.5 py-2.5 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-0">
+                            <input id="nominal" type="text" value="{{ old('id_pemesanan') ? number_format((float) $pemesanan->firstWhere('id_pemesanan', old('id_pemesanan'))?->angsuran, 0, ',', '.') : '' }}" readonly data-installment-display aria-describedby="nominal-hint" class="block min-w-0 flex-1 border-0 bg-slate-100 px-3.5 py-2.5 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-0">
                         </div>
                         <p id="nominal-hint" class="mt-1 text-xs text-slate-500">Nominal diambil otomatis dari angsuran pada pemesanan yang dipilih.</p>
+                    </div>
+                    <div class="md:col-span-2" data-cash-payment-proof>
+                        <label for="bukti_pembayaran" class="block text-sm font-semibold text-slate-700">Bukti Pembayaran (opsional)</label>
+                        <input id="bukti_pembayaran" type="file" name="bukti_pembayaran" accept="image/jpeg,image/png,image/webp,application/pdf" class="mt-2 block w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-700 file:mr-3 file:rounded-lg file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:font-semibold file:text-blue-800">
+                        <p class="mt-1 text-xs text-slate-500">Format JPG, PNG, WEBP, atau PDF; maksimal 5 MB.</p>
                     </div>
                 </div>
                 <div class="mt-8 flex flex-wrap gap-3 border-t border-slate-200 pt-5">

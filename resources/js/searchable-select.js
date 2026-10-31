@@ -145,7 +145,10 @@ function initInstallmentDisplays() {
 
         select.addEventListener('change', () => {
             const selectedOption = select.options[select.selectedIndex];
-            display.value = selectedOption?.value ? selectedOption.dataset.angsuran : '';
+            const nominal = selectedOption?.value ? Number(selectedOption.dataset.angsuran) : NaN;
+            display.value = Number.isFinite(nominal)
+                ? Math.round(nominal).toLocaleString('id-ID')
+                : '';
         });
     });
 }

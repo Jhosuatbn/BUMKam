@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.sneat-dashboard')
 
 @section('title', 'Edit Barang')
 
@@ -49,8 +49,13 @@
                         <label for="harga" class="block text-sm font-semibold text-slate-700">Harga</label>
                         <div class="mt-2 flex min-h-11 overflow-hidden rounded-xl border border-slate-300 focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-600/20">
                             <span class="inline-flex items-center border-r border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-600">Rp</span>
-                            <input id="harga" type="number" name="harga" value="{{ old('harga', $barang->harga) }}" min="0" required class="block min-w-0 flex-1 border-0 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-0">
+                            <input id="harga" type="text" inputmode="numeric" data-rupiah-input name="harga" value="{{ old('harga', $barang->harga) }}" required class="block min-w-0 flex-1 border-0 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-0">
                         </div>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="stok" class="block text-sm font-semibold text-slate-700">Stok tersedia</label>
+                        <input id="stok" type="number" name="stok" value="{{ old('stok', $barang->stok) }}" min="0" step="1" placeholder="Masukkan jumlah stok" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                        <p class="mt-1 text-xs text-slate-500">Biarkan kosong hanya jika jumlah stok belum diketahui.</p>
                     </div>
                 </div>
                 <div class="mt-8 flex flex-wrap gap-3 border-t border-slate-200 pt-5">

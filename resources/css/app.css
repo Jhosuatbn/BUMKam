@@ -6,6 +6,56 @@
 @source '../**/*.js';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    --font-sans: 'Public Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+html, body { font-family: 'Public Sans', ui-sans-serif, system-ui, sans-serif; }
+
+/* Keep dashboard charts inside their cards when the viewport or browser zoom changes. */
+.bumkam-order-status-summary { min-width: 0; flex-wrap: wrap; }
+.bumkam-order-status-plot { width: min(100%, 12rem); min-width: 0; flex: 0 1 12rem; overflow: hidden; }
+#bumkam-order-status-chart { width: 100%; min-width: 0; }
+
+/* BUMKam brand palette: forest green and fresh leaf green. */
+body .layout-menu .bumkam-sidebar-logo {
+    display: block;
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: .15rem;
+    border: 1px solid #e2f0d9;
+    border-radius: .65rem;
+    background: #fff;
+    object-fit: contain;
+}
+body .layout-menu .menu-item.active > .menu-link {
+    color: #087a40 !important;
+    background-color: #edf7e7 !important;
+}
+body .layout-menu .menu-item.active > .menu-link .menu-icon { color: #078a46 !important; }
+body .bg-label-primary { color: #087a40 !important; background-color: #e9f7ef !important; }
+body .text-primary { color: #087a40 !important; }
+body .btn.btn-primary {
+    color: #fff !important;
+    border-color: #078a46 !important;
+    background: linear-gradient(135deg, #078a46, #65a30d) !important;
+}
+body .btn.btn-primary:hover {
+    border-color: #056b38 !important;
+    background: linear-gradient(135deg, #056b38, #4d7c0f) !important;
+}
+
+/* Tema gelap tetap memakai kontras tinggi untuk teks dan kontrol utama. */
+html.dark body { background: #0b1220; color: #e2e8f0; }
+html.dark header.sticky { background: rgb(15 23 42 / 95%); border-color: #334155; }
+html.dark main { background: #0b1220; }
+html.dark [class~="bg-white"] { background-color: #111c2e; }
+html.dark [class~="bg-slate-50"], html.dark [class~="bg-slate-100"] { background-color: #1e293b; }
+html.dark [class~="text-slate-950"], html.dark [class~="text-slate-900"], html.dark [class~="text-slate-800"] { color: #f1f5f9; }
+html.dark [class~="text-slate-700"], html.dark [class~="text-slate-600"] { color: #cbd5e1; }
+html.dark [class~="text-slate-500"], html.dark [class~="text-slate-400"] { color: #94a3b8; }
+html.dark [class*="border-slate-"] { border-color: #334155; }
+html.dark input:not([type="checkbox"]), html.dark select, html.dark textarea { background-color: #0f172a; color: #f1f5f9; border-color: #475569; }
+html.dark input::placeholder, html.dark textarea::placeholder { color: #94a3b8; }
+html.dark table thead { background-color: #172337; }
+html.dark table tbody tr:hover { background-color: rgb(30 64 175 / 15%); }

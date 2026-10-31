@@ -16,7 +16,7 @@ class DashboardController extends Controller
         $totalPelanggan = Pelanggan::count();
         $totalBarang = Barang::count();
         $totalPemesanan = Pemesanan::count();
-        $totalPembayaran = Pembayaran::count();
+        $totalPembayaran = Pembayaran::where('status_gateway', 'settlement')->count();
 
         $totalKredit = Pemesanan::where(
             'skema_pembayaran',
@@ -63,6 +63,23 @@ class DashboardController extends Controller
                 $awalBulanIni->toDateString()
             )
             ->count();
+
+        // Nilai pesanan per periode (menggunakan total_harga yang tercatat).
+        $nilaiPesananBulanIni = Pemesanan::where(
+            'tanggal_pemesanan',
+            '>=',
+            $awalBulanIni->toDateString()
+        )
+            ->where('tanggal_pemesanan', '<', $awalBulanDepan->toDateString())
+            ->sum('total_harga');
+
+        $nilaiPesananBulanLalu = Pemesanan::where(
+            'tanggal_pemesanan',
+            '>=',
+            $awalBulanLalu->toDateString()
+        )
+            ->where('tanggal_pemesanan', '<', $awalBulanIni->toDateString())
+            ->sum('total_harga');
 
         if ($transaksiBulanLalu > 0) {
             $persentasePerubahan = (
@@ -112,6 +129,44 @@ class DashboardController extends Controller
                 ];
             });
 
+        // Perbandingan tahunan dan nilai pemesanan mengikuti enam bulan yang sama.
+        $previousYearStart = $firstTrendMonth->subYear();
+        $previousYearEnd = $today->subYear();
+        $previousYearOrders = Pemesanan::query()
+            ->selectRaw("DATE_FORMAT(tanggal_pemesanan, '%Y-%m') as bulan, COUNT(*) as jumlah")
+            ->whereBetween('tanggal_pemesanan', [
+                $previousYearStart->toDateString(),
+                $previousYearEnd->toDateString(),
+            ])
+            ->groupBy('bulan')
+            ->pluck('jumlah', 'bulan');
+
+        $monthlyOrderComparison = collect(range(0, 5))
+            ->map(function ($offset) use ($firstTrendMonth, $previousYearOrders) {
+                $month = $firstTrendMonth->addMonths($offset);
+
+                return (int) $previousYearOrders->get(
+                    $month->subYear()->format('Y-m'),
+                    0
+                );
+            });
+
+        $monthlyOrderValues = Pemesanan::query()
+            ->selectRaw("DATE_FORMAT(tanggal_pemesanan, '%Y-%m') as bulan, SUM(total_harga) as total")
+            ->whereBetween('tanggal_pemesanan', [
+                $firstTrendMonth->toDateString(),
+                $today->toDateString(),
+            ])
+            ->groupBy('bulan')
+            ->pluck('total', 'bulan');
+
+        $monthlyRevenueTrend = collect(range(0, 5))
+            ->map(function ($offset) use ($firstTrendMonth, $monthlyOrderValues) {
+                $month = $firstTrendMonth->addMonths($offset);
+
+                return (float) $monthlyOrderValues->get($month->format('Y-m'), 0);
+            });
+
         $maxMonthlyOrders = max(
             1,
             (int) $monthlyOrderTotals->max('jumlah')
@@ -138,13 +193,13 @@ class DashboardController extends Controller
         $pembayaranLunas = Pembayaran::where(
             'status_pembayaran',
             'Lunas'
-        )->count();
+        )->where('status_gateway', 'settlement')->count();
 
         $pembayaranBelumLunas = Pembayaran::where(
             'status_pembayaran',
             '!=',
             'Lunas'
-        )->count();
+        )->where('status_gateway', 'settlement')->count();
 
         $totalStatusPembayaran = $pembayaranLunas
             + $pembayaranBelumLunas;
@@ -176,6 +231,23 @@ class DashboardController extends Controller
             (int) $barangTerlaris->max('jumlah')
         );
 
+        // Data tambahan hanya dimuat untuk ringkasan Dashboard Pimpinan.
+        $barangBelumTerjual = collect();
+        $barangStokHabis = collect();
+        if (auth()->user()?->peran === 'Pimpinan') {
+            $ringkasanBarang = Barang::query()
+                ->withSum('detailPemesanan as jumlah_dipesan', 'jumlah')
+                ->get();
+            $barangBelumTerjual = $ringkasanBarang
+                ->filter(fn ($barang) => (int) $barang->jumlah_dipesan === 0)
+                ->take(4)
+                ->values();
+            $barangStokHabis = $ringkasanBarang
+                ->filter(fn ($barang) => $barang->stok !== null && (int) $barang->stok === 0)
+                ->take(4)
+                ->values();
+        }
+
         // Lima transaksi terbaru
         $transaksiTerbaru = Pemesanan::with('pelanggan')
             ->orderByDesc('tanggal_pemesanan')
@@ -194,8 +266,12 @@ class DashboardController extends Controller
             'pemesananBelumLunas',
             'transaksiBulanIni',
             'transaksiBulanLalu',
+            'nilaiPesananBulanIni',
+            'nilaiPesananBulanLalu',
             'persentasePerubahan',
             'pemesananTrend',
+            'monthlyOrderComparison',
+            'monthlyRevenueTrend',
             'pemesananTrendCoordinates',
             'pembayaranLunas',
             'pembayaranBelumLunas',
@@ -203,6 +279,8 @@ class DashboardController extends Controller
             'kelilingGrafikPembayaran',
             'dashGrafikPembayaran',
             'barangTerlaris',
+            'barangBelumTerjual',
+            'barangStokHabis',
             'transaksiTerbaru',
             'maxBarangDipesan'
         ));
