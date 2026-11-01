@@ -79,12 +79,12 @@ class PemesananController extends Controller
             'skema_pembayaran' => 'required|in:DP,Sebagian,Tanpa DP',
             'dp' => 'required_if:skema_pembayaran,DP,Sebagian|nullable|numeric|min:0',
             'tenor' => 'required|integer|in:12,24,36',
-            'jaminan' => 'nullable|string|max:255',
-            'jenis_jaminan' => ['nullable', Rule::in(['BPKB', 'Surat Tanah'])],
-            'nomor_jaminan' => 'required_with:jenis_jaminan|nullable|string|max:100',
-            'pemilik_jaminan' => 'required_with:jenis_jaminan|nullable|string|max:100',
-            'tanggal_penyerahan' => 'required_with:jenis_jaminan|nullable|date',
-            'file_jaminan' => 'required_with:jenis_jaminan|nullable|file|mimes:jpg,jpeg,png,webp,pdf|max:5120',
+            'catatan_jaminan' => 'nullable|string|max:2000',
+            'jenis_jaminan' => ['required', Rule::in(['BPKB', 'Surat Tanah'])],
+            'nomor_jaminan' => 'required|string|max:100',
+            'pemilik_jaminan' => 'required|string|max:100',
+            'tanggal_penyerahan' => 'required|date',
+            'file_jaminan' => 'required|file|mimes:jpg,jpeg,png,webp,pdf|max:5120',
         ]);
 
         $fileJaminanBaru = null;
@@ -130,7 +130,6 @@ class PemesananController extends Controller
                 'skema_pembayaran' => $validated['skema_pembayaran'],
                 'dp' => $dp,
                 'tenor' => $validated['tenor'],
-                'jaminan' => $validated['jaminan'] ?? null,
                 'bunga' => $bunga,
                 'total_harga' => $totalHarga,
                 'angsuran' => $angsuran,
@@ -147,6 +146,7 @@ class PemesananController extends Controller
 
             if (! empty($validated['jenis_jaminan'])) {
                 $fileJaminanBaru = $request->file('file_jaminan')->store('jaminan', 'local');
+                abort_unless($fileJaminanBaru, 500, 'Dokumen jaminan gagal disimpan.');
                 Jaminan::create([
                     'id_jaminan' => 'JMN-'.Str::upper(Str::random(12)),
                     'id_pemesanan' => $pemesanan->id_pemesanan,
@@ -155,7 +155,8 @@ class PemesananController extends Controller
                     'nama_pemilik' => $validated['pemilik_jaminan'],
                     'file_path' => $fileJaminanBaru,
                     'tanggal_penyerahan' => $validated['tanggal_penyerahan'],
-                    'catatan' => $validated['jaminan'] ?? null,
+                    'catatan' => $validated['catatan_jaminan'] ?? null,
+                    'status_verifikasi' => 'Menunggu Verifikasi',
                 ]);
             }
 
@@ -220,7 +221,7 @@ class PemesananController extends Controller
         ));
     }
 
-    public function update(Request $request, Pemesanan $pemesanan, AuditTrailWriter $auditTrail)
+    public function update(Request $request, Pemesanan $pemesanan)
     {
         abort_if(
             $pemesanan->status_persetujuan !== null
@@ -237,25 +238,8 @@ class PemesananController extends Controller
             'skema_pembayaran' => 'required|in:DP,Sebagian,Tanpa DP',
             'dp' => 'required_if:skema_pembayaran,DP,Sebagian|nullable|numeric|min:0',
             'tenor' => 'required|integer|in:12,24,36',
-            'jaminan' => 'nullable|string|max:255',
-            'jenis_jaminan' => ['nullable', Rule::in(['BPKB', 'Surat Tanah'])],
-            'nomor_jaminan' => 'required_with:jenis_jaminan|nullable|string|max:100',
-            'pemilik_jaminan' => 'required_with:jenis_jaminan|nullable|string|max:100',
-            'tanggal_penyerahan' => 'required_with:jenis_jaminan|nullable|date',
-            'file_jaminan' => 'nullable|file|mimes:jpg,jpeg,png,webp,pdf|max:5120',
         ]);
-
-        $jaminanLama = $pemesanan->jaminanDokumen;
-        if (! empty($validated['jenis_jaminan']) && ! $jaminanLama && ! $request->hasFile('file_jaminan')) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
-                'file_jaminan' => 'Unggah foto atau scan dokumen untuk membuat data jaminan.',
-            ]);
-        }
-
-        $fileJaminanBaru = null;
-        $fileJaminanLama = null;
-        try {
-        DB::transaction(function () use ($validated, $pemesanan, $request, &$fileJaminanBaru, &$fileJaminanLama) {
+        DB::transaction(function () use ($validated, $pemesanan) {
             $detail = DetailPemesanan::where('id_pemesanan', $pemesanan->id_pemesanan)
                 ->lockForUpdate()
                 ->first();
@@ -307,41 +291,10 @@ class PemesananController extends Controller
                 'skema_pembayaran' => $validated['skema_pembayaran'],
                 'dp' => $dp,
                 'tenor' => $validated['tenor'],
-                'jaminan' => $validated['jaminan'] ?? null,
                 'bunga' => $bunga,
                 'total_harga' => $totalHarga,
                 'angsuran' => $angsuran,
             ]);
-
-            if (! empty($validated['jenis_jaminan'])) {
-                $jaminanDokumen = $pemesanan->jaminanDokumen()->lockForUpdate()->first();
-                if ($request->hasFile('file_jaminan')) {
-                    $fileJaminanBaru = $request->file('file_jaminan')->store('jaminan', 'local');
-                    $fileJaminanLama = $jaminanDokumen?->file_path;
-                }
-                $dataJaminan = [
-                    'jenis_dokumen' => $validated['jenis_jaminan'],
-                    'nomor_dokumen' => $validated['nomor_jaminan'],
-                    'nama_pemilik' => $validated['pemilik_jaminan'],
-                    'tanggal_penyerahan' => $validated['tanggal_penyerahan'],
-                    'catatan' => $validated['jaminan'] ?? null,
-                    'status_verifikasi' => 'Belum Diverifikasi',
-                    'alasan_penolakan' => null,
-                    'diverifikasi_oleh' => null,
-                ];
-                if ($fileJaminanBaru) {
-                    $dataJaminan['file_path'] = $fileJaminanBaru;
-                }
-                if ($jaminanDokumen) {
-                    $jaminanDokumen->update($dataJaminan);
-                } else {
-                    Jaminan::create($dataJaminan + [
-                        'id_jaminan' => 'JMN-'.Str::upper(Str::random(12)),
-                        'id_pemesanan' => $pemesanan->id_pemesanan,
-                        'file_path' => $fileJaminanBaru,
-                    ]);
-                }
-            }
 
             $dataDetail = [
                 'id_barang' => $barang->id_barang,
@@ -365,14 +318,6 @@ class PemesananController extends Controller
             }
             $barang->decrement('stok', $jumlahBaru);
         });
-        } catch (\Throwable $exception) {
-            if ($fileJaminanBaru) Storage::disk('local')->delete($fileJaminanBaru);
-            throw $exception;
-        }
-        if ($fileJaminanLama) Storage::disk('local')->delete($fileJaminanLama);
-        if (! empty($validated['jenis_jaminan'])) {
-            $auditTrail->record($request->user(), $request, 'update', 'Jaminan', 'Data dokumen jaminan diperbarui dari form pemesanan.');
-        }
 
         return redirect()
             ->route('pemesanan.index')

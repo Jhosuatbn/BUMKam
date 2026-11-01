@@ -61,9 +61,12 @@
                     <div>
                         <label for="foto_ktp" class="block text-sm font-semibold text-slate-700">Foto KTP</label>
                         <div class="mt-2 space-y-2">
-                            <input id="foto_ktp" type="file" name="foto_ktp" accept="image/jpeg,image/png,image/webp" data-upload-preview-input aria-describedby="foto_ktp_hint" class="form-control @error('foto_ktp') border-rose-400 @enderror">
-                            <div id="foto_ktp_preview_box" data-upload-preview-box class="hidden flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-2" aria-live="polite">
-                                <img id="foto_ktp_preview" data-upload-preview-image src="" alt="Pratinjau foto KTP yang dipilih" class="h-14 w-20 shrink-0 rounded-lg bg-slate-100 object-contain">
+                            <input id="foto_ktp" type="file" name="foto_ktp" accept="image/jpeg,image/png,image/webp" data-upload-preview-input data-max-size="2097152" data-allowed-label="JPG, PNG, atau WEBP" aria-describedby="foto_ktp_hint" class="form-control @error('foto_ktp') border-rose-400 @enderror">
+                            <div id="foto_ktp_preview_box" data-upload-preview-box class="hidden flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white p-3" aria-live="polite">
+                                <button type="button" data-upload-preview-image-button class="hidden cursor-zoom-in rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700" aria-label="Perbesar pratinjau foto KTP">
+                                    <img id="foto_ktp_preview" data-upload-preview-image src="" alt="Pratinjau foto KTP yang dipilih" class="h-36 w-56 rounded-lg bg-slate-100 object-contain">
+                                </button>
+                                <button type="button" data-upload-preview-file-button class="hidden rounded-lg bg-slate-100 px-4 py-3 text-sm font-semibold text-blue-800">Lihat dokumen</button>
                                 <span class="min-w-0 flex-1"><span class="block text-xs font-medium text-slate-500">Foto siap diunggah</span><span data-upload-preview-name class="mt-0.5 block truncate text-sm font-semibold text-slate-800"></span></span>
                                 <button type="button" data-clear-upload-preview class="inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-xl leading-none text-slate-500 shadow-sm transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700" aria-label="Hapus foto yang dipilih" title="Hapus foto yang dipilih">&times;</button>
                             </div>

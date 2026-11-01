@@ -47,7 +47,7 @@
             request()->routeIs('pembayaran.index') => 'Data Pembayaran',
             request()->routeIs('pengguna.index') => 'Data Pengguna',
             request()->routeIs('monitoring-kredit.index') => 'Monitoring Kredit',
-            request()->routeIs('jaminan.*') => 'Manajemen Dokumen Jaminan',
+        request()->routeIs('jaminan.*') => 'Manajemen Jaminan',
             request()->routeIs('audit-trail.*') => 'Audit Trail',
             request()->routeIs('laporan.*') => 'Laporan',
             default => trim($__env->yieldContent('title')) ?: 'Dashboard',
@@ -87,6 +87,7 @@
                         @if ($navigationItem['label'] === 'Monitoring Kredit')<li class="menu-header small text-uppercase"><span class="menu-header-text">Pengawasan</span></li>@endif
                         @if ($navigationItem['label'] === 'Laporan')<li class="menu-header small text-uppercase"><span class="menu-header-text">Laporan</span></li>@endif
                         @if ($navigationItem['label'] === 'Pengguna')<li class="menu-header small text-uppercase"><span class="menu-header-text">Pengelolaan</span></li>@endif
+                        @if ($navigationItem['label'] !== 'Monitoring Kredit')
                         <li @class(['menu-item', 'active' => $active])>
                             <a href="{{ route($navigationItem['route']) }}" class="menu-link" @if ($active) aria-current="page" @endif>
                                 <i class="menu-icon tf-icons bx {{ $navigationItem['icon'] }}"></i><div class="text-truncate">{{ $navigationItem['label'] }}</div>
@@ -95,6 +96,17 @@
                                 @endif
                             </a>
                         </li>
+                        @endif
+                        @if ($navigationItem['label'] === 'Monitoring Kredit')
+                            <li @class(['menu-item', 'menu-open' => request()->routeIs('monitoring-kredit.*')])>
+                                <a href="javascript:void(0);" class="menu-link menu-toggle"><i class="menu-icon tf-icons bx bx-line-chart"></i><div class="text-truncate">Monitoring Kredit</div></a>
+                                <ul class="menu-sub">
+                                    <li @class(['menu-item', 'active' => request()->routeIs('monitoring-kredit.index') || request()->routeIs('monitoring-kredit.show')])><a href="{{ route('monitoring-kredit.index') }}" class="menu-link"><div>Daftar Kredit</div></a></li>
+                                    <li @class(['menu-item', 'active' => request()->routeIs('monitoring-kredit.jadwal')])><a href="{{ route('monitoring-kredit.jadwal') }}" class="menu-link"><div>Jadwal Angsuran</div></a></li>
+                                    <li @class(['menu-item', 'active' => request()->routeIs('monitoring-kredit.denda')])><a href="{{ route('monitoring-kredit.denda') }}" class="menu-link"><div>Denda Keterlambatan</div></a></li>
+                                </ul>
+                            </li>
+                        @endif
                     @endforeach
                 </ul>
             </aside>
@@ -137,6 +149,8 @@
         </div>
         <div class="layout-overlay layout-menu-toggle"></div><div class="drag-target"></div>
     </div>
+    @include('components.photo-preview-dialog')
+    @include('components.file-preview-dialog')
     @include('components.delete-confirmation-dialog')
 </body>
 </html>

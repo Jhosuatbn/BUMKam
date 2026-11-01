@@ -137,32 +137,42 @@
 
             <fieldset class="border-t border-slate-200 pt-6">
                 <legend class="text-sm font-semibold text-slate-900">Informasi Jaminan</legend>
-                <p class="mt-1 text-sm text-slate-500">Jika pemesanan kredit menggunakan jaminan, isi data dan unggah dokumennya. File disimpan secara privat.</p>
+                <p class="mt-1 text-sm text-slate-500">Lengkapi data jaminan untuk pengajuan kredit. Dokumen tersimpan secara privat dan selanjutnya dikelola dari menu Manajemen Jaminan.</p>
                 <div class="mt-4 grid grid-cols-1 gap-x-6 gap-y-6 md:grid-cols-2">
                     <div>
                         <label for="jenis_jaminan" class="block text-sm font-semibold text-slate-700">Jenis Jaminan</label>
-                        <select id="jenis_jaminan" name="jenis_jaminan" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20"><option value="">Tidak ada / lengkapi nanti</option><option value="BPKB" @selected(old('jenis_jaminan') === 'BPKB')>BPKB</option><option value="Surat Tanah" @selected(old('jenis_jaminan') === 'Surat Tanah')>Surat Tanah</option></select>
+                        <select id="jenis_jaminan" name="jenis_jaminan" required class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20"><option value="">Pilih jenis dokumen</option><option value="BPKB" @selected(old('jenis_jaminan') === 'BPKB')>BPKB</option><option value="Surat Tanah" @selected(old('jenis_jaminan') === 'Surat Tanah')>Sertifikat Tanah</option></select>
                     </div>
                     <div>
-                        <label for="nomor_jaminan" class="block text-sm font-semibold text-slate-700">Nomor Dokumen</label>
-                        <input id="nomor_jaminan" name="nomor_jaminan" value="{{ old('nomor_jaminan') }}" maxlength="100" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                        <label for="nomor_jaminan" class="block text-sm font-semibold text-slate-700">Nomor Resmi Dokumen</label>
+                        <input id="nomor_jaminan" name="nomor_jaminan" required value="{{ old('nomor_jaminan') }}" maxlength="100" aria-describedby="nomor_jaminan_hint" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                        <p id="nomor_jaminan_hint" class="mt-1 text-xs text-slate-500">Isi nomor yang tercetak pada BPKB atau sertifikat, bukan nomor pemesanan.</p>
                     </div>
                     <div>
                         <label for="pemilik_jaminan" class="block text-sm font-semibold text-slate-700">Nama Pemilik Dokumen</label>
-                        <input id="pemilik_jaminan" name="pemilik_jaminan" value="{{ old('pemilik_jaminan') }}" maxlength="100" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                        <input id="pemilik_jaminan" name="pemilik_jaminan" required value="{{ old('pemilik_jaminan') }}" maxlength="100" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                     </div>
                     <div>
                         <label for="tanggal_penyerahan" class="block text-sm font-semibold text-slate-700">Tanggal Penyerahan</label>
-                        <input id="tanggal_penyerahan" name="tanggal_penyerahan" type="date" value="{{ old('tanggal_penyerahan', date('Y-m-d')) }}" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                        <input id="tanggal_penyerahan" name="tanggal_penyerahan" type="date" required value="{{ old('tanggal_penyerahan', date('Y-m-d')) }}" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                     </div>
                     <div>
                         <label for="file_jaminan" class="block text-sm font-semibold text-slate-700">Foto / Scan Dokumen (JPG, PNG, WEBP, PDF; maks. 5 MB)</label>
-                        <input id="file_jaminan" name="file_jaminan" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" class="form-control mt-2">
+                        <input id="file_jaminan" name="file_jaminan" type="file" required accept="image/jpeg,image/png,image/webp,application/pdf" data-upload-preview-input data-max-size="5242880" data-allowed-label="JPG, PNG, WEBP, atau PDF" class="form-control mt-2">
+                        <div data-upload-preview-box class="hidden mt-3 flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white p-3" aria-live="polite">
+                            <button type="button" data-upload-preview-image-button class="hidden cursor-zoom-in rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700" aria-label="Perbesar pratinjau dokumen jaminan">
+                                <img data-upload-preview-image src="" alt="Pratinjau gambar dokumen jaminan" class="h-36 w-56 rounded-lg bg-slate-100 object-contain">
+                            </button>
+                            <button type="button" data-upload-preview-file-button class="hidden rounded-lg bg-slate-100 px-4 py-3 text-sm font-semibold text-blue-800"><i class="icon-base bx bx-file-pdf me-1" aria-hidden="true"></i>Lihat PDF</button>
+                            <span class="min-w-0 flex-1"><span class="block text-xs font-medium text-slate-500">File siap diunggah</span><span data-upload-preview-name class="mt-0.5 block truncate text-sm font-semibold text-slate-800"></span></span>
+                            <button type="button" data-clear-upload-preview class="inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-xl leading-none text-slate-500 shadow-sm transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700" aria-label="Hapus file yang dipilih" title="Hapus file yang dipilih">&times;</button>
+                        </div>
+                        <p data-upload-preview-error role="alert" class="mt-1 hidden text-xs font-medium text-rose-700"></p>
                     </div>
                     <div class="md:col-span-2">
-                        <label for="jaminan" class="block text-sm font-semibold text-slate-700">Keterangan Jaminan</label>
-                        <textarea id="jaminan" name="jaminan" rows="3" placeholder="Catatan tambahan tentang jaminan"
-                                  class="mt-2 block w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">{{ old('jaminan') }}</textarea>
+                        <label for="catatan_jaminan" class="block text-sm font-semibold text-slate-700">Keterangan Tambahan (Opsional)</label>
+                        <textarea id="catatan_jaminan" name="catatan_jaminan" rows="3" placeholder="Catatan tambahan tentang dokumen jaminan"
+                                  class="mt-2 block w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">{{ old('catatan_jaminan') }}</textarea>
                     </div>
                 </div>
             </fieldset>

@@ -4,14 +4,6 @@
 
 @section('content')
     <div class="pemesanan-page space-y-6">
-        <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-            <div>
-                <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Detail Pemesanan</h1>
-                <p class="mt-2 text-sm text-slate-600">Ringkasan pelanggan, barang, dan skema pembayaran.</p>
-            </div>
-            <a href="{{ route('pemesanan.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Kembali</a>
-        </header>
-
         @if (session('success'))
             <div role="status" class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900">{{ session('success') }}</div>
         @endif
@@ -25,7 +17,7 @@
                 <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Skema Pembayaran</dt><dd class="mt-1 text-sm font-semibold text-slate-900">{{ $pemesanan->skema_pembayaran }}</dd></div>
                 <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">DP</dt><dd class="mt-1 tabular-nums text-sm font-semibold text-slate-900">Rp {{ number_format($pemesanan->dp, 0, ',', '.') }}</dd></div>
                 <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Tenor</dt><dd class="mt-1 text-sm font-semibold text-slate-900">{{ $pemesanan->tenor }} bulan</dd></div>
-                <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Jaminan</dt><dd class="mt-1 break-words text-sm font-semibold text-slate-900">{{ $pemesanan->jaminan ?? '-' }}</dd></div>
+                <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Keterangan Jaminan</dt><dd class="mt-1 break-words text-sm font-semibold text-slate-900">{{ $pemesanan->jaminanDokumen?->catatan ?? $pemesanan->jaminan ?? '—' }}</dd></div>
                 <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Bunga</dt><dd class="mt-1 tabular-nums text-sm font-semibold text-slate-900">Rp {{ number_format($pemesanan->bunga, 0, ',', '.') }}</dd></div>
                 <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Total Harga</dt><dd class="mt-1 tabular-nums text-sm font-semibold text-slate-900">Rp {{ number_format($pemesanan->total_harga, 0, ',', '.') }}</dd></div>
                 <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Angsuran</dt><dd class="mt-1 tabular-nums text-sm font-semibold text-slate-900">Rp {{ number_format($pemesanan->angsuran, 0, ',', '.') }}</dd></div>
@@ -43,7 +35,15 @@
             <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-labelledby="approval-heading">
                 <div class="border-b border-slate-200 px-5 py-4 sm:px-6"><h2 id="approval-heading" class="text-base font-semibold text-slate-900">Persetujuan Pemesanan</h2><p class="mt-1 text-sm text-slate-500">Status, keputusan, dan riwayat pemeriksaan pengajuan.</p></div>
                 @if ($pemesanan->jaminanDokumen)
-                    <div class="border-b border-slate-100 px-5 py-4 sm:px-6"><h3 class="text-sm font-semibold text-slate-800">Dokumen Jaminan</h3><p class="mt-1 text-sm text-slate-600">{{ $pemesanan->jaminanDokumen->jenis_dokumen }} · No. {{ $pemesanan->jaminanDokumen->nomor_dokumen }} · Pemilik {{ $pemesanan->jaminanDokumen->nama_pemilik }}</p><p class="mt-1 text-xs text-slate-500">Verifikasi: {{ $pemesanan->jaminanDokumen->status_verifikasi }} · {{ $pemesanan->jaminanDokumen->catatan ?? 'Tanpa catatan' }}</p><a href="{{ route('jaminan.document', $pemesanan->jaminanDokumen) }}" target="_blank" rel="noopener" class="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:text-blue-900"><i class="icon-base bx bx-file" aria-hidden="true"></i>Lihat dokumen jaminan</a></div>
+                    <div class="border-b border-slate-100 px-5 py-4 sm:px-6">
+                        <h3 class="text-sm font-semibold text-slate-800">Dokumen Jaminan</h3>
+                        <p class="mt-1 text-sm text-slate-600">{{ $pemesanan->jaminanDokumen->jenis_dokumen === 'Surat Tanah' ? 'Sertifikat Tanah' : $pemesanan->jaminanDokumen->jenis_dokumen }} · No. {{ $pemesanan->jaminanDokumen->nomor_dokumen }} · Pemilik {{ $pemesanan->jaminanDokumen->nama_pemilik }}</p>
+                        <p class="mt-1 text-xs text-slate-500">Verifikasi: {{ $pemesanan->jaminanDokumen->status_verifikasi_label }} · Pengembalian: {{ $pemesanan->jaminanDokumen->status_pengembalian_label }}</p>
+                        @if ($pemesanan->jaminanDokumen->alasan_penolakan)
+                            <p class="mt-1 text-xs text-rose-700">Alasan penolakan: {{ $pemesanan->jaminanDokumen->alasan_penolakan }}</p>
+                        @endif
+                        <a href="{{ route('jaminan.document', $pemesanan->jaminanDokumen) }}" target="_blank" rel="noopener" class="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:text-blue-900"><i class="icon-base bx bx-file" aria-hidden="true"></i>Lihat dokumen jaminan</a>
+                    </div>
                 @else
                     <p class="border-b border-slate-100 px-5 py-4 text-sm text-slate-500 sm:px-6">Dokumen jaminan belum diunggah.</p>
                 @endif
@@ -90,7 +90,7 @@
                 @if (auth()->user()?->peran !== 'Pimpinan' && ($pemesanan->status_persetujuan === null || $pemesanan->status_persetujuan === 'Menunggu Persetujuan'))
                     <a href="{{ route('pemesanan.edit', $pemesanan->id_pemesanan) }}" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Edit</a>
                 @endif
-                <a href="{{ route('pemesanan.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Daftar Pemesanan</a>
+                <a href="{{ route('pemesanan.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Kembali</a>
             </div>
         </section>
     </div>

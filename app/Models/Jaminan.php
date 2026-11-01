@@ -32,4 +32,24 @@ class Jaminan extends Model
     {
         return $this->belongsTo(Pengguna::class, 'diverifikasi_oleh', 'id_pengguna');
     }
+
+    /**
+     * Normalize labels for records created before the current status wording.
+     * Stored values remain untouched so existing databases need no migration.
+     */
+    public function getStatusVerifikasiLabelAttribute(): string
+    {
+        return match ($this->status_verifikasi) {
+            'Belum Diverifikasi' => 'Menunggu Verifikasi',
+            'Terverifikasi' => 'Disetujui',
+            default => $this->status_verifikasi ?: 'Menunggu Verifikasi',
+        };
+    }
+
+    public function getStatusPengembalianLabelAttribute(): string
+    {
+        return $this->status_pengembalian === 'Sudah Dikembalikan'
+            ? 'Dikembalikan'
+            : ($this->status_pengembalian ?: 'Masih Disimpan');
+    }
 }

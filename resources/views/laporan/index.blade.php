@@ -82,6 +82,11 @@
                         <button type="button" class="btn btn-outline-primary btn-sm laporan-print-action" onclick="window.print()"><i class="icon-base bx bx-printer me-1" aria-hidden="true"></i>Cetak</button>
                     </div>
                 </div>
+                <div class="grid grid-cols-1 gap-3 border-b p-4 sm:grid-cols-2 xl:grid-cols-4">
+                    @foreach ([['Total Denda Dikenakan', $totalDendaDikenakan], ['Denda Sudah Dibayar', $totalDendaDibayar], ['Denda Belum Dibayar', $totalDendaBelumDibayar], ['Denda Dikurangi / Dibebaskan', $totalDendaDikurangi]] as [$labelDenda, $nilaiDenda])
+                        <article class="rounded-xl border border-slate-200 p-3"><p class="mb-1 text-xs text-body-secondary">{{ $labelDenda }}</p><p class="mb-0 fw-semibold">Rp {{ number_format($nilaiDenda, 0, ',', '.') }}</p></article>
+                    @endforeach
+                </div>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0 laporan-table">
                         <thead>
@@ -126,6 +131,7 @@
                 </div>
             </section>
         @elseif ($tabAktif === 'kredit')
+            @unless ($dendaAktif)<div role="status" class="alert alert-warning">Migration fitur denda belum diterapkan. Ringkasan denda akan aktif setelah migration dijalankan.</div>@endunless
             <section class="card laporan-print-area" aria-labelledby="daftar-kredit-heading">
                 <div class="card-header d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2 border-bottom">
                     <div>
@@ -142,21 +148,16 @@
                         <thead>
                             <tr>
                                 <th scope="col">No.</th><th scope="col">Barang</th><th scope="col">Total Harga</th><th scope="col">DP</th><th scope="col">Nominal Angsuran</th>
-                                <th scope="col">Tenor</th><th scope="col">Angsuran Tercatat</th><th scope="col">Sisa Tagihan</th><th scope="col">Status</th><th scope="col">Jaminan</th>
+                                <th scope="col">Tenor</th><th scope="col">Angsuran Tercatat</th><th scope="col">Sisa Angsuran + Denda</th><th scope="col">Denda Dikenakan</th><th scope="col">Denda Dibayar</th><th scope="col">Denda Belum Dibayar</th><th scope="col">Denda Dikurangi</th><th scope="col">Status</th><th scope="col">Jaminan</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($daftarKredit as $kredit)
                                 @php
-                                    $totalDibayar = (float) $kredit->pembayaran->sum('nominal');
-                                    $sisaTagihan = max(0, (float) $kredit->total_harga + (float) $kredit->bunga - (float) $kredit->dp - $totalDibayar);
-                                    $jumlahJatuhTempo = 0;
-                                    $tanggalMulaiAngsuran = \Illuminate\Support\Carbon::parse($kredit->tanggal_pemesanan);
-                                    for ($bulanJatuhTempo = 1; $bulanJatuhTempo <= (int) $kredit->tenor; $bulanJatuhTempo++) {
-                                        if ($tanggalMulaiAngsuran->copy()->addMonthsNoOverflow($bulanJatuhTempo)->startOfDay()->lte(now()->startOfDay())) $jumlahJatuhTempo++;
-                                    }
-                                    $statusKredit = $sisaTagihan <= 0 ? 'Lunas' : ($jumlahJatuhTempo > $kredit->pembayaran->count() ? 'Menunggak' : 'Berjalan');
-                                    $statusKreditClass = $statusKredit === 'Lunas' ? 'success' : ($statusKredit === 'Menunggak' ? 'danger' : 'warning');
+                                    $monitoringKredit = $kredit->monitoring_kredit;
+                                    $sisaTagihan = $monitoringKredit['sisa_kewajiban'];
+                                    $statusKredit = $monitoringKredit['status'];
+                                    $statusKreditClass = $statusKredit === 'Lunas' ? 'success' : ($statusKredit === 'Terlambat' ? 'danger' : 'warning');
                                 @endphp
                                 <tr>
                                     <td class="text-body-secondary">{{ $loop->iteration }}</td>
@@ -173,11 +174,22 @@
                                     <td class="text-nowrap">{{ $kredit->tenor ?? '—' }} bln</td>
                                     <td class="text-nowrap">{{ $kredit->pembayaran->count() }} / {{ $kredit->tenor ?? 0 }}</td>
                                     <td class="text-nowrap fw-semibold">Rp {{ number_format($sisaTagihan, 0, ',', '.') }}</td>
+                                    <td class="text-nowrap">Rp {{ number_format($monitoringKredit['total_denda_dikenakan'], 0, ',', '.') }}</td>
+                                    <td class="text-nowrap">Rp {{ number_format($monitoringKredit['total_denda_dibayar'], 0, ',', '.') }}</td>
+                                    <td class="text-nowrap">Rp {{ number_format($monitoringKredit['total_denda_belum_dibayar'], 0, ',', '.') }}</td>
+                                    <td class="text-nowrap">Rp {{ number_format($monitoringKredit['total_denda_dikurangi'], 0, ',', '.') }}</td>
                                     <td><span class="badge bg-label-{{ $statusKreditClass }}">{{ $statusKredit }}</span></td>
-                                    <td>{{ $kredit->jaminan ?: '—' }}</td>
+                                    <td>
+                                        @if ($kredit->jaminanDokumen)
+                                            {{ $kredit->jaminanDokumen->jenis_dokumen === 'Surat Tanah' ? 'Sertifikat Tanah' : $kredit->jaminanDokumen->jenis_dokumen }}
+                                            <small class="d-block text-body-secondary">{{ $kredit->jaminanDokumen->nomor_dokumen }}</small>
+                                        @else
+                                            {{ $kredit->jaminan ?: '—' }}
+                                        @endif
+                                    </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="10" class="py-5 text-center text-body-secondary">Belum ada data kredit untuk filter ini.</td></tr>
+                                <tr><td colspan="14" class="py-5 text-center text-body-secondary">Belum ada data kredit untuk filter ini.</td></tr>
                             @endforelse
                         </tbody>
                     </table>

@@ -4,14 +4,6 @@
 
 @section('content')
     <div class="pemesanan-page space-y-6">
-        <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-            <div>
-                <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Edit Pemesanan</h1>
-                <p class="mt-2 text-sm text-slate-600">Perbarui data pemesanan, barang, dan skema pembayaran.</p>
-            </div>
-            <a href="{{ route('pemesanan.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Kembali</a>
-        </header>
-
         @if ($errors->any())
             <div role="alert" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900">
                 <p class="font-semibold">Terjadi kesalahan:</p>
@@ -25,7 +17,6 @@
 
         @php
             $detail = $pemesanan->detailPemesanan->first();
-            $jaminanDokumen = $pemesanan->jaminanDokumen;
         @endphp
 
         <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
@@ -117,19 +108,6 @@
                             <label for="bunga" class="block text-sm font-semibold text-slate-700">Bunga</label>
                             <input id="bunga" type="number" name="bunga" value="{{ $pemesanan->bunga }}" min="0" step="0.01" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                         </div>
-                    </div>
-                </fieldset>
-
-                <fieldset class="border-t border-slate-200 pt-6">
-                    <legend class="text-base font-semibold text-slate-900">Manajemen Dokumen Jaminan</legend>
-                    <p class="mt-1 text-sm text-slate-500">Dokumen kredit disimpan di private storage. Mengganti file akan mengulang status verifikasi.</p>
-                    <div class="mt-4 grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2">
-                        <div><label for="jenis_jaminan" class="block text-sm font-semibold text-slate-700">Jenis Jaminan</label><select id="jenis_jaminan" name="jenis_jaminan" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900"><option value="">Belum ada jaminan</option><option value="BPKB" @selected(old('jenis_jaminan', $jaminanDokumen?->jenis_dokumen) === 'BPKB')>BPKB</option><option value="Surat Tanah" @selected(old('jenis_jaminan', $jaminanDokumen?->jenis_dokumen) === 'Surat Tanah')>Surat Tanah</option></select></div>
-                        <div><label for="nomor_jaminan" class="block text-sm font-semibold text-slate-700">Nomor Dokumen</label><input id="nomor_jaminan" name="nomor_jaminan" value="{{ old('nomor_jaminan', $jaminanDokumen?->nomor_dokumen) }}" maxlength="100" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900"></div>
-                        <div><label for="pemilik_jaminan" class="block text-sm font-semibold text-slate-700">Nama Pemilik Dokumen</label><input id="pemilik_jaminan" name="pemilik_jaminan" value="{{ old('pemilik_jaminan', $jaminanDokumen?->nama_pemilik) }}" maxlength="100" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900"></div>
-                        <div><label for="tanggal_penyerahan" class="block text-sm font-semibold text-slate-700">Tanggal Penyerahan</label><input id="tanggal_penyerahan" name="tanggal_penyerahan" type="date" value="{{ old('tanggal_penyerahan', $jaminanDokumen?->tanggal_penyerahan?->toDateString() ?? date('Y-m-d')) }}" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900"></div>
-                        <div><label for="file_jaminan" class="block text-sm font-semibold text-slate-700">Foto / Scan Dokumen</label><input id="file_jaminan" name="file_jaminan" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900"><p class="mt-1 text-xs text-slate-500">{{ $jaminanDokumen ? 'Kosongkan untuk mempertahankan dokumen saat ini.' : 'JPG, PNG, WEBP, atau PDF · maksimal 5 MB.' }}</p></div>
-                        <div><label for="jaminan" class="block text-sm font-semibold text-slate-700">Catatan Tambahan</label><textarea id="jaminan" name="jaminan" rows="2" class="mt-2 block w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm text-slate-900">{{ old('jaminan', $pemesanan->jaminan) }}</textarea></div>
                     </div>
                 </fieldset>
 

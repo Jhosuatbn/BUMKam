@@ -1,6 +1,38 @@
 # BUMKam Tuah Rezeki
 
-Aplikasi informasi untuk membantu operasional BUMKam Tuah Rezeki: data pelanggan dan barang, pemesanan, pembayaran, pemantauan kredit, serta laporan.
+Aplikasi web untuk membantu operasional BUMKam Tuah Rezeki, mulai dari pengelolaan pelanggan dan persediaan barang sampai pemesanan, pembayaran, pemantauan kredit, dan laporan.
+
+## Gambaran proyek
+
+Proyek ini adalah aplikasi administrasi BUMKam yang dibangun dengan Laravel. Aplikasi menyimpan data operasional dalam database dan menyediakan halaman kerja untuk Staff serta halaman pemantauan dan persetujuan untuk Pimpinan.
+
+### Fitur yang sudah dibuat
+
+- **Dashboard** — ringkasan pelanggan, barang, pemesanan, pembayaran, kondisi kredit, dan informasi operasional. Tampilan dashboard menyesuaikan peran pengguna.
+- **Pelanggan** — pencatatan dan pengelolaan identitas serta informasi kontak, termasuk foto KTP dan pencarian pelanggan.
+- **Barang dan stok** — pengelolaan katalog barang dan jumlah stok. Stok diperiksa saat pesanan dibuat, dikurangi ketika barang dipesan, dan disesuaikan kembali pada kondisi pembatalan atau penolakan pesanan.
+- **Pemesanan** — pencatatan pelanggan, barang, jumlah, harga, tanggal, skema pembayaran, uang muka, tenor, bunga, angsuran, serta data jaminan kredit. Pimpinan dapat menyetujui atau menolak pengajuan dan memberikan alasan penolakan.
+- **Pembayaran** — pencatatan pembayaran dan bukti pembayaran. Pembayaran dapat dicatat sebagai tunai/di tempat atau dilakukan secara online melalui Midtrans Snap. Status online diperbarui melalui notifikasi gateway yang tervalidasi.
+- **Monitoring kredit** — perhitungan total kewajiban, jumlah terbayar, sisa kewajiban, jadwal jatuh tempo, dan status angsuran. Pembayaran online baru dihitung setelah berstatus `settlement`.
+- **Jaminan** — penyimpanan dokumen jaminan secara privat, pemeriksaan dan persetujuan Pimpinan, serta pencatatan pengembalian jaminan setelah kewajiban kredit lunas.
+- **Laporan** — ringkasan dan rincian transaksi untuk membantu pemantauan kegiatan usaha.
+- **Pengguna dan hak akses** — pengelolaan akun Staff oleh Pimpinan, termasuk status aktif dan reset kata sandi. Akun nonaktif tidak dapat masuk.
+- **Audit Trail** — pencatatan login/logout dan aktivitas perubahan data untuk membantu penelusuran aktivitas aplikasi.
+- **Antarmuka operasional** — dashboard, navigasi, tabel data, form, detail, dan aksi dibuat dengan Blade serta komponen gaya Tailwind CSS/Bootstrap. Halaman detail dan edit memakai tampilan yang lebih ringkas, sedangkan aksi tabel menggunakan ikon yang konsisten.
+
+### Alur kerja utama
+
+1. Staff memasukkan data pelanggan dan barang, termasuk stok yang tersedia.
+2. Staff membuat pemesanan dan memilih skema pembayaran. Pesanan kredit dapat menyertakan uang muka, tenor, serta dokumen jaminan.
+3. Pimpinan memeriksa pengajuan kredit, lalu menyetujui atau menolaknya. Pengajuan yang ditolak menyimpan alasan keputusan.
+4. Pembayaran dicatat secara tunai/di tempat atau diproses melalui Midtrans. Status pembayaran online mengikuti notifikasi resmi dari Midtrans.
+5. Monitoring kredit menyusun jadwal angsuran dan menghitung sisa kewajiban berdasarkan pembayaran yang telah terverifikasi.
+6. Setelah kewajiban lunas, pengembalian jaminan dapat dicatat. Dashboard, laporan, dan Audit Trail membantu pemantauan aktivitas.
+
+### Pengguna aplikasi
+
+- **Staff** mengelola data operasional seperti pelanggan, barang, pemesanan, dan pembayaran sesuai aturan aplikasi.
+- **Pimpinan** memantau dashboard, laporan, kredit, dan audit; memeriksa jaminan; menyetujui pengajuan pemesanan; serta mengelola akun Staff. Akses perubahan data operasional dibatasi di backend, bukan hanya dengan menyembunyikan tombol.
 
 ## Teknologi
 
@@ -120,7 +152,7 @@ Logo BUMKam dipakai di halaman login dan sidebar. Warna identitas utamanya hijau
 
 ## Dokumen jaminan kredit
 
-Dokumen jaminan (BPKB atau Surat Tanah) disimpan pada disk `local` Laravel, dengan root `storage/app/private`; jangan buat symbolic link ke folder `public`. Staff mengunggah atau memperbarui dokumen lewat form Pemesanan atau menu Manajemen Jaminan. Pimpinan dapat melihat dokumen dan menyetujui/menolak dengan alasan. Staff hanya dapat menandai dokumen sudah dikembalikan jika saldo kewajiban sudah lunas. File valid: JPG, PNG, WEBP, PDF, maksimum 5 MB. Seluruh akses file melalui route terautentikasi `jaminan.document`.
+Dokumen jaminan (BPKB atau Sertifikat Tanah) diinput saat Staff membuat pengajuan pada form Pemesanan dan disimpan sebagai satu record yang terhubung ke pemesanan. Perbaikan informasi atau penggantian file dilakukan dari menu Manajemen Jaminan, yang menggunakan record yang sama. Dokumen disimpan pada disk `local` Laravel dengan root `storage/app/private`; jangan buat symbolic link ke folder `public`. Pimpinan dapat melihat dokumen dan menyetujui atau menolak dengan alasan. Keputusan menyimpan identitas Pimpinan serta waktu verifikasi. Staff hanya dapat mencatat pengembalian dokumen jika seluruh kewajiban sudah lunas. File valid: JPG, PNG, WEBP, PDF, maksimum 5 MB. Seluruh akses file melalui route terautentikasi `jaminan.document`.
 
 ## Akun pengguna dan Audit Trail
 

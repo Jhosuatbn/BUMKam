@@ -71,12 +71,20 @@ class RecordAuditTrail
         if ($routeName === 'pengguna.update' && $request->filled('is_active')) $activity = 'account_status';
         if ($routeName === 'pengguna.update' && $request->filled('password')) $activity = 'password_reset';
 
+        $description = $action.' pada modul '.$module.' ('.$routeName.').';
+        if ($routeName === 'jaminan.verify') {
+            $jaminan = $route->parameter('jaminan');
+            $keputusan = $request->input('status_verifikasi');
+            $keteranganKeputusan = $keputusan === 'Ditolak' ? 'ditolak' : 'disetujui';
+            $description = 'Jaminan '.($jaminan?->id_jaminan ?? '').' '.$keteranganKeputusan.' oleh Pimpinan.';
+        }
+
         $this->writer->record(
             $actor,
             $request,
             $activity,
             $module,
-            $action.' pada modul '.$module.' ('.$routeName.').'
+            $description
         );
 
         return $response;

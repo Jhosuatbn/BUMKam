@@ -4,14 +4,6 @@
 
 @section('content')
     <div class="pembayaran-page space-y-6">
-        <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-            <div>
-                <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Edit Pembayaran</h1>
-                <p class="mt-2 text-sm text-slate-600">Perbarui informasi pembayaran.</p>
-            </div>
-            <a href="{{ route('pembayaran.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Kembali</a>
-        </header>
-
         @if ($errors->any())
             <div role="alert" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900">
                 <p class="font-semibold">Terjadi kesalahan:</p>
@@ -64,9 +56,26 @@
                     <div class="md:col-span-2">
                         <label for="bukti_pembayaran" class="block text-sm font-semibold text-slate-700">Bukti Pembayaran</label>
                         @if ($pembayaran->bukti_pembayaran)
-                            <a href="{{ asset('storage/' . $pembayaran->bukti_pembayaran) }}" target="_blank" rel="noopener" class="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-blue-800 underline">Lihat bukti saat ini</a>
+                            @php($buktiUrl = asset('storage/' . $pembayaran->bukti_pembayaran))
+                            @php($buktiExt = strtolower(pathinfo($pembayaran->bukti_pembayaran, PATHINFO_EXTENSION)))
+                            @if (in_array($buktiExt, ['jpg', 'jpeg', 'png', 'webp'], true))
+                                <button type="button" data-photo-preview="{{ $buktiUrl }}" data-photo-alt="Bukti pembayaran saat ini" class="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-blue-800 underline">Lihat bukti saat ini</button>
+                            @else
+                                <button type="button" data-file-preview="{{ $buktiUrl }}" data-file-name="Bukti pembayaran saat ini" class="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-blue-800 underline">Lihat bukti saat ini</button>
+                            @endif
                         @endif
-                        <input id="bukti_pembayaran" type="file" name="bukti_pembayaran" accept="image/jpeg,image/png,image/webp,application/pdf" class="mt-2 block w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-700 file:mr-3 file:rounded-lg file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:font-semibold file:text-blue-800">
+                        <div class="mt-2 space-y-2">
+                            <input id="bukti_pembayaran" type="file" name="bukti_pembayaran" accept="image/jpeg,image/png,image/webp,application/pdf" data-upload-preview-input data-max-size="5242880" data-allowed-label="JPG, PNG, WEBP, atau PDF" class="form-control @error('bukti_pembayaran') border-rose-400 @enderror">
+                        <div data-upload-preview-box class="hidden mt-3 flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white p-3" aria-live="polite">
+                            <button type="button" data-upload-preview-image-button class="hidden cursor-zoom-in rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700" aria-label="Perbesar pratinjau bukti pembayaran">
+                                <img data-upload-preview-image src="" alt="Pratinjau bukti pembayaran baru" class="h-36 w-56 rounded-lg bg-slate-100 object-contain">
+                            </button>
+                            <button type="button" data-upload-preview-file-button class="hidden rounded-lg bg-slate-100 px-4 py-3 text-sm font-semibold text-blue-800"><i class="icon-base bx bx-file-pdf me-1" aria-hidden="true"></i>Lihat PDF</button>
+                            <span class="min-w-0 flex-1"><span class="block text-xs font-medium text-slate-500">File siap diunggah</span><span data-upload-preview-name class="mt-0.5 block truncate text-sm font-semibold text-slate-800"></span></span>
+                            <button type="button" data-clear-upload-preview class="inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-xl leading-none text-slate-500 shadow-sm transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700" aria-label="Hapus file yang dipilih" title="Hapus file yang dipilih">&times;</button>
+                        </div>
+                        <p data-upload-preview-error role="alert" class="mt-1 hidden text-xs font-medium text-rose-700"></p>
+                        </div>
                         <p class="mt-1 text-xs text-slate-500">Pilih file baru untuk mengganti bukti lama. JPG, PNG, WEBP, atau PDF; maksimal 5 MB.</p>
                     </div>
                 </div>

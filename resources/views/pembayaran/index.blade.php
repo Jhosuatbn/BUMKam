@@ -15,13 +15,13 @@
         @endif
 
         <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-labelledby="pembayaran-list-heading">
-            <div class="flex flex-col gap-3 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-end sm:justify-between sm:px-6">
+            <div class="flex flex-col gap-3 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-6">
                 <div>
                     <h2 id="pembayaran-list-heading" class="text-base font-semibold text-slate-900">Daftar Pembayaran</h2>
                     <p class="mt-1 text-sm text-slate-500">Rincian pembayaran dan saldo setiap transaksi.</p>
                 </div>
                 @if (auth()->user()?->peran !== 'Pimpinan')
-                    <a href="{{ route('pembayaran.create') }}" class="inline-flex min-h-11 shrink-0 self-end items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"><i class="icon-base bx bx-plus" aria-hidden="true"></i>Tambah Pembayaran</a>
+                    <a href="{{ route('pembayaran.create') }}" class="inline-flex min-h-11 shrink-0 self-start items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"><i class="icon-base bx bx-plus" aria-hidden="true"></i>Tambah Pembayaran</a>
                 @endif
             </div>
             <div class="overflow-x-auto">
@@ -83,20 +83,26 @@
                                         <span class="mt-1 block text-xs text-slate-400">Belum ada</span>
                                     @endif
                                 </td>
-                                <td class="px-4 py-3.5 sm:px-6">
-                                    <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
-                                        <a href="{{ route('pembayaran.show', $item->id_pembayaran) }}" class="font-semibold text-blue-800 underline-offset-4 hover:underline">Detail</a>
+                                <td class="px-4 py-3.5 text-center sm:px-6">
+                                    <div class="inline-flex items-center justify-center gap-3">
+                                        <a href="{{ route('pembayaran.show', $item->id_pembayaran) }}" class="text-blue-700 transition hover:text-blue-800" title="Lihat detail {{ $item->id_pembayaran }}" aria-label="Lihat detail {{ $item->id_pembayaran }}">
+                                            <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.25 12s3.5-6 9.75-6 9.75 6 9.75 6-3.5 6-9.75 6-9.75-6-9.75-6Z"/><circle cx="12" cy="12" r="2.5" stroke-width="2"/></svg>
+                                        </a>
                                         @if ($item->metode_pembayaran === 'online' && $item->status_gateway === 'pending' && $item->snap_token)
                                             <a href="{{ route('pembayaran.online', $item->id_pembayaran) }}" class="font-semibold text-blue-800 underline-offset-4 hover:underline">Lanjut Bayar</a>
                                         @endif
                                         @if ($item->metode_pembayaran !== 'online')
-                                            <a href="{{ route('pembayaran.edit', $item->id_pembayaran) }}" class="font-semibold text-blue-800 underline-offset-4 hover:underline">Edit</a>
+                                            <a href="{{ route('pembayaran.edit', $item->id_pembayaran) }}" class="text-amber-600 transition hover:text-amber-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700" title="Edit pembayaran {{ $item->id_pembayaran }}" aria-label="Edit pembayaran {{ $item->id_pembayaran }}">
+                                                <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 0 1 2.828 2.828L11.828 15H9v-2.828z"/></svg>
+                                            </a>
                                         @endif
                                         @if ($item->metode_pembayaran !== 'online' || ! in_array($item->status_gateway, ['pending', 'settlement', 'refund', 'partial_refund'], true))
                                             <form action="{{ route('pembayaran.destroy', $item->id_pembayaran) }}" method="POST" data-confirm-delete="Yakin ingin menghapus catatan pembayaran ini?">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="min-h-9 rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-800 transition hover:bg-rose-100" title="Hapus"><svg class="mr-1 inline size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2m-9 0 1 14h8l1-14M10 10v6m4-6v6"/></svg>Hapus</button>
+                                                <button type="submit" class="text-rose-600 transition hover:text-rose-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-700" title="Hapus pembayaran {{ $item->id_pembayaran }}" aria-label="Hapus pembayaran {{ $item->id_pembayaran }}">
+                                                    <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16"/></svg>
+                                                </button>
                                             </form>
                                         @endif
                                     </div>

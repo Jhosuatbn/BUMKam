@@ -14,6 +14,9 @@
                 </ul>
             </div>
         @endif
+        @unless ($dendaAktif)
+            <div role="status" class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">Tabel fitur denda belum tersedia. Pembayaran tetap dapat dicatat, tetapi denda dan alokasi terpisah akan aktif setelah migration fitur diterapkan.</div>
+        @endunless
 
         <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6" aria-labelledby="pembayaran-form-heading">
             <h2 id="pembayaran-form-heading" class="text-base font-semibold text-slate-900">Informasi Pembayaran</h2>
@@ -48,8 +51,12 @@
                             <select id="id_pemesanan" name="id_pemesanan" class="hidden" tabindex="-1" aria-hidden="true" data-searchable-options data-installment-select>
                                 <option value="">-- Pilih Pemesanan --</option>
                                 @foreach ($pemesanan as $item)
-                                    @php($labelPemesanan = $item->id_pemesanan . ' - ' . ($item->pelanggan->nama_pelanggan ?? '-') . ' - Angsuran Rp ' . number_format($item->angsuran, 0, ',', '.') . ' - Total Rp ' . number_format($item->total_harga, 0, ',', '.'))
-                                    <option value="{{ $item->id_pemesanan }}" data-search="{{ strtolower($item->id_pemesanan . ' ' . ($item->pelanggan->nama_pelanggan ?? '')) }}" data-angsuran="{{ number_format($item->angsuran, 2, '.', '') }}" {{ old('id_pemesanan') == $item->id_pemesanan ? 'selected' : '' }}>
+                                    @php($angsuranBerikut = collect($item->ringkasan_denda['jadwal'])->first(fn ($row) => $row['sisa_angsuran'] > 0 || $row['denda_berjalan'] > 0))
+                                    @php($nilaiBerikut = $angsuranBerikut['sisa_angsuran'] ?? 0)
+                                    @php($dendaBerikut = $angsuranBerikut['denda_berjalan'] ?? 0)
+                                    @php($nominalBerikut = $nilaiBerikut + $dendaBerikut)
+                                    @php($labelPemesanan = $item->id_pemesanan . ' - ' . ($item->pelanggan->nama_pelanggan ?? '-') . ' - Sisa angsuran Rp ' . number_format($nilaiBerikut, 0, ',', '.') . ' - Denda Rp ' . number_format($dendaBerikut, 0, ',', '.'))
+                                    <option value="{{ $item->id_pemesanan }}" data-search="{{ strtolower($item->id_pemesanan . ' ' . ($item->pelanggan->nama_pelanggan ?? '')) }}" data-angsuran="{{ number_format($nominalBerikut, 2, '.', '') }}" data-denda="{{ number_format($dendaBerikut, 2, '.', '') }}" {{ old('id_pemesanan') == $item->id_pemesanan ? 'selected' : '' }}>
                                         {{ $labelPemesanan }}
                                     </option>
                                 @endforeach
@@ -58,16 +65,28 @@
                         <p class="mt-1 text-xs text-slate-500">Ketik ID atau nama pelanggan, lalu pilih pemesanan dari daftar.</p>
                     </div>
                     <div class="md:col-span-2">
-                        <label for="nominal" class="block text-sm font-semibold text-slate-700">Nominal Angsuran</label>
+                        <label for="nominal" class="block text-sm font-semibold text-slate-700">Nominal Pembayaran</label>
                         <div class="mt-2 flex min-h-11 overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
                             <span class="inline-flex items-center border-r border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-600">Rp</span>
-                            <input id="nominal" type="text" value="{{ old('id_pemesanan') ? number_format((float) $pemesanan->firstWhere('id_pemesanan', old('id_pemesanan'))?->angsuran, 0, ',', '.') : '' }}" readonly data-installment-display aria-describedby="nominal-hint" class="block min-w-0 flex-1 border-0 bg-slate-100 px-3.5 py-2.5 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-0">
+                            <input id="nominal" name="nominal" type="number" min="0.01" step="0.01" value="{{ old('nominal') }}" data-installment-display aria-describedby="nominal-hint" class="block min-w-0 flex-1 border-0 bg-slate-100 px-3.5 py-2.5 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-0">
                         </div>
-                        <p id="nominal-hint" class="mt-1 text-xs text-slate-500">Nominal diambil otomatis dari angsuran pada pemesanan yang dipilih.</p>
+                        <p id="nominal-hint" class="mt-1 text-xs text-slate-500">Nominal default mengikuti sisa angsuran dan denda berikutnya. Staff dapat mencatat pembayaran sebagian.</p>
+                        <p class="mt-1 text-xs text-slate-500">Denda angsuran berikutnya: <strong>Rp <span data-installment-penalty-display>0</span></strong>. Pembayaran dialokasikan ke pokok angsuran terlebih dahulu, lalu ke denda.</p>
                     </div>
                     <div class="md:col-span-2" data-cash-payment-proof>
                         <label for="bukti_pembayaran" class="block text-sm font-semibold text-slate-700">Bukti Pembayaran (opsional)</label>
-                        <input id="bukti_pembayaran" type="file" name="bukti_pembayaran" accept="image/jpeg,image/png,image/webp,application/pdf" class="mt-2 block w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-700 file:mr-3 file:rounded-lg file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:font-semibold file:text-blue-800">
+                        <div class="mt-2 space-y-2">
+                            <input id="bukti_pembayaran" type="file" name="bukti_pembayaran" accept="image/jpeg,image/png,image/webp,application/pdf" data-upload-preview-input data-max-size="5242880" data-allowed-label="JPG, PNG, WEBP, atau PDF" class="form-control @error('bukti_pembayaran') border-rose-400 @enderror">
+                        <div data-upload-preview-box class="hidden mt-3 flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white p-3" aria-live="polite">
+                            <button type="button" data-upload-preview-image-button class="hidden cursor-zoom-in rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700" aria-label="Perbesar pratinjau bukti pembayaran">
+                                <img data-upload-preview-image src="" alt="Pratinjau bukti pembayaran" class="h-36 w-56 rounded-lg bg-slate-100 object-contain">
+                            </button>
+                            <button type="button" data-upload-preview-file-button class="hidden rounded-lg bg-slate-100 px-4 py-3 text-sm font-semibold text-blue-800"><i class="icon-base bx bx-file-pdf me-1" aria-hidden="true"></i>Lihat PDF</button>
+                            <span class="min-w-0 flex-1"><span class="block text-xs font-medium text-slate-500">File siap diunggah</span><span data-upload-preview-name class="mt-0.5 block truncate text-sm font-semibold text-slate-800"></span></span>
+                            <button type="button" data-clear-upload-preview class="inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-xl leading-none text-slate-500 shadow-sm transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700" aria-label="Hapus file yang dipilih" title="Hapus file yang dipilih">&times;</button>
+                        </div>
+                        <p data-upload-preview-error role="alert" class="mt-1 hidden text-xs font-medium text-rose-700"></p>
+                        </div>
                         <p class="mt-1 text-xs text-slate-500">Format JPG, PNG, WEBP, atau PDF; maksimal 5 MB.</p>
                     </div>
                 </div>

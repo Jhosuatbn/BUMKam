@@ -140,16 +140,20 @@ function initSearchableSelect(wrapper) {
 function initInstallmentDisplays() {
     document.querySelectorAll('[data-installment-select]').forEach(select => {
         const display = select.closest('form')?.querySelector('[data-installment-display]');
+        const penaltyDisplay = select.closest('form')?.querySelector('[data-installment-penalty-display]');
 
         if (!display) return;
 
-        select.addEventListener('change', () => {
+        const update = (resetAmount = false) => {
             const selectedOption = select.options[select.selectedIndex];
             const nominal = selectedOption?.value ? Number(selectedOption.dataset.angsuran) : NaN;
-            display.value = Number.isFinite(nominal)
-                ? Math.round(nominal).toLocaleString('id-ID')
-                : '';
-        });
+            const denda = selectedOption?.value ? Number(selectedOption.dataset.denda || 0) : NaN;
+            if (resetAmount || !display.value) display.value = Number.isFinite(nominal) ? nominal.toFixed(2) : '';
+            if (penaltyDisplay) penaltyDisplay.textContent = Number.isFinite(denda) ? Math.round(denda).toLocaleString('id-ID') : '0';
+        };
+
+        select.addEventListener('change', () => update(true));
+        update(false);
     });
 }
 

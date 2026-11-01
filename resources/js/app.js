@@ -19,6 +19,24 @@ document.addEventListener('click', (event) => {
 
     if (event.target.closest('[data-photo-preview-close]')) {
         document.querySelector('[data-photo-preview-dialog]')?.close();
+        return;
+    }
+
+    const filePreviewButton = event.target.closest('[data-file-preview]');
+    if (filePreviewButton) {
+        const dialog = document.querySelector('[data-file-preview-dialog]');
+        const frame = dialog?.querySelector('[data-file-preview-frame]');
+        const title = dialog?.querySelector('[data-file-preview-title]');
+        if (dialog && frame && typeof dialog.showModal === 'function') {
+            frame.src = filePreviewButton.dataset.filePreview;
+            if (title) title.textContent = filePreviewButton.dataset.fileName || 'Pratinjau dokumen';
+            dialog.showModal();
+        }
+        return;
+    }
+
+    if (event.target.closest('[data-file-preview-close]')) {
+        document.querySelector('[data-file-preview-dialog]')?.close();
     }
 
 });
@@ -139,10 +157,22 @@ document.querySelectorAll('[data-photo-preview-dialog]').forEach((dialog) => {
     });
 });
 
+document.querySelectorAll('[data-file-preview-dialog]').forEach((dialog) => {
+    dialog.addEventListener('click', (event) => {
+        if (event.target === dialog) dialog.close();
+    });
+    dialog.addEventListener('close', () => {
+        const frame = dialog.querySelector('[data-file-preview-frame]');
+        if (frame) frame.src = 'about:blank';
+    });
+});
+
 document.querySelectorAll('[data-upload-preview-input]').forEach((input) => {
     const form = input.closest('form');
     const box = form?.querySelector('[data-upload-preview-box]');
     const image = box?.querySelector('[data-upload-preview-image]');
+    const imageButton = box?.querySelector('[data-upload-preview-image-button]');
+    const fileButton = box?.querySelector('[data-upload-preview-file-button]');
     const error = form?.querySelector('[data-upload-preview-error]');
     const clearButton = box?.querySelector('[data-clear-upload-preview]');
     const fileName = box?.querySelector('[data-upload-preview-name]');
@@ -150,13 +180,19 @@ document.querySelectorAll('[data-upload-preview-input]').forEach((input) => {
     const removeSavedPhoto = form?.querySelector('input[name="hapus_foto"]');
     let previewUrl = null;
 
-    if (!box || !image || !clearButton) return;
+    if (!box || !image || !imageButton || !fileButton || !clearButton) return;
 
     const clearPreview = () => {
         input.value = '';
         if (previewUrl) URL.revokeObjectURL(previewUrl);
         previewUrl = null;
         image.removeAttribute('src');
+        imageButton.removeAttribute('data-photo-preview');
+        imageButton.removeAttribute('data-photo-alt');
+        imageButton.classList.add('hidden');
+        fileButton.removeAttribute('data-file-preview');
+        fileButton.removeAttribute('data-file-name');
+        fileButton.classList.add('hidden');
         if (fileName) fileName.textContent = '';
         box.classList.add('hidden');
         placeholder?.classList.remove('hidden');
@@ -178,19 +214,28 @@ document.querySelectorAll('[data-upload-preview-input]').forEach((input) => {
             return;
         }
 
-        if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+        const acceptedTypes = (input.getAttribute('accept') || '').split(',').map((type) => type.trim().toLowerCase()).filter(Boolean);
+        const accepted = acceptedTypes.some((type) => type.startsWith('.')
+            ? file.name.toLowerCase().endsWith(type)
+            : type.endsWith('/*')
+                ? file.type.startsWith(type.slice(0, -1))
+                : file.type.toLowerCase() === type);
+        if (!accepted) {
             clearPreview();
             if (error) {
-                error.textContent = 'Pilih foto berformat JPG, PNG, atau WEBP.';
+                error.textContent = input.dataset.allowedLabel
+                    ? `Pilih file dengan format ${input.dataset.allowedLabel}.`
+                    : 'Format file yang dipilih tidak didukung.';
                 error.classList.remove('hidden');
             }
             return;
         }
 
-        if (file.size > 2 * 1024 * 1024) {
+        const maxSize = Number(input.dataset.maxSize || 2 * 1024 * 1024);
+        if (file.size > maxSize) {
             clearPreview();
             if (error) {
-                error.textContent = 'Ukuran foto maksimal 2 MB.';
+                error.textContent = `Ukuran file maksimal ${Math.round(maxSize / (1024 * 1024))} MB.`;
                 error.classList.remove('hidden');
             }
             return;
@@ -198,8 +243,19 @@ document.querySelectorAll('[data-upload-preview-input]').forEach((input) => {
 
         if (previewUrl) URL.revokeObjectURL(previewUrl);
         previewUrl = URL.createObjectURL(file);
-        image.src = previewUrl;
         if (fileName) fileName.textContent = file.name;
+        if (file.type.startsWith('image/')) {
+            image.src = previewUrl;
+            imageButton.dataset.photoPreview = previewUrl;
+            imageButton.dataset.photoAlt = `Pratinjau ${file.name}`;
+            imageButton.classList.remove('hidden');
+            fileButton.classList.add('hidden');
+        } else if (file.type === 'application/pdf') {
+            fileButton.dataset.filePreview = previewUrl;
+            fileButton.dataset.fileName = file.name;
+            fileButton.classList.remove('hidden');
+            imageButton.classList.add('hidden');
+        }
         placeholder?.classList.add('hidden');
         box.classList.remove('hidden');
         if (removeSavedPhoto) removeSavedPhoto.checked = false;
@@ -214,7 +270,10 @@ document.querySelectorAll('[data-payment-method]').forEach((select) => {
         const isCash = select.value === 'tunai';
         proofField.classList.toggle('hidden', !isCash);
         const fileInput = proofField.querySelector('input[type="file"]');
-        if (!isCash && fileInput) fileInput.value = '';
+        if (!isCash && fileInput) {
+            fileInput.value = '';
+            fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
     };
 
     select.addEventListener('change', syncProofField);

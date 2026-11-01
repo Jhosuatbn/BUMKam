@@ -4,24 +4,26 @@
 
 @section('content')
     @php
-        $statusClass = match ($ringkasan['status']) { 'Lunas' => 'success', 'Terlambat' => 'danger', 'Jatuh Tempo Hari Ini' => 'warning', default => 'info' };
+        $statusClass = match ($ringkasan['status']) { 'Lunas' => 'success', 'Terlambat' => 'danger', 'Dalam Masa Tenggang', 'Jatuh Tempo Hari Ini' => 'warning', default => 'info' };
         $pokokKredit = max(0, (float) $pemesanan->total_harga - (float) $pemesanan->dp);
     @endphp
     <div class="space-y-6">
-        <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-            <div>
-                <p class="text-sm font-semibold uppercase tracking-[0.14em] text-primary">Pengawasan Kredit</p>
-                <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Rincian Kredit</h1>
-                <p class="mt-2 text-sm text-slate-600">Pemesanan {{ $pemesanan->id_pemesanan }} · {{ $pemesanan->pelanggan?->nama_pelanggan ?? 'Pelanggan tidak ditemukan' }}</p>
+        <section class="card overflow-hidden" aria-label="Ringkasan kredit">
+            <div class="card-header flex items-start justify-between gap-4 border-b">
+                <div>
+                <p class="mb-1 text-sm font-semibold uppercase tracking-[0.14em] text-primary">Pengawasan Kredit</p>
+                <h1 class="mt-0.5 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Rincian Kredit</h1>
+                <p class="mt-1 text-sm text-slate-600">Pemesanan {{ $pemesanan->id_pemesanan }} · {{ $pemesanan->pelanggan?->nama_pelanggan ?? 'Pelanggan tidak ditemukan' }}</p>
+                </div>
+                <a href="{{ route('monitoring-kredit.index') }}" class="btn btn-success shrink-0" aria-label="Kembali ke Monitoring"><i class="icon-base bx bx-arrow-back me-1" aria-hidden="true"></i>Kembali</a>
             </div>
-            <a href="{{ route('monitoring-kredit.index') }}" class="btn btn-outline-secondary"><i class="icon-base bx bx-arrow-back me-1" aria-hidden="true"></i>Kembali ke Monitoring</a>
-        </header>
-
-        <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Ringkasan kredit">
-            <article class="card"><div class="card-body"><p class="mb-2 text-sm text-body-secondary">Total Kewajiban</p><p class="mb-0 text-xl font-bold">Rp {{ number_format($ringkasan['total_kewajiban'], 0, ',', '.') }}</p></div></article>
-            <article class="card"><div class="card-body"><p class="mb-2 text-sm text-body-secondary">Sudah Dibayar</p><p class="mb-0 text-xl font-bold text-success">Rp {{ number_format($ringkasan['total_terbayar'], 0, ',', '.') }}</p></div></article>
-            <article class="card"><div class="card-body"><p class="mb-2 text-sm text-body-secondary">Sisa Kewajiban</p><p class="mb-0 text-xl font-bold text-danger">Rp {{ number_format($ringkasan['sisa_kewajiban'], 0, ',', '.') }}</p></div></article>
-            <article class="card"><div class="card-body"><p class="mb-2 text-sm text-body-secondary">Status Kredit</p><span class="badge bg-label-{{ $statusClass }}">{{ $ringkasan['status'] }}</span></div></article>
+            <div class="grid grid-cols-1 gap-3 px-4 py-4 sm:grid-cols-2 sm:px-5 xl:grid-cols-4">
+                <article class="rounded-xl border border-slate-200 p-4"><p class="mb-2 text-sm text-body-secondary">Total Kewajiban</p><p class="mb-0 text-xl font-bold">Rp {{ number_format($ringkasan['total_kewajiban'], 0, ',', '.') }}</p></article>
+                <article class="rounded-xl border border-slate-200 p-4"><p class="mb-2 text-sm text-body-secondary">Sudah Dibayar</p><p class="mb-0 text-xl font-bold text-success">Rp {{ number_format($ringkasan['total_terbayar'], 0, ',', '.') }}</p></article>
+                <article class="rounded-xl border border-slate-200 p-4"><p class="mb-2 text-sm text-body-secondary">Sisa Kewajiban</p><p class="mb-0 text-xl font-bold text-danger">Rp {{ number_format($ringkasan['sisa_kewajiban'], 0, ',', '.') }}</p></article>
+                <article class="rounded-xl border border-slate-200 p-4"><p class="mb-2 text-sm text-body-secondary">Status Kredit</p><span class="badge bg-label-{{ $statusClass }}">{{ $ringkasan['status'] }}</span></article>
+                <article class="rounded-xl border border-slate-200 p-4"><p class="mb-2 text-sm text-body-secondary">Denda Berjalan</p><p class="mb-0 text-xl font-bold text-danger">Rp {{ number_format($ringkasan['total_denda_belum_dibayar'], 0, ',', '.') }}</p></article>
+            </div>
         </section>
 
         <section class="card" aria-labelledby="informasi-kredit-heading">
@@ -49,16 +51,20 @@
             </div>
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
-                    <thead><tr><th scope="col">Angsuran</th><th scope="col">Jatuh Tempo</th><th scope="col">Tanggal Bayar</th><th scope="col">Nominal</th><th scope="col">Sudah Dibayar</th><th scope="col">Status</th><th scope="col">ID Transaksi</th></tr></thead>
+                    <thead><tr><th scope="col">Angsuran</th><th scope="col">Jatuh Tempo</th><th scope="col">Tanggal Bayar</th><th scope="col">Jumlah Angsuran</th><th scope="col">Sudah Dibayar</th><th scope="col">Sisa Angsuran</th><th scope="col">Hari Terlambat</th><th scope="col">Denda Berjalan</th><th scope="col">Total Tagihan Baris</th><th scope="col">Status</th><th scope="col">ID Transaksi</th></tr></thead>
                     <tbody>
                         @foreach ($ringkasan['jadwal'] as $angsuran)
-                            @php($statusAngsuranClass = match ($angsuran['status']) { 'Lunas' => 'success', 'Terlambat' => 'danger', 'Jatuh Tempo Hari Ini' => 'warning', default => 'info' })
+                            @php($statusAngsuranClass = match ($angsuran['status']) { 'Lunas' => 'success', 'Terlambat' => 'danger', 'Dalam Masa Tenggang', 'Jatuh Tempo Hari Ini' => 'warning', default => 'info' })
                             <tr>
                                 <td>Angsuran {{ $angsuran['nomor'] }}</td>
                                 <td class="text-nowrap">{{ $angsuran['tanggal_jatuh_tempo']->format('d/m/Y') }}</td>
                                 <td class="text-nowrap">{{ $angsuran['tanggal_pembayaran'] ? \Carbon\Carbon::parse($angsuran['tanggal_pembayaran'])->format('d/m/Y') : '—' }}</td>
                                 <td class="text-nowrap">Rp {{ number_format($angsuran['nominal'], 0, ',', '.') }}</td>
                                 <td class="text-nowrap">Rp {{ number_format($angsuran['nominal_terbayar'], 0, ',', '.') }}</td>
+                                <td class="text-nowrap">Rp {{ number_format($angsuran['sisa_angsuran'], 0, ',', '.') }}</td>
+                                <td>{{ $angsuran['hari_keterlambatan'] }} hari</td>
+                                <td class="text-nowrap">Rp {{ number_format($angsuran['denda_berjalan'], 0, ',', '.') }}</td>
+                                <td class="text-nowrap">Rp {{ number_format($angsuran['sisa_angsuran'] + $angsuran['denda_berjalan'], 0, ',', '.') }}</td>
                                 <td><span class="badge bg-label-{{ $statusAngsuranClass }}">{{ $angsuran['status'] }}</span></td>
                                 <td class="small">{{ $angsuran['id_transaksi'] ? implode(', ', $angsuran['id_transaksi']) : '—' }}</td>
                             </tr>

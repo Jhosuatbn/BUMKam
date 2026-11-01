@@ -56,11 +56,16 @@ Route::middleware(['auth', 'pimpinan.access', 'audit.trail'])->group(function ()
 
     Route::get('/monitoring-kredit', [MonitoringKreditController::class, 'index'])
         ->name('monitoring-kredit.index');
+    Route::get('/monitoring-kredit/jadwal-angsuran', [MonitoringKreditController::class, 'jadwal'])
+        ->name('monitoring-kredit.jadwal');
+    Route::get('/monitoring-kredit/denda-keterlambatan', [MonitoringKreditController::class, 'denda'])
+        ->name('monitoring-kredit.denda');
+    Route::post('/monitoring-kredit/{pemesanan}/denda', [MonitoringKreditController::class, 'kurangiDenda'])
+        ->name('monitoring-kredit.denda.reduce');
     Route::get('/monitoring-kredit/{pemesanan}', [MonitoringKreditController::class, 'show'])
         ->name('monitoring-kredit.show');
 
     Route::get('/jaminan', [JaminanController::class, 'index'])->name('jaminan.index');
-    Route::post('/jaminan', [JaminanController::class, 'store'])->name('jaminan.store');
     Route::get('/jaminan/{jaminan}', [JaminanController::class, 'show'])->name('jaminan.show');
     Route::get('/jaminan/{jaminan}/dokumen', [JaminanController::class, 'document'])->name('jaminan.document');
     Route::put('/jaminan/{jaminan}', [JaminanController::class, 'update'])->name('jaminan.update');

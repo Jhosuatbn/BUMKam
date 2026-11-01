@@ -4,10 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Pembayaran;
 use App\Models\Pemesanan;
+use App\Services\AlokasiPembayaranService;
+use App\Services\MonitoringKreditService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 
 class PembayaranController extends Controller
@@ -22,27 +25,34 @@ class PembayaranController extends Controller
         return view('pembayaran.index', compact('pembayaran'));
     }
 
-    public function create()
+    public function create(MonitoringKreditService $monitoring)
     {
         $pemesanan = Pemesanan::with('pelanggan')
-            ->where('status_pemesanan', '!=', 'Lunas')
+            ->where('tenor', '>', 0)
             ->where(function ($query) {
                 $query->whereNull('status_persetujuan')
                     ->orWhere('status_persetujuan', 'Disetujui');
             })
             ->whereDoesntHave('pembayaran', fn ($query) => $query->where('status_gateway', 'pending'))
             ->get();
+        $pemesanan->each(function (Pemesanan $order) use ($monitoring) {
+            $order->load($this->relasiPembayaranSettlement());
+            $order->setAttribute('ringkasan_denda', $monitoring->hitung($order));
+        });
+        $pemesanan = $pemesanan->filter(fn (Pemesanan $order) => $order->ringkasan_denda['sisa_kewajiban'] > 0)->values();
         $idPembayaranPreview = $this->idPembayaranBerikutnya();
 
-        return view('pembayaran.create', compact('pemesanan', 'idPembayaranPreview'));
+        $dendaAktif = $this->dendaTersedia();
+        return view('pembayaran.create', compact('pemesanan', 'idPembayaranPreview', 'dendaAktif'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, AlokasiPembayaranService $allocator)
     {
         $validated = $request->validate([
             'id_pemesanan' => 'required|exists:pemesanan,id_pemesanan',
             'tanggal_pembayaran' => 'required|date',
             'metode_pembayaran' => 'required|in:tunai,online',
+            'nominal' => 'nullable|numeric|gt:0',
             'bukti_pembayaran' => 'nullable|file|mimes:jpg,jpeg,png,webp,pdf|max:5120',
         ]);
 
@@ -52,15 +62,19 @@ class PembayaranController extends Controller
 
         $bukti = $request->file('bukti_pembayaran')?->store('bukti-pembayaran', 'public');
 
-        DB::transaction(function () use ($validated, $bukti) {
+        DB::transaction(function () use ($validated, $bukti, $allocator) {
             $pemesanan = Pemesanan::whereKey($validated['id_pemesanan'])
+                ->with($this->relasiPembayaranSettlement())
                 ->lockForUpdate()
                 ->firstOrFail();
             $this->pastikanDapatDibayar($pemesanan);
-            $nominal = min(
-                round((float) $pemesanan->angsuran, 2),
-                $this->sisaTagihan($pemesanan)
-            );
+            $maksimumDapatDibayar = $this->sisaTagihan($pemesanan)
+                + (float) app(MonitoringKreditService::class)->hitung($pemesanan)['total_denda_belum_dibayar'];
+            $nominalDiminta = (float) ($validated['nominal'] ?? $pemesanan->angsuran);
+            if (array_key_exists('nominal', $validated) && $nominalDiminta > $maksimumDapatDibayar) {
+                throw ValidationException::withMessages(['nominal' => 'Nominal melebihi sisa angsuran dan denda yang dapat dibayar.']);
+            }
+            $nominal = min($nominalDiminta, $maksimumDapatDibayar);
 
             if ($nominal <= 0) {
                 throw ValidationException::withMessages([
@@ -68,24 +82,30 @@ class PembayaranController extends Controller
                 ]);
             }
 
-            $ringkasan = $this->ringkasanPembayaran($pemesanan, $nominal);
-
-            Pembayaran::create([
+            $payment = Pembayaran::create([
                 'id_pembayaran' => $this->idPembayaranBerikutnya(),
                 'id_pemesanan' => $pemesanan->id_pemesanan,
                 'tanggal_pembayaran' => $validated['tanggal_pembayaran'],
                 'nominal' => $nominal,
-                'total_pembayaran' => $ringkasan['total'],
-                'sisa_pembayaran' => $ringkasan['sisa'],
-                'status_pembayaran' => $ringkasan['status'],
+                'total_pembayaran' => 0,
+                'sisa_pembayaran' => $this->sisaTagihan($pemesanan),
+                'status_pembayaran' => 'Belum Lunas',
                 'metode_pembayaran' => 'tunai',
                 'status_gateway' => 'settlement',
                 'bukti_pembayaran' => $bukti,
             ]);
 
-            $pemesanan->update([
-                'status_pemesanan' => $ringkasan['status'],
+            $alokasi = $this->dendaTersedia()
+                ? $allocator->alokasikan($pemesanan, $payment, $nominal)
+                : ['pokok' => $nominal, 'denda' => 0.0];
+            $ringkasan = $this->ringkasanPembayaran($pemesanan, $alokasi['pokok'], $payment->id_pembayaran);
+            $payment->update([
+                'total_pembayaran' => $ringkasan['total'],
+                'sisa_pembayaran' => $ringkasan['sisa'],
+                'status_pembayaran' => $ringkasan['status'],
             ]);
+
+            $pemesanan->update(['status_pemesanan' => $ringkasan['status']]);
             $this->sinkronkanPembayaran($pemesanan);
         });
 
@@ -109,7 +129,7 @@ class PembayaranController extends Controller
         ]);
     }
 
-    public function notifikasiMidtrans(Request $request)
+    public function notifikasiMidtrans(Request $request, AlokasiPembayaranService $allocator)
     {
         $serverKey = (string) config('services.midtrans.server_key');
         $orderId = (string) $request->input('order_id');
@@ -167,7 +187,7 @@ class PembayaranController extends Controller
             return response()->json(['message' => 'Notifikasi diterima untuk rekonsiliasi.']);
         }
 
-        DB::transaction(function () use ($pembayaran, $statusGateway) {
+        DB::transaction(function () use ($pembayaran, $statusGateway, $allocator) {
             $pemesanan = Pemesanan::whereKey($pembayaran->id_pemesanan)
                 ->lockForUpdate()
                 ->firstOrFail();
@@ -182,6 +202,16 @@ class PembayaranController extends Controller
             }
             if ($pembayaranTerkunci->status_gateway === 'refund' && $statusGateway !== 'refund') {
                 return;
+            }
+
+            if ($statusGateway === 'settlement' && $pembayaranTerkunci->status_gateway !== 'settlement') {
+                $pemesanan->load($this->relasiPembayaranSettlement());
+                $pemesanan->setRelation('pembayaran', $pemesanan->pembayaran->reject(
+                    fn (Pembayaran $item) => $item->id_pembayaran === $pembayaranTerkunci->id_pembayaran
+                )->values());
+                if ($this->dendaTersedia()) {
+                    $allocator->alokasikan($pemesanan, $pembayaranTerkunci, (float) $pembayaranTerkunci->nominal);
+                }
             }
 
             $pembayaranTerkunci->update([
@@ -213,10 +243,13 @@ class PembayaranController extends Controller
             $this->pastikanDapatDibayar($pemesanan);
 
             // Midtrans menerima nominal Rupiah bulat; nominal angsuran di sini dibatasi sisa tagihan.
-            $nominal = min(
-                (int) round((float) $pemesanan->angsuran),
-                (int) round($this->sisaTagihan($pemesanan))
-            );
+            $maksimumDapatDibayar = $this->sisaTagihan($pemesanan)
+                + (float) app(MonitoringKreditService::class)->hitung($pemesanan)['total_denda_belum_dibayar'];
+            $nominalDiminta = (float) ($validated['nominal'] ?? $pemesanan->angsuran);
+            if (array_key_exists('nominal', $validated) && $nominalDiminta > $maksimumDapatDibayar) {
+                throw ValidationException::withMessages(['nominal' => 'Nominal melebihi sisa angsuran dan denda yang dapat dibayar.']);
+            }
+            $nominal = min((int) round($nominalDiminta), (int) round($maksimumDapatDibayar));
             if ($nominal <= 0) {
                 throw ValidationException::withMessages([
                     'id_pemesanan' => 'Sisa tagihan pada pemesanan ini sudah tidak dapat dibayar.',
@@ -312,7 +345,7 @@ class PembayaranController extends Controller
             ]);
         }
 
-        if ($pemesanan->status_pemesanan === 'Lunas' || $this->sisaTagihan($pemesanan) <= 0) {
+        if (app(MonitoringKreditService::class)->hitung($pemesanan)['sisa_kewajiban'] <= 0) {
             throw ValidationException::withMessages([
                 'id_pemesanan' => 'Pemesanan ini sudah lunas.',
             ]);
@@ -332,9 +365,14 @@ class PembayaranController extends Controller
     private function sisaTagihan(Pemesanan $pemesanan): float
     {
         $tagihan = max(0, (float) $pemesanan->total_harga + (float) $pemesanan->bunga - (float) $pemesanan->dp);
-        $terbayar = (float) Pembayaran::where('id_pemesanan', $pemesanan->id_pemesanan)
+        $query = Pembayaran::where('id_pemesanan', $pemesanan->id_pemesanan)
             ->where('status_gateway', 'settlement')
-            ->sum('nominal');
+            ;
+        if (Schema::hasTable('alokasi_pembayaran')) $query->with('alokasiDenda');
+        $pembayaran = $query->get();
+        $terbayar = (float) $pembayaran->sum(fn (Pembayaran $item) => Schema::hasTable('alokasi_pembayaran') && $item->alokasiDenda->isNotEmpty()
+            ? (float) $item->alokasiDenda->sum('alokasi_angsuran')
+            : (float) $item->nominal);
 
         return round(max(0, $tagihan - $terbayar), 2);
     }
@@ -342,6 +380,8 @@ class PembayaranController extends Controller
     public function show(Pembayaran $pembayaran)
     {
         $pembayaran->load('pemesanan.pelanggan');
+        if (Schema::hasTable('alokasi_pembayaran')) $pembayaran->load('alokasiDenda');
+        else $pembayaran->setRelation('alokasiDenda', collect());
 
         return view('pembayaran.show', compact('pembayaran'));
     }
@@ -363,15 +403,28 @@ class PembayaranController extends Controller
             'bukti_pembayaran' => 'nullable|file|mimes:jpg,jpeg,png,webp,pdf|max:5120',
         ]);
         $buktiLama = $pembayaran->bukti_pembayaran;
+        if (Schema::hasTable('alokasi_pembayaran')) $pembayaran->loadMissing('alokasiDenda');
         $buktiBaru = $request->file('bukti_pembayaran')?->store('bukti-pembayaran', 'public');
         $idPemesananSebelumnya = $pembayaran->id_pemesanan;
+
+        $hasAllocation = Schema::hasTable('alokasi_pembayaran') && $pembayaran->alokasiDenda->isNotEmpty();
+        if ($hasAllocation && $validated['id_pemesanan'] !== $pembayaran->id_pemesanan) {
+            throw ValidationException::withMessages(['id_pemesanan' => 'Pembayaran yang sudah memiliki rincian alokasi tidak dapat dipindahkan ke pemesanan lain.']);
+        }
 
         DB::transaction(function () use ($validated, $pembayaran, $idPemesananSebelumnya, $buktiBaru) {
             $pemesanan = Pemesanan::whereKey($validated['id_pemesanan'])
                 ->lockForUpdate()
                 ->firstOrFail();
             $this->pastikanDapatDibayar($pemesanan);
-            $nominal = round((float) $pemesanan->angsuran, 2);
+            if (Schema::hasTable('alokasi_pembayaran')) $pembayaran->loadMissing('alokasiDenda');
+            $hasAllocation = Schema::hasTable('alokasi_pembayaran') && $pembayaran->alokasiDenda->isNotEmpty();
+            $nominal = $hasAllocation
+                ? (float) $pembayaran->nominal
+                : round((float) $pemesanan->angsuran, 2);
+            $nominalPokok = $hasAllocation
+                ? (float) $pembayaran->alokasiDenda->sum('alokasi_angsuran')
+                : $nominal;
 
             if ($nominal <= 0) {
                 throw ValidationException::withMessages([
@@ -381,7 +434,7 @@ class PembayaranController extends Controller
 
             $ringkasan = $this->ringkasanPembayaran(
                 $pemesanan,
-                $nominal,
+                $nominalPokok,
                 $pembayaran->id_pembayaran
             );
 
@@ -420,6 +473,7 @@ class PembayaranController extends Controller
 
     public function destroy(Pembayaran $pembayaran)
     {
+        abort_if(Schema::hasTable('alokasi_pembayaran') && $pembayaran->alokasiDenda()->exists(), 403, 'Pembayaran yang sudah memiliki rincian alokasi tidak dapat dihapus.');
         if ($pembayaran->metode_pembayaran === 'online'
             && in_array($pembayaran->status_gateway, ['pending', 'settlement', 'refund', 'partial_refund'], true)) {
             throw ValidationException::withMessages([
@@ -486,7 +540,11 @@ class PembayaranController extends Controller
             $query->where('id_pembayaran', '!=', $idPembayaranDikecualikan);
         }
 
-        $total = round((float) $query->sum('nominal') + $nominalTambahan, 2);
+        if (Schema::hasTable('alokasi_pembayaran')) $query->with('alokasiDenda');
+        $payments = $query->get();
+        $total = round((float) $payments->sum(fn (Pembayaran $item) => Schema::hasTable('alokasi_pembayaran') && $item->alokasiDenda->isNotEmpty()
+            ? (float) $item->alokasiDenda->sum('alokasi_angsuran')
+            : (float) $item->nominal) + $nominalTambahan, 2);
         $tagihanAngsuran = max(
             0,
             round(
@@ -543,7 +601,12 @@ class PembayaranController extends Controller
                 continue;
             }
 
-            $total = round($total + (float) $item->nominal, 2);
+            if (Schema::hasTable('alokasi_pembayaran')) $item->loadMissing('alokasiDenda');
+            $hasAllocation = Schema::hasTable('alokasi_pembayaran') && $item->alokasiDenda->isNotEmpty();
+            $nominalPokok = $hasAllocation
+                ? (float) $item->alokasiDenda->sum('alokasi_angsuran')
+                : (float) $item->nominal;
+            $total = round($total + $nominalPokok, 2);
             $sisa = round(max(0, $tagihan - $total), 2);
             $item->updateQuietly([
                 'total_pembayaran' => $total,
@@ -553,9 +616,28 @@ class PembayaranController extends Controller
         }
 
         $pemesanan->update([
-            'status_pemesanan' => $riwayat->isNotEmpty() && $sisa <= 0
-                ? 'Lunas'
-                : 'Belum Lunas',
+            'status_pemesanan' => $riwayat->isNotEmpty() && $sisa <= 0 ? 'Lunas' : 'Belum Lunas',
         ]);
+        $pemesanan->unsetRelation('pembayaran');
+        $pemesanan->load($this->relasiPembayaranSettlement());
+        $ringkasanKredit = app(MonitoringKreditService::class)->hitung($pemesanan);
+        $pemesanan->update(['status_pemesanan' => $ringkasanKredit['sisa_kewajiban'] <= 0 ? 'Lunas' : 'Belum Lunas']);
+    }
+
+    private function dendaTersedia(): bool
+    {
+        return app(\App\Services\DendaKeterlambatanService::class)->tersedia();
+    }
+
+    private function relasiPembayaranSettlement(): array
+    {
+        return [
+            'pembayaran' => function ($query) {
+                $query->where('status_gateway', 'settlement')->orderBy('tanggal_pembayaran')->orderBy('id_pembayaran');
+                if (Schema::hasTable('alokasi_pembayaran')) $query->with('alokasiDenda');
+            },
+            ...(Schema::hasTable('penyesuaian_denda') ? ['penyesuaianDenda'] : []),
+            ...(Schema::hasTable('denda_angsuran') ? ['dendaAngsuran'] : []),
+        ];
     }
 }

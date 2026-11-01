@@ -44,7 +44,7 @@
                     <label class="sr-only" for="status">Filter status kredit</label>
                     <select id="status" name="status" class="form-select">
                         <option value="">Semua status</option>
-                        @foreach (['Belum Jatuh Tempo', 'Jatuh Tempo Hari Ini', 'Terlambat', 'Lunas'] as $status)
+                        @foreach (['Belum Jatuh Tempo', 'Jatuh Tempo Hari Ini', 'Dalam Masa Tenggang', 'Terlambat', 'Lunas'] as $status)
                             <option value="{{ $status }}" @selected($statusFilter === $status)>{{ $status }}</option>
                         @endforeach
                     </select>

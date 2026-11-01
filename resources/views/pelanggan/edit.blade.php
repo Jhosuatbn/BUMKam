@@ -4,14 +4,6 @@
 
 @section('content')
     <div class="space-y-6">
-        <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-            <div>
-                <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Edit Pelanggan</h1>
-                <p class="mt-2 text-sm text-slate-600">Perbarui identitas dan informasi kontak pelanggan.</p>
-            </div>
-            <a href="{{ route('pelanggan.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Kembali</a>
-        </header>
-
         @if ($errors->any())
             <div role="alert" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900">
                 <p class="font-semibold">Terjadi kesalahan:</p>
@@ -70,13 +62,19 @@
                     <div>
                         <label for="foto_ktp" class="block text-sm font-semibold text-slate-700">Foto KTP</label>
                         <div class="mt-2 space-y-2">
-                            <input id="foto_ktp" type="file" name="foto_ktp" accept="image/jpeg,image/png,image/webp" data-upload-preview-input aria-describedby="foto_ktp_hint" class="form-control @error('foto_ktp') border-rose-400 @enderror">
-                            <div id="foto_ktp_preview_box" data-upload-preview-box class="hidden flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-2" aria-live="polite">
-                                <img id="foto_ktp_preview" data-upload-preview-image src="" alt="Pratinjau foto KTP baru" class="h-14 w-20 shrink-0 rounded-lg bg-slate-100 object-contain">
+                            <input id="foto_ktp" type="file" name="foto_ktp" accept="image/jpeg,image/png,image/webp" data-upload-preview-input data-max-size="2097152" data-allowed-label="JPG, PNG, atau WEBP" aria-describedby="foto_ktp_hint" class="form-control @error('foto_ktp') border-rose-400 @enderror">
+                            <div id="foto_ktp_preview_box" data-upload-preview-box class="hidden flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white p-3" aria-live="polite">
+                                <button type="button" data-upload-preview-image-button class="hidden cursor-zoom-in rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700" aria-label="Perbesar pratinjau foto KTP">
+                                    <img id="foto_ktp_preview" data-upload-preview-image src="" alt="Pratinjau foto KTP baru" class="h-36 w-56 rounded-lg bg-slate-100 object-contain">
+                                </button>
+                                <button type="button" data-upload-preview-file-button class="hidden rounded-lg bg-slate-100 px-4 py-3 text-sm font-semibold text-blue-800">Lihat dokumen</button>
                                 <span class="min-w-0 flex-1"><span class="block text-xs font-medium text-slate-500">Foto siap diunggah</span><span data-upload-preview-name class="mt-0.5 block truncate text-sm font-semibold text-slate-800"></span></span>
                                 <button type="button" data-clear-upload-preview class="inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-xl leading-none text-slate-500 shadow-sm transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700" aria-label="Hapus foto yang dipilih" title="Hapus foto yang dipilih">&times;</button>
                             </div>
                         </div>
+                        @if ($pelanggan->foto_ktp_url)
+                            <button type="button" data-photo-preview="{{ $pelanggan->foto_ktp_url }}" data-photo-alt="Foto KTP tersimpan" class="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-blue-700 underline">Lihat foto KTP saat ini</button>
+                        @endif
                         <p id="foto_ktp_hint" class="mt-1.5 text-xs text-slate-500">
                             @if ($pelanggan->foto_ktp)
                                 Pilih file baru hanya jika ingin mengganti foto. JPG, PNG, atau WEBP, maksimal 2 MB.

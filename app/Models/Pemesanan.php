@@ -51,6 +51,16 @@ class Pemesanan extends Model
         return $this->hasMany(Pembayaran::class, 'id_pemesanan');
     }
 
+    public function penyesuaianDenda()
+    {
+        return $this->hasMany(PenyesuaianDenda::class, 'id_pemesanan', 'id_pemesanan');
+    }
+
+    public function dendaAngsuran()
+    {
+        return $this->hasMany(DendaAngsuran::class, 'id_pemesanan', 'id_pemesanan');
+    }
+
     public function jaminanDokumen()
     {
         return $this->hasOne(Jaminan::class, 'id_pemesanan', 'id_pemesanan');
