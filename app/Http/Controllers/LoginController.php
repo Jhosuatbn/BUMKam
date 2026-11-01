@@ -22,6 +22,7 @@ class LoginController extends Controller
         if (Auth::attempt([
             'username' => $credentials['username'],
             'password' => $credentials['password'],
+            'is_active' => true,
         ])) {
             $request->session()->regenerate();
 

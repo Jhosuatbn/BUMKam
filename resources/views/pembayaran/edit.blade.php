@@ -3,7 +3,7 @@
 @section('title', 'Edit Pembayaran')
 
 @section('content')
-    <div class="space-y-6">
+    <div class="pembayaran-page space-y-6">
         <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
                 <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Edit Pembayaran</h1>

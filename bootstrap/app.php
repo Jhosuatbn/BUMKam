@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ]);
     $middleware->alias([
         'pimpinan.access' => \App\Http\Middleware\PimpinanAccess::class,
+        'audit.trail' => \App\Http\Middleware\RecordAuditTrail::class,
     ]);
 })
     ->withExceptions(function (Exceptions $exceptions): void {

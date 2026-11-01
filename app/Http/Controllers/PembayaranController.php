@@ -26,6 +26,10 @@ class PembayaranController extends Controller
     {
         $pemesanan = Pemesanan::with('pelanggan')
             ->where('status_pemesanan', '!=', 'Lunas')
+            ->where(function ($query) {
+                $query->whereNull('status_persetujuan')
+                    ->orWhere('status_persetujuan', 'Disetujui');
+            })
             ->whereDoesntHave('pembayaran', fn ($query) => $query->where('status_gateway', 'pending'))
             ->get();
         $idPembayaranPreview = $this->idPembayaranBerikutnya();
@@ -299,6 +303,15 @@ class PembayaranController extends Controller
 
     private function pastikanDapatDibayar(Pemesanan $pemesanan): void
     {
+        if ($pemesanan->status_persetujuan !== null
+            && $pemesanan->status_persetujuan !== 'Disetujui') {
+            throw ValidationException::withMessages([
+                'id_pemesanan' => $pemesanan->status_persetujuan === 'Ditolak'
+                    ? 'Pemesanan ini ditolak dan tidak dapat menerima pembayaran.'
+                    : 'Pemesanan ini masih menunggu persetujuan Pimpinan.',
+            ]);
+        }
+
         if ($pemesanan->status_pemesanan === 'Lunas' || $this->sisaTagihan($pemesanan) <= 0) {
             throw ValidationException::withMessages([
                 'id_pemesanan' => 'Pemesanan ini sudah lunas.',
@@ -357,6 +370,7 @@ class PembayaranController extends Controller
             $pemesanan = Pemesanan::whereKey($validated['id_pemesanan'])
                 ->lockForUpdate()
                 ->firstOrFail();
+            $this->pastikanDapatDibayar($pemesanan);
             $nominal = round((float) $pemesanan->angsuran, 2);
 
             if ($nominal <= 0) {

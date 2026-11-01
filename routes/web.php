@@ -9,6 +9,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MonitoringKreditController;
 use App\Http\Controllers\PenggunaController;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\JaminanController;
+use App\Http\Controllers\AuditTrailController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -19,14 +21,14 @@ Route::get('/login', [LoginController::class, 'showLogin'])
     ->name('login');
 
 Route::post('/login', [LoginController::class, 'login'])
-    ->name('login.process');
+    ->name('login.process')->middleware('audit.trail');
 
 // Callback resmi gateway; validasi autentikasinya menggunakan signature Midtrans.
 Route::post('/pembayaran/midtrans/notification', [PembayaranController::class, 'notifikasiMidtrans'])
-    ->name('pembayaran.midtrans.notification');
+    ->name('pembayaran.midtrans.notification')->middleware('audit.trail');
 
 // Halaman yang harus login terlebih dahulu
-Route::middleware(['auth', 'pimpinan.access'])->group(function () {
+Route::middleware(['auth', 'pimpinan.access', 'audit.trail'])->group(function () {
 
     // Pencarian pelanggan (untuk dropdown di form pemesanan).
     // WAJIB di atas Route::resource('pelanggan'), kalau tidak "cari"
@@ -39,6 +41,8 @@ Route::middleware(['auth', 'pimpinan.access'])->group(function () {
     Route::resource('barang', BarangController::class);
 
     Route::resource('pemesanan', PemesananController::class);
+    Route::put('/pemesanan/{pemesanan}/approval', [PemesananController::class, 'approve'])
+        ->name('pemesanan.approve');
 
     Route::resource('pembayaran', PembayaranController::class);
 
@@ -54,6 +58,16 @@ Route::middleware(['auth', 'pimpinan.access'])->group(function () {
         ->name('monitoring-kredit.index');
     Route::get('/monitoring-kredit/{pemesanan}', [MonitoringKreditController::class, 'show'])
         ->name('monitoring-kredit.show');
+
+    Route::get('/jaminan', [JaminanController::class, 'index'])->name('jaminan.index');
+    Route::post('/jaminan', [JaminanController::class, 'store'])->name('jaminan.store');
+    Route::get('/jaminan/{jaminan}', [JaminanController::class, 'show'])->name('jaminan.show');
+    Route::get('/jaminan/{jaminan}/dokumen', [JaminanController::class, 'document'])->name('jaminan.document');
+    Route::put('/jaminan/{jaminan}', [JaminanController::class, 'update'])->name('jaminan.update');
+    Route::put('/jaminan/{jaminan}/verifikasi', [JaminanController::class, 'verify'])->name('jaminan.verify');
+    Route::put('/jaminan/{jaminan}/pengembalian', [JaminanController::class, 'returnCollateral'])->name('jaminan.return');
+
+    Route::get('/audit-trail', [AuditTrailController::class, 'index'])->name('audit-trail.index');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');

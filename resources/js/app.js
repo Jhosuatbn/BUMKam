@@ -86,7 +86,7 @@ const actionIconPaths = {
     show: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
 };
 document.querySelectorAll('button').forEach((button) => {
-    if (button.querySelector('svg') || button.matches('[data-photo-preview], [data-photo-preview-close], [data-clear-photo-preview], [data-clear-upload-preview], [data-theme-toggle]')) return;
+    if (button.querySelector('svg, i.icon-base, .bx') || button.matches('[data-photo-preview], [data-photo-preview-close], [data-clear-photo-preview], [data-clear-upload-preview], [data-theme-toggle]')) return;
     const label = `${button.textContent} ${button.getAttribute('aria-label') || ''}`.toLocaleLowerCase('id-ID');
     const key = /hapus|delete/.test(label) ? 'delete'
         : /simpan|update|login|masuk/.test(label) ? (/(login|masuk)/.test(label) ? 'login' : 'save')
@@ -114,13 +114,23 @@ if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-s
     document.documentElement.classList.add('dark');
     document.documentElement.dataset.bsTheme = 'dark';
 } else {
+    document.documentElement.classList.remove('dark');
     document.documentElement.dataset.bsTheme = 'light';
 }
+const syncThemeToggleLabels = () => {
+    const nextMode = document.documentElement.classList.contains('dark') ? 'terang' : 'gelap';
+    document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
+        button.setAttribute('aria-label', `Aktifkan mode ${nextMode}`);
+        button.setAttribute('title', `Aktifkan mode ${nextMode}`);
+    });
+};
+syncThemeToggleLabels();
 document.addEventListener('click', (event) => {
     if (!event.target.closest('[data-theme-toggle]')) return;
     const isDark = document.documentElement.classList.toggle('dark');
     document.documentElement.dataset.bsTheme = isDark ? 'dark' : 'light';
     localStorage.setItem('bumkam-theme', isDark ? 'dark' : 'light');
+    syncThemeToggleLabels();
 });
 
 document.querySelectorAll('[data-photo-preview-dialog]').forEach((dialog) => {
@@ -135,6 +145,7 @@ document.querySelectorAll('[data-upload-preview-input]').forEach((input) => {
     const image = box?.querySelector('[data-upload-preview-image]');
     const error = form?.querySelector('[data-upload-preview-error]');
     const clearButton = box?.querySelector('[data-clear-upload-preview]');
+    const fileName = box?.querySelector('[data-upload-preview-name]');
     const placeholder = form?.querySelector('[data-upload-preview-placeholder]');
     const removeSavedPhoto = form?.querySelector('input[name="hapus_foto"]');
     let previewUrl = null;
@@ -146,6 +157,7 @@ document.querySelectorAll('[data-upload-preview-input]').forEach((input) => {
         if (previewUrl) URL.revokeObjectURL(previewUrl);
         previewUrl = null;
         image.removeAttribute('src');
+        if (fileName) fileName.textContent = '';
         box.classList.add('hidden');
         placeholder?.classList.remove('hidden');
         if (error) {
@@ -187,6 +199,7 @@ document.querySelectorAll('[data-upload-preview-input]').forEach((input) => {
         if (previewUrl) URL.revokeObjectURL(previewUrl);
         previewUrl = URL.createObjectURL(file);
         image.src = previewUrl;
+        if (fileName) fileName.textContent = file.name;
         placeholder?.classList.add('hidden');
         box.classList.remove('hidden');
         if (removeSavedPhoto) removeSavedPhoto.checked = false;

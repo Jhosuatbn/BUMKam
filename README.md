@@ -93,6 +93,7 @@ Pastikan PHP, Composer, Node.js/npm dan MySQL tersedia. Jalankan perintah dari f
 | Dashboard Staff dan pemilihan dashboard | `app/Http/Controllers/DashboardController.php`, `resources/views/dashboard.blade.php`, `resources/views/dashboard-staff.blade.php` |
 | Dashboard Pimpinan | `resources/views/dashboard-pimpinan.blade.php` |
 | Layout navigasi utama | `resources/views/layouts/sneat-dashboard.blade.php` |
+| Logo dan warna brand BUMKam | `public/assets/img/bumkam-mark.png`, `resources/css/app.css`, `resources/views/login.blade.php` |
 | Sidebar/layout lama atau pendukung | `resources/views/dashboard-layout.blade.php`, `resources/views/layouts/app.blade.php` |
 | Pelanggan | `app/Http/Controllers/PelangganController.php`, `resources/views/pelanggan/` |
 | Barang dan stok | `app/Http/Controllers/BarangController.php`, `resources/views/barang/` |
@@ -101,17 +102,37 @@ Pastikan PHP, Composer, Node.js/npm dan MySQL tersedia. Jalankan perintah dari f
 | Monitoring kredit | `app/Http/Controllers/MonitoringKreditController.php`, `app/Services/MonitoringKreditService.php`, `resources/views/monitoring-kredit/` |
 | Laporan | `app/Http/Controllers/LaporanController.php`, `resources/views/laporan/index.blade.php` |
 | Middleware akses Pimpinan | `app/Http/Middleware/PimpinanAccess.php`, didaftarkan di `bootstrap/app.php` |
+| Dokumen jaminan privat | `app/Models/Jaminan.php`, `app/Http/Controllers/JaminanController.php`, `resources/views/jaminan/`, migration `2026_10_31_000001_create_jaminan_table.php` |
+| Audit Trail | `app/Models/AuditTrail.php`, `app/Services/AuditTrailWriter.php`, `app/Http/Middleware/RecordAuditTrail.php`, `app/Http/Controllers/AuditTrailController.php`, `resources/views/audit-trail/` |
 | Skema database | `database/migrations/` |
 
 Model utama menggunakan nama tabel dan primary key khusus (misalnya `Pelanggan` memakai tabel `pelanggan` dan primary key string `id_pelanggan`). Periksa model serta migration sebelum mengubah query atau struktur data.
 
+Logo BUMKam dipakai di halaman login dan sidebar. Warna identitas utamanya hijau tua dan hijau daun; pertahankan aset logo serta aksen tersebut ketika melakukan perubahan UI.
+
 ## Hak akses
 
 - Route operasional dilindungi oleh middleware `auth` dan `pimpinan.access`.
-- Pimpinan hanya diizinkan membuka Dashboard, laporan, daftar/detail Pelanggan dan Barang (mode lihat), Monitoring Kredit, dan Logout.
-- Tindakan menambah, mengubah, atau menghapus Pelanggan/Barang serta modul operasional lain tetap dilarang untuk Pimpinan di backend.
+- Pimpinan hanya dapat melihat Dashboard, Laporan, daftar/detail Pelanggan dan Barang, Monitoring Kredit, serta dokumen Jaminan; Pimpinan dapat memverifikasi jaminan, melihat Audit Trail, dan mengelola akun Staff. Operasi data usaha lainnya tetap mengikuti pemeriksaan di backend.
+- Pimpinan tidak boleh membuat/mengubah/menghapus data Pelanggan dan Barang, Pemesanan, atau Pembayaran. Tindakan verifikasi Jaminan dan pengelolaan akun Staff adalah pengecualian yang disediakan khusus.
 - Menu yang disembunyikan di Blade bukan pengganti pemeriksaan akses backend. Periksa `PimpinanAccess` dan validasi/otorisasi controller ketika mengubah hak akses.
 - Role yang dipakai adalah nilai `peran` pada pengguna, antara lain `Staff` dan `Pimpinan`.
+
+## Dokumen jaminan kredit
+
+Dokumen jaminan (BPKB atau Surat Tanah) disimpan pada disk `local` Laravel, dengan root `storage/app/private`; jangan buat symbolic link ke folder `public`. Staff mengunggah atau memperbarui dokumen lewat form Pemesanan atau menu Manajemen Jaminan. Pimpinan dapat melihat dokumen dan menyetujui/menolak dengan alasan. Staff hanya dapat menandai dokumen sudah dikembalikan jika saldo kewajiban sudah lunas. File valid: JPG, PNG, WEBP, PDF, maksimum 5 MB. Seluruh akses file melalui route terautentikasi `jaminan.document`.
+
+## Akun pengguna dan Audit Trail
+
+Migration `2026_10_31_000002_add_is_active_to_pengguna_table.php` menambahkan status akun dan default akun lama menjadi aktif. Pengguna yang nonaktif tidak dapat login. Menu Pengguna dan Audit Trail dibatasi untuk Pimpinan; Pimpinan dapat menambah akun Staff serta memperbarui nama, username, status, dan melakukan reset password. Role tetap hanya `Staff` dan `Pimpinan`, dan akun Pimpinan tidak dapat dikelola dari form Staff. Password baru di-hash menggunakan `Hash::make()` dan tidak pernah diperlihatkan kembali.
+
+Audit Trail dibuat oleh middleware untuk login/logout dan aksi tulis di route aplikasi. Halaman Pimpinan menyediakan filter pengguna, jenis aktivitas, rentang tanggal, dan pencarian. Tabel log tidak memiliki operasi edit/hapus di aplikasi. Nilai form tidak disimpan agar NIK, password, dan isi dokumen pribadi tidak masuk log; kolom nilai lama/baru dibiarkan kosong.
+
+Setelah menarik perubahan terbaru, jalankan migration baru pada database lokal:
+
+```powershell
+php artisan migrate
+```
 
 ## Pembayaran Midtrans (opsional)
 

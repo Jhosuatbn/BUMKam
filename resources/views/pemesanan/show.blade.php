@@ -3,7 +3,7 @@
 @section('title', 'Detail Pemesanan')
 
 @section('content')
-    <div class="space-y-6">
+    <div class="pemesanan-page space-y-6">
         <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
                 <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Detail Pemesanan</h1>
@@ -11,6 +11,10 @@
             </div>
             <a href="{{ route('pemesanan.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Kembali</a>
         </header>
+
+        @if (session('success'))
+            <div role="status" class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900">{{ session('success') }}</div>
+        @endif
 
         <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-labelledby="pemesanan-detail-heading">
             <h2 id="pemesanan-detail-heading" class="border-b border-slate-200 px-5 py-4 text-base font-semibold text-slate-900 sm:px-6">Informasi Pemesanan</h2>
@@ -25,9 +29,48 @@
                 <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Bunga</dt><dd class="mt-1 tabular-nums text-sm font-semibold text-slate-900">Rp {{ number_format($pemesanan->bunga, 0, ',', '.') }}</dd></div>
                 <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Total Harga</dt><dd class="mt-1 tabular-nums text-sm font-semibold text-slate-900">Rp {{ number_format($pemesanan->total_harga, 0, ',', '.') }}</dd></div>
                 <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Angsuran</dt><dd class="mt-1 tabular-nums text-sm font-semibold text-slate-900">Rp {{ number_format($pemesanan->angsuran, 0, ',', '.') }}</dd></div>
-                <div class="border-b border-slate-100 py-4 sm:col-span-2"><dt class="text-sm font-medium text-slate-500">Status</dt><dd class="mt-1 text-sm font-semibold text-slate-900">{{ $pemesanan->status_pemesanan }}</dd></div>
+                <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Status Persetujuan</dt><dd class="mt-1 text-sm font-semibold text-slate-900">{{ $pemesanan->status_persetujuan ?? 'Data lama — tidak memerlukan approval' }}</dd></div>
+                <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Status Pembayaran</dt><dd class="mt-1 text-sm font-semibold text-slate-900">{{ $pemesanan->status_pemesanan }}</dd></div>
+                @if ($pemesanan->status_persetujuan === 'Ditolak')
+                    <div class="border-b border-slate-100 py-4 sm:col-span-2"><dt class="text-sm font-medium text-slate-500">Alasan Penolakan</dt><dd class="mt-1 whitespace-pre-line text-sm text-rose-800">{{ $pemesanan->catatan_persetujuan }}</dd></div>
+                @elseif ($pemesanan->persetujuan_pada)
+                    <div class="border-b border-slate-100 py-4 sm:col-span-2"><dt class="text-sm font-medium text-slate-500">Diputuskan oleh</dt><dd class="mt-1 text-sm font-semibold text-slate-900">{{ $pemesanan->persetujuanOleh?->nama_lengkap ?? $pemesanan->persetujuanOleh?->username ?? 'Pimpinan' }} · {{ $pemesanan->persetujuan_pada->locale('id')->translatedFormat('d M Y, H:i') }}</dd></div>
+                @endif
             </dl>
         </section>
+
+        @if ($pemesanan->status_persetujuan !== null)
+            <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-labelledby="approval-heading">
+                <div class="border-b border-slate-200 px-5 py-4 sm:px-6"><h2 id="approval-heading" class="text-base font-semibold text-slate-900">Persetujuan Pemesanan</h2><p class="mt-1 text-sm text-slate-500">Status, keputusan, dan riwayat pemeriksaan pengajuan.</p></div>
+                @if ($pemesanan->jaminanDokumen)
+                    <div class="border-b border-slate-100 px-5 py-4 sm:px-6"><h3 class="text-sm font-semibold text-slate-800">Dokumen Jaminan</h3><p class="mt-1 text-sm text-slate-600">{{ $pemesanan->jaminanDokumen->jenis_dokumen }} · No. {{ $pemesanan->jaminanDokumen->nomor_dokumen }} · Pemilik {{ $pemesanan->jaminanDokumen->nama_pemilik }}</p><p class="mt-1 text-xs text-slate-500">Verifikasi: {{ $pemesanan->jaminanDokumen->status_verifikasi }} · {{ $pemesanan->jaminanDokumen->catatan ?? 'Tanpa catatan' }}</p><a href="{{ route('jaminan.document', $pemesanan->jaminanDokumen) }}" target="_blank" rel="noopener" class="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:text-blue-900"><i class="icon-base bx bx-file" aria-hidden="true"></i>Lihat dokumen jaminan</a></div>
+                @else
+                    <p class="border-b border-slate-100 px-5 py-4 text-sm text-slate-500 sm:px-6">Dokumen jaminan belum diunggah.</p>
+                @endif
+
+                @if (auth()->user()?->peran === 'Pimpinan' && $pemesanan->status_persetujuan === 'Menunggu Persetujuan')
+                    <form action="{{ route('pemesanan.approve', $pemesanan) }}" method="POST" class="border-b border-slate-100 p-5 sm:px-6">
+                        @csrf @method('PUT')
+                        <label for="catatan_persetujuan" class="block text-sm font-semibold text-slate-700">Catatan atau alasan penolakan</label>
+                        <textarea id="catatan_persetujuan" name="catatan_persetujuan" rows="3" maxlength="2000" class="mt-2 block w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20" placeholder="Wajib diisi jika pengajuan ditolak">{{ old('catatan_persetujuan') }}</textarea>
+                        @error('status_persetujuan')<p class="mt-2 text-sm text-rose-700">{{ $message }}</p>@enderror
+                        @error('catatan_persetujuan')<p class="mt-2 text-sm text-rose-700">{{ $message }}</p>@enderror
+                        <div class="mt-4 flex flex-wrap gap-3">
+                            <button type="submit" name="status_persetujuan" value="Disetujui" class="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-800"><i class="icon-base bx bx-check" aria-hidden="true"></i>Setujui Pemesanan</button>
+                            <button type="submit" name="status_persetujuan" value="Ditolak" formnovalidate class="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-rose-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-rose-800" onclick="if (!this.form.elements.catatan_persetujuan.value.trim()) { this.form.elements.catatan_persetujuan.setCustomValidity('Alasan penolakan wajib diisi.'); this.form.elements.catatan_persetujuan.reportValidity(); this.form.elements.catatan_persetujuan.setCustomValidity(''); return false; }"><i class="icon-base bx bx-x" aria-hidden="true"></i>Tolak Pemesanan</button>
+                        </div>
+                    </form>
+                @endif
+
+                <div class="divide-y divide-slate-100 px-5 sm:px-6"><h3 class="py-4 text-sm font-semibold text-slate-800">Riwayat Persetujuan</h3>
+                    @forelse ($pemesanan->riwayatPersetujuan as $riwayat)
+                        <div class="flex flex-col justify-between gap-1 py-3 sm:flex-row sm:items-start"><div><p class="text-sm font-semibold text-slate-800">{{ $riwayat->status_persetujuan }} <span class="font-normal text-slate-500">oleh {{ $riwayat->pengguna?->nama_lengkap ?? $riwayat->pengguna?->username ?? 'Pengguna' }}</span></p>@if ($riwayat->catatan)<p class="mt-1 whitespace-pre-line text-sm text-slate-600">{{ $riwayat->catatan }}</p>@endif</div><time class="text-xs text-slate-500">{{ $riwayat->created_at?->locale('id')->translatedFormat('d M Y, H:i') }}</time></div>
+                    @empty
+                        <p class="pb-4 text-sm text-slate-500">Belum ada riwayat keputusan.</p>
+                    @endforelse
+                </div>
+            </section>
+        @endif
 
         <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-labelledby="barang-dipesan-heading">
             <div class="border-b border-slate-200 px-5 py-4 sm:px-6"><h2 id="barang-dipesan-heading" class="text-base font-semibold text-slate-900">Barang yang Dipesan</h2></div>
@@ -44,7 +87,9 @@
                 @endforelse
             </div>
             <div class="flex flex-wrap gap-3 border-t border-slate-200 px-5 py-4 sm:px-6">
-                <a href="{{ route('pemesanan.edit', $pemesanan->id_pemesanan) }}" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Edit</a>
+                @if (auth()->user()?->peran !== 'Pimpinan' && ($pemesanan->status_persetujuan === null || $pemesanan->status_persetujuan === 'Menunggu Persetujuan'))
+                    <a href="{{ route('pemesanan.edit', $pemesanan->id_pemesanan) }}" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Edit</a>
+                @endif
                 <a href="{{ route('pemesanan.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Daftar Pemesanan</a>
             </div>
         </section>

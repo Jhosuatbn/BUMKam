@@ -3,7 +3,7 @@
 @section('title', 'Pembayaran')
 
 @section('content')
-    <div class="space-y-6">
+    <div class="pembayaran-page space-y-6">
         @if (session('success'))
             <div role="status" class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900">{{ session('success') }}</div>
         @endif
@@ -15,17 +15,17 @@
         @endif
 
         <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-labelledby="pembayaran-list-heading">
-            <div class="flex flex-col gap-3 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <div class="flex flex-col gap-3 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-end sm:justify-between sm:px-6">
                 <div>
                     <h2 id="pembayaran-list-heading" class="text-base font-semibold text-slate-900">Daftar Pembayaran</h2>
                     <p class="mt-1 text-sm text-slate-500">Rincian pembayaran dan saldo setiap transaksi.</p>
                 </div>
                 @if (auth()->user()?->peran !== 'Pimpinan')
-                    <a href="{{ route('pembayaran.create') }}" class="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"><i class="icon-base bx bx-plus" aria-hidden="true"></i>Tambah Pembayaran</a>
+                    <a href="{{ route('pembayaran.create') }}" class="inline-flex min-h-11 shrink-0 self-end items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"><i class="icon-base bx bx-plus" aria-hidden="true"></i>Tambah Pembayaran</a>
                 @endif
             </div>
             <div class="overflow-x-auto">
-                <table class="min-w-[68rem] divide-y divide-slate-200 text-left text-sm">
+                <table class="payment-list-table min-w-[68rem] divide-y divide-slate-200 text-left text-sm">
                     <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-600">
                         <tr>
                             <th scope="col" class="px-4 py-3 font-semibold sm:px-6">ID</th>

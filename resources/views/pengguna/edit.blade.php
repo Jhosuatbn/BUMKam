@@ -7,7 +7,7 @@
         <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
                 <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Edit Pengguna</h1>
-                <p class="mt-2 text-sm text-slate-600">Perbarui informasi dan peran akun.</p>
+                <p class="mt-2 text-sm text-slate-600">Kelola informasi, status, dan reset password akun Staff. Password lama tidak ditampilkan.</p>
             </div>
             <a href="{{ route('pengguna.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Kembali</a>
         </header>
@@ -33,21 +33,16 @@
                         <label for="id_pengguna_display" class="block text-sm font-semibold text-slate-700">ID Pengguna</label>
                         <input id="id_pengguna_display" type="text" value="{{ $pengguna->id_pengguna }}" disabled class="mt-2 block min-h-11 w-full rounded-xl border border-slate-200 bg-slate-100 px-3.5 py-2.5 text-sm text-slate-600">
                     </div>
-                    <div>
-                        <label for="peran" class="block text-sm font-semibold text-slate-700">Peran</label>
-                        <select id="peran" name="peran" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
-                            <option value="Staff" {{ $pengguna->peran == 'Staff' ? 'selected' : '' }}>Staff</option>
-                            <option value="Pimpinan" {{ $pengguna->peran == 'Pimpinan' ? 'selected' : '' }}>Pimpinan</option>
-                        </select>
-                    </div>
+                    <div><label class="block text-sm font-semibold text-slate-700">Peran</label><div class="mt-2 flex min-h-11 items-center rounded-xl border border-slate-200 bg-slate-100 px-3.5 text-sm font-semibold text-slate-700">Staff</div></div>
                     <div>
                         <label for="username" class="block text-sm font-semibold text-slate-700">Username</label>
                         <input id="username" type="text" name="username" value="{{ old('username', $pengguna->username) }}" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                     </div>
                     <div>
                         <label for="password" class="block text-sm font-semibold text-slate-700">Password Baru</label>
-                        <input id="password" type="password" name="password" placeholder="Kosongkan jika tidak ingin mengubah password" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                        <input id="password" type="password" name="password" minlength="10" autocomplete="new-password" placeholder="Kosongkan jika tidak mereset (minimal 10 karakter)" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                     </div>
+                    <div class="md:col-span-2"><input type="hidden" name="is_active" value="0"><label class="inline-flex items-center gap-2 text-sm font-semibold text-slate-700"><input type="checkbox" name="is_active" value="1" @checked(old('is_active', $pengguna->is_active))> Akun aktif dan dapat login</label><p class="mt-1 text-xs text-slate-500">Nonaktifkan akun untuk menghentikan akses tanpa menghapus riwayatnya.</p></div>
                     <div class="md:col-span-2">
                         <label for="nama_lengkap" class="block text-sm font-semibold text-slate-700">Nama Lengkap</label>
                         <input id="nama_lengkap" type="text" name="nama_lengkap" value="{{ old('nama_lengkap', $pengguna->nama_lengkap) }}" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">

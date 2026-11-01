@@ -32,21 +32,14 @@
                         <label for="id_pengguna" class="block text-sm font-semibold text-slate-700">ID Pengguna</label>
                         <input id="id_pengguna" type="text" name="id_pengguna" value="{{ old('id_pengguna') }}" placeholder="Contoh: PGN-001" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                     </div>
-                    <div>
-                        <label for="peran" class="block text-sm font-semibold text-slate-700">Peran</label>
-                        <select id="peran" name="peran" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
-                            <option value="">-- Pilih Peran --</option>
-                            <option value="Staff" {{ old('peran') == 'Staff' ? 'selected' : '' }}>Staff</option>
-                            <option value="Pimpinan" {{ old('peran') == 'Pimpinan' ? 'selected' : '' }}>Pimpinan</option>
-                        </select>
-                    </div>
+                    <div><label class="block text-sm font-semibold text-slate-700">Peran</label><div class="mt-2 flex min-h-11 items-center rounded-xl border border-slate-200 bg-slate-100 px-3.5 text-sm font-semibold text-slate-700">Staff</div></div>
                     <div>
                         <label for="username" class="block text-sm font-semibold text-slate-700">Username</label>
                         <input id="username" type="text" name="username" value="{{ old('username') }}" placeholder="Masukkan username" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                     </div>
                     <div>
                         <label for="password" class="block text-sm font-semibold text-slate-700">Password</label>
-                        <input id="password" type="password" name="password" placeholder="Masukkan password" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                        <input id="password" type="password" name="password" minlength="10" required autocomplete="new-password" placeholder="Buat password awal (minimal 10 karakter)" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                     </div>
                     <div class="md:col-span-2">
                         <label for="nama_lengkap" class="block text-sm font-semibold text-slate-700">Nama Lengkap</label>

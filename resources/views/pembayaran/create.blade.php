@@ -3,15 +3,7 @@
 @section('title', 'Tambah Pembayaran')
 
 @section('content')
-    <div class="space-y-6">
-        <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-            <div>
-                <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Tambah Pembayaran</h1>
-                <p class="mt-2 text-sm text-slate-600">Catat pembayaran untuk pemesanan.</p>
-            </div>
-            <a href="{{ route('pembayaran.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Kembali</a>
-        </header>
-
+    <div class="pembayaran-page space-y-6">
         @if ($errors->any())
             <div role="alert" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900">
                 <p class="font-semibold">Terjadi kesalahan:</p>

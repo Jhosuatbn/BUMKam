@@ -5,87 +5,94 @@ namespace App\Http\Controllers;
 use App\Models\Pengguna;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class PenggunaController extends Controller
 {
+    private function pastikanPimpinan(): void
+    {
+        abort_unless(auth()->user()?->peran === 'Pimpinan', 403);
+    }
+
+    private function pastikanStaffTarget(Pengguna $pengguna): void
+    {
+        abort_unless($pengguna->peran === 'Staff' && $pengguna->id_pengguna !== auth()->id(), 403, 'Akun Pimpinan tidak dapat dikelola dari halaman ini.');
+    }
+
     public function index()
     {
-        $pengguna = Pengguna::all();
+        $this->pastikanPimpinan();
+        $pengguna = Pengguna::orderBy('created_at')->get();
 
         return view('pengguna.index', compact('pengguna'));
     }
 
     public function create()
     {
+        $this->pastikanPimpinan();
+
         return view('pengguna.create');
     }
 
     public function store(Request $request)
-{
-    $request->validate([
-        'id_pengguna' => 'required|string|max:20|unique:pengguna,id_pengguna',
-        'username' => 'required|string|max:50|unique:pengguna,username',
-        'password' => 'required|string|min:6',
-        'nama_lengkap' => 'required|string|max:100',
-        'peran' => 'required|in:Staff,Pimpinan',
-    ]);
+    {
+        $this->pastikanPimpinan();
+        $data = $request->validate([
+            'id_pengguna' => ['required', 'string', 'max:20', 'unique:pengguna,id_pengguna'],
+            'username' => ['required', 'string', 'max:50', 'unique:pengguna,username'],
+            'password' => ['required', 'string', 'min:10'],
+            'nama_lengkap' => ['required', 'string', 'max:100'],
+        ]);
+        Pengguna::create(array_merge($data, [
+            'password' => Hash::make($data['password']),
+            'peran' => 'Staff',
+            'is_active' => true,
+        ]));
 
-    Pengguna::create([
-        'id_pengguna' => $request->id_pengguna,
-        'username' => $request->username,
-        'password' => Hash::make($request->password),
-        'nama_lengkap' => $request->nama_lengkap,
-        'peran' => $request->peran,
-    ]);
-
-    return redirect()
-        ->route('pengguna.index')
-        ->with('success', 'Pengguna berhasil ditambahkan.');
-}
-
-    public function show(Pengguna $pengguna)
-{
-    return view('pengguna.show', compact('pengguna'));
-}
-
-    public function edit(Pengguna $pengguna)
-{
-    return view('pengguna.edit', compact('pengguna'));
-}
-
-public function update(Request $request, Pengguna $pengguna)
-{
-    $request->validate([
-        'username' => 'required|string|max:50|unique:pengguna,username,' . $pengguna->id_pengguna . ',id_pengguna',
-        'password' => 'nullable|string|min:6',
-        'nama_lengkap' => 'required|string|max:100',
-        'peran' => 'required|in:Staff,Pimpinan',
-    ]);
-
-    $data = [
-        'username' => $request->username,
-        'nama_lengkap' => $request->nama_lengkap,
-        'peran' => $request->peran,
-    ];
-
-    // Password hanya diubah jika diisi
-    if ($request->filled('password')) {
-        $data['password'] = Hash::make($request->password);
+        return redirect()->route('pengguna.index')->with('success', 'Akun Staff berhasil dibuat. Sampaikan password awal secara aman kepada pemilik akun.');
     }
 
-    $pengguna->update($data);
+    public function show(Pengguna $pengguna)
+    {
+        $this->pastikanPimpinan();
+        $pengguna->makeHidden('password');
 
-    return redirect()
-        ->route('pengguna.index')
-        ->with('success', 'Pengguna berhasil diperbarui.');
-}
+        return view('pengguna.show', compact('pengguna'));
+    }
+
+    public function edit(Pengguna $pengguna)
+    {
+        $this->pastikanPimpinan();
+        $this->pastikanStaffTarget($pengguna);
+
+        return view('pengguna.edit', compact('pengguna'));
+    }
+
+    public function update(Request $request, Pengguna $pengguna)
+    {
+        $this->pastikanPimpinan();
+        $this->pastikanStaffTarget($pengguna);
+        $data = $request->validate([
+            'username' => ['required', 'string', 'max:50', Rule::unique('pengguna', 'username')->ignore($pengguna->id_pengguna, 'id_pengguna')],
+            'nama_lengkap' => ['required', 'string', 'max:100'],
+            'password' => ['nullable', 'string', 'min:10'],
+            'is_active' => ['required', 'boolean'],
+        ]);
+        $updates = [
+            'username' => $data['username'],
+            'nama_lengkap' => $data['nama_lengkap'],
+            'is_active' => (bool) $data['is_active'],
+        ];
+        if (! empty($data['password'])) {
+            $updates['password'] = Hash::make($data['password']);
+        }
+        $pengguna->update($updates);
+
+        return redirect()->route('pengguna.index')->with('success', 'Akun Staff berhasil diperbarui. Password tidak pernah ditampilkan kembali.');
+    }
 
     public function destroy(Pengguna $pengguna)
-{
-    $pengguna->delete();
-
-    return redirect()
-        ->route('pengguna.index')
-        ->with('success', 'Pengguna berhasil dihapus.');
-}
+    {
+        abort(403, 'Akun tidak dihapus permanen. Nonaktifkan akun melalui menu edit.');
+    }
 }

@@ -69,17 +69,12 @@
                     {{-- Foto KTP --}}
                     <div>
                         <label for="foto_ktp" class="block text-sm font-semibold text-slate-700">Foto KTP</label>
-                        <div class="relative mt-2 h-48 overflow-hidden rounded-xl border bg-white @error('foto_ktp') border-rose-400 @else border-slate-300 @enderror">
-                            <label data-upload-preview-placeholder for="foto_ktp" class="absolute inset-0 flex h-full cursor-pointer flex-col items-center justify-center gap-3 px-5 py-6 text-center transition hover:bg-blue-50/70 focus-within:outline focus-within:outline-2 focus-within:outline-blue-600">
-                                <input id="foto_ktp" type="file" name="foto_ktp" accept="image/jpeg,image/png,image/webp" data-upload-preview-input aria-describedby="foto_ktp_hint" class="sr-only">
-                                <svg class="size-10 text-blue-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
-                                <span><span class="block text-sm font-semibold text-slate-800">Pilih foto KTP</span><span class="mt-1 block text-xs text-slate-500">JPG, PNG, atau WEBP · Maksimal 2 MB</span></span>
-                            </label>
-                            <div id="foto_ktp_preview_box" data-upload-preview-box class="absolute inset-0 hidden h-full bg-slate-50 p-3" aria-live="polite">
-                                <div class="relative grid h-full place-items-center overflow-hidden rounded-lg bg-slate-100 p-2">
-                                    <img id="foto_ktp_preview" data-upload-preview-image src="" alt="Pratinjau foto KTP baru" class="max-h-full max-w-full rounded-lg object-contain">
-                                    <button type="button" data-clear-upload-preview class="absolute right-2 top-2 inline-flex size-9 items-center justify-center rounded-full bg-slate-950/80 text-2xl leading-none text-white shadow-lg transition hover:bg-rose-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white" aria-label="Hapus foto yang dipilih" title="Hapus foto yang dipilih">&times;</button>
-                                </div>
+                        <div class="mt-2 space-y-2">
+                            <input id="foto_ktp" type="file" name="foto_ktp" accept="image/jpeg,image/png,image/webp" data-upload-preview-input aria-describedby="foto_ktp_hint" class="form-control @error('foto_ktp') border-rose-400 @enderror">
+                            <div id="foto_ktp_preview_box" data-upload-preview-box class="hidden flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-2" aria-live="polite">
+                                <img id="foto_ktp_preview" data-upload-preview-image src="" alt="Pratinjau foto KTP baru" class="h-14 w-20 shrink-0 rounded-lg bg-slate-100 object-contain">
+                                <span class="min-w-0 flex-1"><span class="block text-xs font-medium text-slate-500">Foto siap diunggah</span><span data-upload-preview-name class="mt-0.5 block truncate text-sm font-semibold text-slate-800"></span></span>
+                                <button type="button" data-clear-upload-preview class="inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-xl leading-none text-slate-500 shadow-sm transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700" aria-label="Hapus foto yang dipilih" title="Hapus foto yang dipilih">&times;</button>
                             </div>
                         </div>
                         <p id="foto_ktp_hint" class="mt-1.5 text-xs text-slate-500">

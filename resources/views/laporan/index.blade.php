@@ -7,7 +7,7 @@
         $tabAktif = request('tab', 'pemesanan');
     @endphp
 
-    <div>
+    <div class="laporan-page">
         @if ($errors->any())
             <div class="alert alert-danger" role="alert">
                 <i class="icon-base bx bx-error-circle me-1" aria-hidden="true"></i>
@@ -34,7 +34,7 @@
             </div>
         </section>
 
-        <section class="card mb-4" aria-labelledby="filter-laporan-heading">
+        <section class="card mb-4 laporan-filter-card" aria-labelledby="filter-laporan-heading">
             <div class="card-header border-bottom">
                 <h2 id="filter-laporan-heading" class="card-title mb-1">Filter Laporan</h2>
                 <p class="mb-0 text-body-secondary">Pilih rentang tanggal untuk mempersempit data laporan.</p>

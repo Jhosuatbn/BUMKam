@@ -3,7 +3,7 @@
 @section('title', 'Pembayaran Online')
 
 @section('content')
-    <div class="mx-auto max-w-3xl space-y-6">
+    <div class="pembayaran-page mx-auto max-w-3xl space-y-6">
         <header>
             <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Pembayaran Online</h1>
             <p class="mt-2 text-sm text-slate-600">Selesaikan angsuran melalui kanal pembayaran Midtrans.</p>

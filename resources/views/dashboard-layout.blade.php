@@ -62,6 +62,16 @@
         @endif
         <div class="col-6 mb-6"><div class="card h-100"><div class="card-body"><div class="avatar mb-3"><span class="avatar-initial rounded bg-label-success"><i class="icon-base bx bx-check-circle icon-lg"></i></span></div><p class="mb-1">Pembayaran Lunas</p><h4 class="card-title mb-0">{{ number_format($pembayaranLunas, 0, ',', '.') }}</h4></div></div></div>
         <div class="col-6 mb-6"><div class="card h-100"><div class="card-body"><div class="avatar mb-3"><span class="avatar-initial rounded bg-label-warning"><i class="icon-base bx bx-time-five icon-lg"></i></span></div><p class="mb-1">Belum Lunas</p><h4 class="card-title mb-0">{{ number_format($pembayaranBelumLunas, 0, ',', '.') }}</h4></div></div></div>
+        @if ($isPimpinan)
+            <div class="col-12 mb-6"><div class="card h-100 border border-primary"><div class="card-header d-flex align-items-center justify-content-between"><div><h5 class="card-title mb-1">Persetujuan Pemesanan</h5><p class="card-subtitle">Pengajuan kredit yang memerlukan pemeriksaan Anda</p></div><span class="badge bg-label-primary">{{ $jumlahPersetujuanMenunggu }}</span></div><div class="card-body pt-2">
+                @forelse ($pengajuanMenungguPersetujuan as $pengajuan)
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 border-bottom py-3"><div><h6 class="mb-1">{{ $pengajuan->pelanggan?->nama_pelanggan ?? 'Pelanggan' }}</h6><small class="text-body-secondary">{{ $pengajuan->id_pemesanan }} · {{ \Carbon\Carbon::parse($pengajuan->tanggal_pemesanan)->locale('id')->translatedFormat('d M Y') }}</small></div><a href="{{ route('pemesanan.show', $pengajuan) }}" class="btn btn-sm btn-primary"><i class="icon-base bx bx-search-alt me-1"></i>Periksa</a></div>
+                @empty
+                    <p class="mb-0 text-body-secondary">Tidak ada pengajuan yang menunggu persetujuan.</p>
+                @endforelse
+                <a href="{{ route('pemesanan.index') }}" class="btn btn-sm btn-label-primary mt-3">Lihat semua pengajuan</a>
+            </div></div></div>
+        @endif
         <div class="col-12 mb-6"><div class="card h-100"><div class="card-body"><div class="d-flex justify-content-between align-items-center mb-3"><div><h5 class="mb-1">Ringkasan Periode</h5><small class="text-body-secondary">Perubahan pemesanan bulanan</small></div><span class="avatar"><span class="avatar-initial rounded bg-label-success"><i class="icon-base bx bx-trending-up icon-lg"></i></span></span></div><div class="d-flex align-items-end gap-2"><h3 class="mb-0 {{ $persentasePerubahan >= 0 ? 'text-success' : 'text-danger' }}">{{ $persentasePerubahan > 0 ? '+' : '' }}{{ number_format($persentasePerubahan, 1, ',', '.') }}%</h3><span class="text-body-secondary mb-1">dari bulan lalu</span></div><div class="progress mt-4" style="height: 8px"><div class="progress-bar" role="progressbar" style="width: {{ min(100, max(4, abs($persentasePerubahan))) }}%" aria-valuenow="{{ min(100, abs($persentasePerubahan)) }}" aria-valuemin="0" aria-valuemax="100"></div></div><small class="d-block mt-2 text-body-secondary">{{ number_format($nilaiPesananBulanIni, 0, ',', '.') }} nilai pemesanan bulan ini</small></div></div></div>
     </div></div>
 

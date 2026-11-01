@@ -9,7 +9,7 @@
         @endif
 
         <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-labelledby="barang-list-heading">
-            <div class="flex flex-col gap-4 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <div class="flex flex-col gap-4 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-end sm:justify-between sm:px-6">
                 <div>
                     <h2 id="barang-list-heading" class="text-base font-semibold text-slate-900">Daftar Barang</h2>
                     <p class="mt-1 text-sm text-slate-500">Informasi barang yang tersedia.</p>
@@ -22,7 +22,7 @@
                     @endif
                     {{-- Form Pencarian Barang --}}
                     <form action="{{ route('barang.index') }}" method="GET" class="flex w-full min-w-0 flex-col gap-2 sm:flex-row">
-                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari ID, nama, atau kategori..." class="block w-full min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari ID, nama, atau kategori..." class="block min-h-11 w-full min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                         <button type="submit" style="border-radius: 12px !important;" class="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border-0 bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">
     <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
         <circle cx="11" cy="11" r="7"/>

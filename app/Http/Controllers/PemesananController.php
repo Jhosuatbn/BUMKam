@@ -6,9 +6,13 @@ use App\Models\Barang;
 use App\Models\DetailPemesanan;
 use App\Models\Pelanggan;
 use App\Models\Pemesanan;
+use App\Models\Jaminan;
+use App\Services\AuditTrailWriter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class PemesananController extends Controller
@@ -17,7 +21,7 @@ class PemesananController extends Controller
 
     public function index()
     {
-        $pemesanan = Pemesanan::with('pelanggan')->get();
+        $pemesanan = Pemesanan::with('pelanggan')->latest('created_at')->get();
 
         return view('pemesanan.index', compact('pemesanan'));
     }
@@ -64,7 +68,7 @@ class PemesananController extends Controller
         ));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, AuditTrailWriter $auditTrail)
     {
         $validated = $request->validate([
             'id_pemesanan' => 'required|string|max:20|unique:pemesanan,id_pemesanan',
@@ -75,10 +79,17 @@ class PemesananController extends Controller
             'skema_pembayaran' => 'required|in:DP,Sebagian,Tanpa DP',
             'dp' => 'required_if:skema_pembayaran,DP,Sebagian|nullable|numeric|min:0',
             'tenor' => 'required|integer|in:12,24,36',
-            'jaminan' => 'nullable|string',
+            'jaminan' => 'nullable|string|max:255',
+            'jenis_jaminan' => ['nullable', Rule::in(['BPKB', 'Surat Tanah'])],
+            'nomor_jaminan' => 'required_with:jenis_jaminan|nullable|string|max:100',
+            'pemilik_jaminan' => 'required_with:jenis_jaminan|nullable|string|max:100',
+            'tanggal_penyerahan' => 'required_with:jenis_jaminan|nullable|date',
+            'file_jaminan' => 'required_with:jenis_jaminan|nullable|file|mimes:jpg,jpeg,png,webp,pdf|max:5120',
         ]);
 
-        DB::transaction(function () use ($validated) {
+        $fileJaminanBaru = null;
+        try {
+        DB::transaction(function () use ($validated, $request, &$fileJaminanBaru) {
             $barang = Barang::whereKey($validated['id_barang'])->lockForUpdate()->firstOrFail();
             $jumlah = (int) $validated['jumlah'];
 
@@ -124,7 +135,29 @@ class PemesananController extends Controller
                 'total_harga' => $totalHarga,
                 'angsuran' => $angsuran,
                 'status_pemesanan' => 'Belum Lunas',
+                'status_persetujuan' => 'Menunggu Persetujuan',
             ]);
+
+            $pemesanan->riwayatPersetujuan()->create([
+                'id_pengguna' => $request->user()->id_pengguna,
+                'status_persetujuan' => 'Menunggu Persetujuan',
+                'catatan' => 'Pengajuan pemesanan dikirim untuk diperiksa Pimpinan.',
+                'created_at' => now(),
+            ]);
+
+            if (! empty($validated['jenis_jaminan'])) {
+                $fileJaminanBaru = $request->file('file_jaminan')->store('jaminan', 'local');
+                Jaminan::create([
+                    'id_jaminan' => 'JMN-'.Str::upper(Str::random(12)),
+                    'id_pemesanan' => $pemesanan->id_pemesanan,
+                    'jenis_dokumen' => $validated['jenis_jaminan'],
+                    'nomor_dokumen' => $validated['nomor_jaminan'],
+                    'nama_pemilik' => $validated['pemilik_jaminan'],
+                    'file_path' => $fileJaminanBaru,
+                    'tanggal_penyerahan' => $validated['tanggal_penyerahan'],
+                    'catatan' => $validated['jaminan'] ?? null,
+                ]);
+            }
 
             DetailPemesanan::create([
                 'id_detail' => 'DTL-' . Str::upper(Str::random(10)),
@@ -138,6 +171,14 @@ class PemesananController extends Controller
 
             $barang->decrement('stok', $jumlah);
         });
+        } catch (\Throwable $exception) {
+            if ($fileJaminanBaru) Storage::disk('local')->delete($fileJaminanBaru);
+            throw $exception;
+        }
+        if ($fileJaminanBaru) {
+            $auditTrail->record($request->user(), $request, 'create', 'Jaminan', 'Dokumen jaminan dicatat bersama pemesanan kredit baru.');
+        }
+        $auditTrail->record($request->user(), $request, 'create', 'Persetujuan Pemesanan', 'Pengajuan pemesanan ' . $validated['id_pemesanan'] . ' menunggu pemeriksaan Pimpinan.');
 
         return redirect()
             ->route('pemesanan.index')
@@ -150,6 +191,9 @@ class PemesananController extends Controller
             'pelanggan',
             'detailPemesanan.barang',
             'pembayaran',
+            'jaminanDokumen',
+            'persetujuanOleh',
+            'riwayatPersetujuan.pengguna',
         ]);
 
         return view('pemesanan.show', compact('pemesanan'));
@@ -157,6 +201,13 @@ class PemesananController extends Controller
 
     public function edit(Pemesanan $pemesanan)
     {
+        abort_if(
+            $pemesanan->status_persetujuan !== null
+                && $pemesanan->status_persetujuan !== 'Menunggu Persetujuan',
+            403,
+            'Pemesanan yang sudah disetujui atau ditolak tidak dapat diubah.'
+        );
+
         $pelanggan = Pelanggan::all();
         $barang = Barang::all();
 
@@ -169,8 +220,15 @@ class PemesananController extends Controller
         ));
     }
 
-    public function update(Request $request, Pemesanan $pemesanan)
+    public function update(Request $request, Pemesanan $pemesanan, AuditTrailWriter $auditTrail)
     {
+        abort_if(
+            $pemesanan->status_persetujuan !== null
+                && $pemesanan->status_persetujuan !== 'Menunggu Persetujuan',
+            403,
+            'Pemesanan yang sudah disetujui atau ditolak tidak dapat diubah.'
+        );
+
         $validated = $request->validate([
             'id_pelanggan' => 'required|exists:pelanggan,id_pelanggan',
             'tanggal_pemesanan' => 'required|date',
@@ -179,10 +237,25 @@ class PemesananController extends Controller
             'skema_pembayaran' => 'required|in:DP,Sebagian,Tanpa DP',
             'dp' => 'required_if:skema_pembayaran,DP,Sebagian|nullable|numeric|min:0',
             'tenor' => 'required|integer|in:12,24,36',
-            'jaminan' => 'nullable|string',
+            'jaminan' => 'nullable|string|max:255',
+            'jenis_jaminan' => ['nullable', Rule::in(['BPKB', 'Surat Tanah'])],
+            'nomor_jaminan' => 'required_with:jenis_jaminan|nullable|string|max:100',
+            'pemilik_jaminan' => 'required_with:jenis_jaminan|nullable|string|max:100',
+            'tanggal_penyerahan' => 'required_with:jenis_jaminan|nullable|date',
+            'file_jaminan' => 'nullable|file|mimes:jpg,jpeg,png,webp,pdf|max:5120',
         ]);
 
-        DB::transaction(function () use ($validated, $pemesanan) {
+        $jaminanLama = $pemesanan->jaminanDokumen;
+        if (! empty($validated['jenis_jaminan']) && ! $jaminanLama && ! $request->hasFile('file_jaminan')) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'file_jaminan' => 'Unggah foto atau scan dokumen untuk membuat data jaminan.',
+            ]);
+        }
+
+        $fileJaminanBaru = null;
+        $fileJaminanLama = null;
+        try {
+        DB::transaction(function () use ($validated, $pemesanan, $request, &$fileJaminanBaru, &$fileJaminanLama) {
             $detail = DetailPemesanan::where('id_pemesanan', $pemesanan->id_pemesanan)
                 ->lockForUpdate()
                 ->first();
@@ -240,6 +313,36 @@ class PemesananController extends Controller
                 'angsuran' => $angsuran,
             ]);
 
+            if (! empty($validated['jenis_jaminan'])) {
+                $jaminanDokumen = $pemesanan->jaminanDokumen()->lockForUpdate()->first();
+                if ($request->hasFile('file_jaminan')) {
+                    $fileJaminanBaru = $request->file('file_jaminan')->store('jaminan', 'local');
+                    $fileJaminanLama = $jaminanDokumen?->file_path;
+                }
+                $dataJaminan = [
+                    'jenis_dokumen' => $validated['jenis_jaminan'],
+                    'nomor_dokumen' => $validated['nomor_jaminan'],
+                    'nama_pemilik' => $validated['pemilik_jaminan'],
+                    'tanggal_penyerahan' => $validated['tanggal_penyerahan'],
+                    'catatan' => $validated['jaminan'] ?? null,
+                    'status_verifikasi' => 'Belum Diverifikasi',
+                    'alasan_penolakan' => null,
+                    'diverifikasi_oleh' => null,
+                ];
+                if ($fileJaminanBaru) {
+                    $dataJaminan['file_path'] = $fileJaminanBaru;
+                }
+                if ($jaminanDokumen) {
+                    $jaminanDokumen->update($dataJaminan);
+                } else {
+                    Jaminan::create($dataJaminan + [
+                        'id_jaminan' => 'JMN-'.Str::upper(Str::random(12)),
+                        'id_pemesanan' => $pemesanan->id_pemesanan,
+                        'file_path' => $fileJaminanBaru,
+                    ]);
+                }
+            }
+
             $dataDetail = [
                 'id_barang' => $barang->id_barang,
                 'jumlah' => $jumlahBaru,
@@ -262,14 +365,106 @@ class PemesananController extends Controller
             }
             $barang->decrement('stok', $jumlahBaru);
         });
+        } catch (\Throwable $exception) {
+            if ($fileJaminanBaru) Storage::disk('local')->delete($fileJaminanBaru);
+            throw $exception;
+        }
+        if ($fileJaminanLama) Storage::disk('local')->delete($fileJaminanLama);
+        if (! empty($validated['jenis_jaminan'])) {
+            $auditTrail->record($request->user(), $request, 'update', 'Jaminan', 'Data dokumen jaminan diperbarui dari form pemesanan.');
+        }
 
         return redirect()
             ->route('pemesanan.index')
             ->with('success', 'Pemesanan berhasil diperbarui.');
     }
 
+    public function approve(Request $request, Pemesanan $pemesanan, AuditTrailWriter $auditTrail)
+    {
+        abort_unless($request->user()?->peran === 'Pimpinan', 403);
+
+        $validated = $request->validate([
+            'status_persetujuan' => ['required', Rule::in(['Disetujui', 'Ditolak'])],
+            'catatan_persetujuan' => ['required_if:status_persetujuan,Ditolak', 'nullable', 'string', 'max:2000'],
+        ]);
+
+        DB::transaction(function () use ($request, $pemesanan, $validated) {
+            $terkunci = Pemesanan::whereKey($pemesanan->id_pemesanan)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($terkunci->status_persetujuan !== 'Menunggu Persetujuan') {
+                throw ValidationException::withMessages([
+                    'status_persetujuan' => 'Pengajuan ini sudah diputuskan atau bukan pengajuan yang menunggu persetujuan.',
+                ]);
+            }
+
+            $catatan = $validated['catatan_persetujuan'] ?? null;
+            $terkunci->update([
+                'status_persetujuan' => $validated['status_persetujuan'],
+                'persetujuan_oleh' => $request->user()->id_pengguna,
+                'persetujuan_pada' => now(),
+                'catatan_persetujuan' => $catatan,
+            ]);
+
+            $terkunci->riwayatPersetujuan()->create([
+                'id_pengguna' => $request->user()->id_pengguna,
+                'status_persetujuan' => $validated['status_persetujuan'],
+                'catatan' => $catatan,
+                'created_at' => now(),
+            ]);
+
+            if ($validated['status_persetujuan'] === 'Ditolak') {
+                $details = DetailPemesanan::where('id_pemesanan', $terkunci->id_pemesanan)
+                    ->lockForUpdate()
+                    ->get();
+
+                foreach ($details as $detail) {
+                    if (! $detail->stok_dikurangi) {
+                        continue;
+                    }
+
+                    $barang = Barang::whereKey($detail->id_barang)->lockForUpdate()->first();
+                    if ($barang && $barang->stok !== null) {
+                        $barang->increment('stok', (int) $detail->jumlah);
+                    }
+                    $detail->update(['stok_dikurangi' => false]);
+                }
+            }
+        });
+
+        $status = $validated['status_persetujuan'];
+        $catatan = $validated['catatan_persetujuan'] ?? null;
+        $auditTrail->record(
+            $request->user(),
+            $request,
+            $status === 'Disetujui' ? 'approve' : 'reject',
+            'Persetujuan Pemesanan',
+            'Pemesanan ' . $pemesanan->id_pemesanan . ' ' . strtolower($status) . ($catatan ? ': ' . $catatan : '.')
+        );
+
+        return redirect()->route('pemesanan.show', $pemesanan)
+            ->with('success', 'Status pemesanan berhasil diperbarui menjadi ' . $status . '.');
+    }
+
     public function destroy(Pemesanan $pemesanan)
     {
+        abort_if(
+            $pemesanan->status_persetujuan !== null
+                && $pemesanan->status_persetujuan !== 'Menunggu Persetujuan',
+            403,
+            'Pemesanan yang sudah disetujui atau ditolak tidak dapat dihapus.'
+        );
+
+        abort_if(
+            $pemesanan->pembayaran()->exists(),
+            403,
+            'Pemesanan yang sudah memiliki riwayat pembayaran tidak dapat dihapus.'
+        );
+
+        if ($pemesanan->jaminanDokumen()->exists()) {
+            return back()->with('error', 'Pemesanan memiliki dokumen jaminan. Kelola jaminan terlebih dahulu sebelum menghapus pemesanan.');
+        }
         DB::transaction(function () use ($pemesanan) {
             $details = $pemesanan->detailPemesanan()->get();
             foreach ($details as $detail) {

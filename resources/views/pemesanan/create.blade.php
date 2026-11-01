@@ -3,15 +3,7 @@
 @section('title', 'Tambah Pemesanan')
 
 @section('content')
-<div class="space-y-6">
-    <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-        <div>
-            <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Tambah Pemesanan</h1>
-            <p class="mt-2 text-sm text-slate-600">Isi data pelanggan, barang, dan skema pembayaran.</p>
-        </div>
-        <a href="{{ route('pemesanan.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50">Kembali</a>
-    </header>
-
+<div class="pemesanan-page space-y-6">
     @if ($errors->any())
         <div role="alert" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900">
             <p class="font-semibold">Terjadi kesalahan:</p>
@@ -24,12 +16,12 @@
     @endif
 
     <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-        <form action="{{ route('pemesanan.store') }}" method="POST" id="formPemesanan" class="space-y-8">
+        <form action="{{ route('pemesanan.store') }}" method="POST" enctype="multipart/form-data" id="formPemesanan" class="space-y-8">
             @csrf
 
             <fieldset>
                 <legend class="text-base font-semibold text-slate-900">Informasi Pemesanan</legend>
-                <div class="mt-4 grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2">
+                <div class="mt-4 grid grid-cols-1 gap-x-6 gap-y-6 md:grid-cols-2">
                     <div>
                         <label for="id_pemesanan" class="block text-sm font-semibold text-slate-700">ID Pemesanan</label>
                         <input id="id_pemesanan" name="id_pemesanan" type="text"
@@ -46,7 +38,7 @@
                                class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                     </div>
 
-                    <div class="relative md:col-span-2">
+                    <div class="relative">
                         <label for="cari_pelanggan" class="block text-sm font-semibold text-slate-700">Pelanggan</label>
                         <input id="cari_pelanggan" type="text" placeholder="Cari atau pilih nama/ID pelanggan..."
                                autocomplete="off" aria-autocomplete="list" aria-expanded="false"
@@ -64,13 +56,8 @@
                         </select>
                         <p class="mt-1 text-xs text-slate-500">Ketik untuk mencari, lalu pilih pelanggan dari daftar.</p>
                     </div>
-                </div>
-            </fieldset>
 
-            <fieldset class="border-t border-slate-200 pt-6">
-                <legend class="text-base font-semibold text-slate-900">Barang</legend>
-                <div class="mt-4 grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2">
-                    <div class="relative md:col-span-2">
+                    <div class="relative">
                         <label for="cari_barang" class="block text-sm font-semibold text-slate-700">Barang</label>
                         <input id="cari_barang" type="text" placeholder="Cari atau pilih nama/ID barang..."
                                autocomplete="off" aria-autocomplete="list" aria-expanded="false"
@@ -90,7 +77,12 @@
                         <p id="hargaSatuan" class="mt-2 text-sm text-slate-500">Harga satuan: -</p>
                         <p class="mt-1 text-xs text-slate-500">Ketik untuk mencari, lalu pilih barang dari daftar.</p>
                     </div>
+                </div>
+            </fieldset>
 
+            <fieldset class="border-t border-slate-200 pt-6">
+                <legend class="text-sm font-semibold text-slate-900">Rincian Barang</legend>
+                <div class="mt-4 grid grid-cols-1 gap-x-6 gap-y-6 md:grid-cols-2">
                     <div>
                         <label for="jumlah" class="block text-sm font-semibold text-slate-700">Jumlah</label>
                         <input id="jumlah" type="number" name="jumlah" value="{{ old('jumlah', 1) }}" min="1" step="1" required
@@ -106,8 +98,8 @@
             </fieldset>
 
             <fieldset class="border-t border-slate-200 pt-6">
-                <legend class="text-base font-semibold text-slate-900">Skema Pembayaran</legend>
-                <div class="mt-4 grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2">
+                <legend class="text-sm font-semibold text-slate-900">Skema Pembayaran</legend>
+                <div class="mt-4 grid grid-cols-1 gap-x-6 gap-y-6 md:grid-cols-2">
                     <div>
                         <label for="skema_pembayaran" class="block text-sm font-semibold text-slate-700">Skema Pembayaran</label>
                         <select id="skema_pembayaran" name="skema_pembayaran" required
@@ -140,9 +132,36 @@
                         </select>
                     </div>
 
+                </div>
+            </fieldset>
+
+            <fieldset class="border-t border-slate-200 pt-6">
+                <legend class="text-sm font-semibold text-slate-900">Informasi Jaminan</legend>
+                <p class="mt-1 text-sm text-slate-500">Jika pemesanan kredit menggunakan jaminan, isi data dan unggah dokumennya. File disimpan secara privat.</p>
+                <div class="mt-4 grid grid-cols-1 gap-x-6 gap-y-6 md:grid-cols-2">
+                    <div>
+                        <label for="jenis_jaminan" class="block text-sm font-semibold text-slate-700">Jenis Jaminan</label>
+                        <select id="jenis_jaminan" name="jenis_jaminan" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20"><option value="">Tidak ada / lengkapi nanti</option><option value="BPKB" @selected(old('jenis_jaminan') === 'BPKB')>BPKB</option><option value="Surat Tanah" @selected(old('jenis_jaminan') === 'Surat Tanah')>Surat Tanah</option></select>
+                    </div>
+                    <div>
+                        <label for="nomor_jaminan" class="block text-sm font-semibold text-slate-700">Nomor Dokumen</label>
+                        <input id="nomor_jaminan" name="nomor_jaminan" value="{{ old('nomor_jaminan') }}" maxlength="100" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                    </div>
+                    <div>
+                        <label for="pemilik_jaminan" class="block text-sm font-semibold text-slate-700">Nama Pemilik Dokumen</label>
+                        <input id="pemilik_jaminan" name="pemilik_jaminan" value="{{ old('pemilik_jaminan') }}" maxlength="100" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                    </div>
+                    <div>
+                        <label for="tanggal_penyerahan" class="block text-sm font-semibold text-slate-700">Tanggal Penyerahan</label>
+                        <input id="tanggal_penyerahan" name="tanggal_penyerahan" type="date" value="{{ old('tanggal_penyerahan', date('Y-m-d')) }}" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                    </div>
+                    <div>
+                        <label for="file_jaminan" class="block text-sm font-semibold text-slate-700">Foto / Scan Dokumen (JPG, PNG, WEBP, PDF; maks. 5 MB)</label>
+                        <input id="file_jaminan" name="file_jaminan" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" class="form-control mt-2">
+                    </div>
                     <div class="md:col-span-2">
-                        <label for="jaminan" class="block text-sm font-semibold text-slate-700">Jaminan</label>
-                        <textarea id="jaminan" name="jaminan" rows="3" placeholder="Masukkan jaminan jika ada"
+                        <label for="jaminan" class="block text-sm font-semibold text-slate-700">Keterangan Jaminan</label>
+                        <textarea id="jaminan" name="jaminan" rows="3" placeholder="Catatan tambahan tentang jaminan"
                                   class="mt-2 block w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">{{ old('jaminan') }}</textarea>
                     </div>
                 </div>
@@ -160,8 +179,8 @@
                         </svg>
                     </div>
                     <div>
-                        <h2 class="font-bold text-slate-900">Ringkasan Angsuran</h2>
-                        <p class="text-xs text-slate-600">Perhitungan diperbarui otomatis saat data berubah.</p>
+                        <h2 class="mb-0 text-sm font-semibold text-slate-900">Ringkasan Angsuran</h2>
+                        <p class="mb-0 text-xs text-slate-600">Perhitungan diperbarui otomatis saat data berubah.</p>
                     </div>
                 </div>
 
