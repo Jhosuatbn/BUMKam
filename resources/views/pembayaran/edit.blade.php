@@ -79,9 +79,9 @@
                         <p class="mt-1 text-xs text-slate-500">Pilih file baru untuk mengganti bukti lama. JPG, PNG, WEBP, atau PDF; maksimal 5 MB.</p>
                     </div>
                 </div>
-                <div class="mt-8 flex flex-wrap gap-3 border-t border-slate-200 pt-5">
-                    <button type="submit" class="inline-flex min-h-11 items-center justify-center rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Simpan Perubahan</button>
-                    <a href="{{ route('pembayaran.index') }}" class="inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Batal</a>
+                <div class="mt-8 flex flex-wrap justify-end gap-3 border-t border-slate-200 pt-5">
+                    <a href="{{ route('pembayaran.index') }}" class="bumkam-cancel-button inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-bold text-black shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Batal</a>
+                    <button type="submit" data-no-auto-icon class="bumkam-green-action inline-flex min-h-11 items-center justify-center rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">Simpan Perubahan</button>
                 </div>
             </form>
         </section>

@@ -58,6 +58,7 @@ Route::middleware(['auth', 'pimpinan.access', 'audit.trail'])->group(function ()
     Route::get('/barang-masuk', [BarangMasukController::class, 'index'])->name('barang-masuk.index');
     Route::get('/barang-masuk/create', [BarangMasukController::class, 'create'])->name('barang-masuk.create');
     Route::post('/barang-masuk', [BarangMasukController::class, 'store'])->name('barang-masuk.store');
+    Route::get('/barang-masuk/cari-barang', [BarangMasukController::class, 'cariBarang'])->name('barang-masuk.cari-barang');
     Route::get('/barang-masuk/{barangMasuk}', [BarangMasukController::class, 'show'])->name('barang-masuk.show');
     Route::get('/monitoring-stok', [MonitoringStokController::class, 'index'])->name('monitoring-stok.index');
 

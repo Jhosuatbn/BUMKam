@@ -94,8 +94,8 @@
                                             </form>
                                         </div>
                                     @else
-                                        <a href="{{ route('barang.show', $item->id_barang) }}" class="inline-flex items-center gap-1 text-sm font-semibold text-blue-800 hover:underline" aria-label="Lihat detail {{ $item->nama_barang }}">
-                                            Detail <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                        <a href="{{ route('barang.show', $item->id_barang) }}" class="inline-flex items-center justify-center text-blue-700 transition hover:text-blue-900" aria-label="Lihat {{ $item->nama_barang }}" title="Lihat">
+                                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
                                         </a>
                                     @endif
                                 </td>
@@ -161,8 +161,8 @@
                     <p class="text-xs italic text-slate-500">*ID Barang akan dibuat otomatis berdasarkan kategori pilihan.</p>
 
                     <div class="mt-6 flex justify-end gap-3 pt-2">
-                        <button onclick="closeModal()" type="button" class="min-w-24 rounded-xl bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm border border-slate-300 hover:bg-slate-50 transition">Batal</button>
-                        <button type="submit" class="min-w-24 rounded-xl bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-800 transition">Simpan</button>
+                        <button onclick="closeModal()" data-no-auto-icon type="button" class="bumkam-cancel-button barang-modal-action min-w-24 rounded-2xl bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm border border-slate-300 hover:bg-slate-50 transition">Batal</button>
+                        <button data-no-auto-icon type="submit" class="barang-modal-action bumkam-green-action min-w-24 rounded-2xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition">Simpan</button>
                     </div>
                 </form>
             </div>

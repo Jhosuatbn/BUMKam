@@ -20,13 +20,13 @@
                 <ul class="nav nav-pills gap-2">
                     <li class="nav-item">
                         <a href="{{ route('laporan.index', array_merge(request()->except('tab', 'pelanggan'), ['tab' => 'pemesanan'])) }}"
-                           class="nav-link {{ $tabAktif === 'pemesanan' ? 'active' : '' }}">
+                           class="nav-link {{ $tabAktif === 'pemesanan' ? 'active bumkam-laporan-tab-active' : '' }}">
                             <i class="icon-base bx bx-receipt me-1" aria-hidden="true"></i>Laporan Pemesanan
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="{{ route('laporan.index', array_merge(request()->except('tab'), ['tab' => 'kredit'])) }}"
-                           class="nav-link {{ $tabAktif === 'kredit' ? 'active' : '' }}">
+                           class="nav-link {{ $tabAktif === 'kredit' ? 'active bumkam-laporan-tab-active' : '' }}">
                             <i class="icon-base bx bx-wallet me-1" aria-hidden="true"></i>Laporan Kredit
                         </a>
                     </li>
@@ -139,7 +139,7 @@
                 <div class="card-header d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2 border-bottom">
                     <div>
                         <h2 id="daftar-kredit-heading" class="card-title mb-1">Daftar Kredit</h2>
-                        <p class="mb-0 text-body-secondary">Rincian pembiayaan, angsuran, sisa tagihan, dan jaminan pelanggan.</p>
+                        <p class="mb-0 text-body-secondary">Ringkasan kredit pelanggan. Buka rincian untuk melihat DP, sisa tagihan, denda, dan jaminan.</p>
                     </div>
                     <div class="d-flex align-items-center gap-2">
                         <span class="badge bg-label-primary">{{ $daftarKredit->count() }} data</span>
@@ -147,11 +147,11 @@
                     </div>
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0 laporan-table">
+                    <table class="table table-hover align-middle mb-0 laporan-table laporan-credit-table">
                         <thead>
                             <tr>
-                                <th scope="col">No.</th><th scope="col">Barang</th><th scope="col">Total Harga</th><th scope="col">DP</th><th scope="col">Nominal Angsuran</th>
-                                <th scope="col">Tenor</th><th scope="col">Angsuran Tercatat</th><th scope="col">Sisa Angsuran + Denda</th><th scope="col">Denda Dikenakan</th><th scope="col">Denda Dibayar</th><th scope="col">Denda Belum Dibayar</th><th scope="col">Denda Dikurangi</th><th scope="col">Status</th><th scope="col">Jaminan</th>
+                                <th scope="col">No.</th><th scope="col">Tanggal</th><th scope="col">Pelanggan</th><th scope="col">Barang</th>
+                                <th scope="col">Total Kredit</th><th scope="col">Angsuran / Bulan</th><th scope="col">Status</th><th scope="col">Rincian</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -162,8 +162,14 @@
                                     $statusKredit = $monitoringKredit['status'];
                                     $statusKreditClass = $statusKredit === 'Lunas' ? 'success' : ($statusKredit === 'Terlambat' ? 'danger' : 'warning');
                                 @endphp
+                                @php($rincianId = 'rincian-kredit-' . $kredit->id_pemesanan)
                                 <tr>
                                     <td class="text-body-secondary">{{ $loop->iteration }}</td>
+                                    <td class="text-nowrap">{{ $kredit->tanggal_pemesanan ? \Illuminate\Support\Carbon::parse($kredit->tanggal_pemesanan)->format('d/m/Y') : '—' }}</td>
+                                    <td>
+                                        <span class="d-block fw-semibold">{{ $kredit->pelanggan?->nama_pelanggan ?? '—' }}</span>
+                                        <small class="d-block text-body-secondary">{{ $kredit->id_pemesanan }}</small>
+                                    </td>
                                     <td class="fw-semibold">
                                         @forelse ($kredit->detailPemesanan as $detail)
                                             {{ $detail->barang->nama_barang ?? '—' }}@if (!$loop->last), @endif
@@ -171,28 +177,48 @@
                                             —
                                         @endforelse
                                     </td>
-                                    <td class="text-nowrap">Rp {{ number_format($kredit->total_harga ?? 0, 0, ',', '.') }}</td>
-                                    <td class="text-nowrap">Rp {{ number_format($kredit->dp ?? 0, 0, ',', '.') }}</td>
+                                    <td class="text-nowrap">Rp {{ number_format(max(0, (float) ($kredit->total_harga ?? 0) + (float) ($kredit->bunga ?? 0) - (float) ($kredit->dp ?? 0)), 0, ',', '.') }}</td>
                                     <td class="text-nowrap">Rp {{ number_format($kredit->angsuran ?? 0, 0, ',', '.') }}</td>
-                                    <td class="text-nowrap">{{ $kredit->tenor ?? '—' }} bln</td>
-                                    <td class="text-nowrap">{{ $kredit->pembayaran->count() }} / {{ $kredit->tenor ?? 0 }}</td>
-                                    <td class="text-nowrap fw-semibold">Rp {{ number_format($sisaTagihan, 0, ',', '.') }}</td>
-                                    <td class="text-nowrap">Rp {{ number_format($monitoringKredit['total_denda_dikenakan'], 0, ',', '.') }}</td>
-                                    <td class="text-nowrap">Rp {{ number_format($monitoringKredit['total_denda_dibayar'], 0, ',', '.') }}</td>
-                                    <td class="text-nowrap">Rp {{ number_format($monitoringKredit['total_denda_belum_dibayar'], 0, ',', '.') }}</td>
-                                    <td class="text-nowrap">Rp {{ number_format($monitoringKredit['total_denda_dikurangi'], 0, ',', '.') }}</td>
                                     <td><span class="badge bg-label-{{ $statusKreditClass }}">{{ $statusKredit }}</span></td>
                                     <td>
-                                        @if ($kredit->jaminanDokumen)
-                                            {{ $kredit->jaminanDokumen->jenis_dokumen === 'Surat Tanah' ? 'Sertifikat Tanah' : $kredit->jaminanDokumen->jenis_dokumen }}
-                                            <small class="d-block text-body-secondary">{{ $kredit->jaminanDokumen->nomor_dokumen }}</small>
-                                        @else
-                                            {{ $kredit->jaminan ?: '—' }}
-                                        @endif
+                                        <button type="button" class="credit-details-toggle btn btn-sm bumkam-green-action" data-credit-details-toggle aria-expanded="false" aria-controls="{{ $rincianId }}">
+                                            <span data-credit-details-label>Rincian</span><i class="icon-base bx bx-chevron-down ms-1" aria-hidden="true"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr id="{{ $rincianId }}" class="credit-details-row hidden">
+                                    <td colspan="8">
+                                        <div class="credit-details-grid grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                                            <article class="rounded-lg border border-slate-200 bg-slate-50 p-3"><span class="d-block small text-body-secondary">Skema Pembayaran</span><strong>{{ $kredit->skema_pembayaran ?: '—' }}</strong></article>
+                                            <article class="rounded-lg border border-slate-200 bg-slate-50 p-3"><span class="d-block small text-body-secondary">DP</span><strong>Rp {{ number_format($kredit->dp ?? 0, 0, ',', '.') }}</strong></article>
+                                            <article class="rounded-lg border border-slate-200 bg-slate-50 p-3"><span class="d-block small text-body-secondary">Tenor</span><strong>{{ $kredit->tenor ?? '—' }} bulan</strong></article>
+                                            <article class="rounded-lg border border-slate-200 bg-slate-50 p-3"><span class="d-block small text-body-secondary">Angsuran Tercatat</span><strong>{{ $kredit->pembayaran->count() }} / {{ $kredit->tenor ?? 0 }}</strong></article>
+                                            <article class="rounded-lg border border-slate-200 bg-slate-50 p-3"><span class="d-block small text-body-secondary">Sisa Angsuran + Denda</span><strong>Rp {{ number_format($sisaTagihan, 0, ',', '.') }}</strong></article>
+                                            <article class="credit-fine-breakdown-card rounded-lg border border-slate-200 bg-slate-50 p-3">
+                                                <span class="d-block small text-body-secondary">Rincian Denda</span>
+                                                <div class="credit-fine-breakdown mt-2">
+                                                    <span>Dikenakan <strong>Rp {{ number_format($monitoringKredit['total_denda_dikenakan'], 0, ',', '.') }}</strong></span>
+                                                    <span>Dibayar <strong>Rp {{ number_format($monitoringKredit['total_denda_dibayar'], 0, ',', '.') }}</strong></span>
+                                                    <span>Belum dibayar <strong>Rp {{ number_format($monitoringKredit['total_denda_belum_dibayar'], 0, ',', '.') }}</strong></span>
+                                                    <span>Dikurangi <strong>Rp {{ number_format($monitoringKredit['total_denda_dikurangi'], 0, ',', '.') }}</strong></span>
+                                                </div>
+                                            </article>
+                                            <article class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                                                <span class="d-block small text-body-secondary">Jaminan</span>
+                                                <strong>
+                                                    @if ($kredit->jaminanDokumen)
+                                                        {{ $kredit->jaminanDokumen->jenis_dokumen === 'Surat Tanah' ? 'Sertifikat Tanah' : $kredit->jaminanDokumen->jenis_dokumen }}
+                                                        <small class="d-block text-body-secondary">{{ $kredit->jaminanDokumen->nomor_dokumen }}</small>
+                                                    @else
+                                                        {{ $kredit->jaminan ?: '—' }}
+                                                    @endif
+                                                </strong>
+                                            </article>
+                                        </div>
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="14" class="py-5 text-center text-body-secondary">Belum ada data kredit untuk filter ini.</td></tr>
+                                <tr><td colspan="8" class="py-5 text-center text-body-secondary">Belum ada data kredit untuk filter ini.</td></tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -214,6 +240,11 @@
     <style>
         .laporan-table { min-width: 980px; }
         .laporan-table th { white-space: nowrap; font-size: .75rem; }
+        .laporan-credit-table { min-width: 1050px; }
+        .credit-details-row > td { background: #f8fafc; }
+        .credit-details-grid article { min-width: 0; }
+        .credit-fine-breakdown { display: grid; gap: .2rem; font-size: .72rem; line-height: 1.35; }
+        .credit-fine-breakdown span { display: flex; justify-content: space-between; gap: .75rem; white-space: nowrap; }
         .laporan-official-header, .laporan-signature { display: none; }
         @media print {
             @page { size: A4 landscape; margin: 12mm; }
@@ -224,6 +255,14 @@
             .laporan-print-action { display: none !important; }
             .table-responsive { overflow: visible !important; }
             .laporan-table { min-width: 0; width: 100%; font-size: 8px; }
+            .laporan-page .laporan-credit-table { min-width: 0; table-layout: auto; }
+            .credit-details-toggle { display: none !important; }
+            .laporan-page .laporan-credit-table .credit-details-row { display: table-row !important; }
+            .laporan-page .laporan-credit-table .credit-details-row > td { padding: 6px !important; }
+            .credit-details-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+            .credit-details-grid article { break-inside: avoid; }
+            .credit-fine-breakdown { min-width: 0; font-size: 6.5px; }
+            .credit-fine-breakdown span { white-space: normal; }
             .laporan-table th, .laporan-table td { padding: 4px 5px !important; }
             .laporan-official-header { display: flex; align-items: center; gap: 14px; border-bottom: 2px solid #177245; padding: 0 0 9px; margin-bottom: 12px; color: #172b25 !important; }
             .laporan-official-header img { width: 52px; height: 52px; object-fit: contain; }
@@ -235,4 +274,20 @@
             .laporan-signature .signature-space { height: 54px; }
         }
     </style>
+    <script>
+        document.querySelectorAll('[data-credit-details-toggle]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const row = document.getElementById(button.getAttribute('aria-controls'));
+                if (!row) return;
+
+                const expanded = button.getAttribute('aria-expanded') !== 'true';
+                row.classList.toggle('hidden', !expanded);
+                button.setAttribute('aria-expanded', String(expanded));
+                button.querySelector('[data-credit-details-label]').textContent = expanded ? 'Tutup' : 'Rincian';
+                const icon = button.querySelector('.bx');
+                icon?.classList.toggle('bx-chevron-down', !expanded);
+                icon?.classList.toggle('bx-chevron-up', expanded);
+            });
+        });
+    </script>
 @endsection

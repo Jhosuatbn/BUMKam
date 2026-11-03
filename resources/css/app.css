@@ -12,6 +12,62 @@
 
 html, body { font-family: 'Public Sans', ui-sans-serif, system-ui, sans-serif; }
 
+.pelanggan-save-button { border-radius: 1rem !important; }
+.bumkam-green-action {
+    color: #fff !important;
+    border: 1px solid #078a46 !important;
+    border-radius: .75rem !important;
+    background: linear-gradient(135deg, #078a46, #65a30d) !important;
+}
+.bumkam-green-action:hover,
+.bumkam-green-action:focus-visible {
+    color: #fff !important;
+    border-color: #056b38 !important;
+    background: linear-gradient(135deg, #056b38, #4d7c0f) !important;
+}
+.bumkam-cancel-button {
+    color: #8492a6 !important;
+    border-color: #8492a6 !important;
+    background-color: #fff !important;
+}
+.bumkam-cancel-button:hover,
+.bumkam-cancel-button:focus-visible {
+    color: #fff !important;
+    border-color: #7f8b9b !important;
+    background-color: #7f8b9b !important;
+}
+.barang-modal-action { border-radius: 1rem !important; }
+.bumkam-laporan-tab-active,
+.bumkam-laporan-tab-active.active {
+    color: #fff !important;
+    border: 1px solid #078a46 !important;
+    border-radius: .75rem !important;
+    background: linear-gradient(135deg, #078a46, #65a30d) !important;
+}
+.monitoring-credit-table td { padding-block: .85rem; line-height: 1.4; }
+.monitoring-credit-table .monitoring-credit-identity { min-width: 13rem; }
+.monitoring-credit-table .monitoring-credit-identity a { color: #087a40; }
+
+dialog[data-delete-confirmation-dialog] .delete-confirmation-question {
+    color: #0f172a !important;
+    font-weight: 700 !important;
+}
+dialog[data-delete-confirmation-dialog] .delete-confirmation-cancel {
+    color: #111827 !important;
+    font-weight: 700 !important;
+}
+dialog[data-delete-confirmation-dialog] .delete-confirmation-warning {
+    color: #334155 !important;
+    font-weight: 600 !important;
+}
+html.dark dialog[data-delete-confirmation-dialog] .delete-confirmation-question,
+html.dark dialog[data-delete-confirmation-dialog] .delete-confirmation-cancel {
+    color: #f8fafc !important;
+}
+html.dark dialog[data-delete-confirmation-dialog] .delete-confirmation-warning {
+    color: #cbd5e1 !important;
+}
+
 /* Keep dashboard charts inside their cards when the viewport or browser zoom changes. */
 .bumkam-order-status-summary { min-width: 0; flex-wrap: wrap; }
 .bumkam-order-status-plot { width: min(100%, 12rem); min-width: 0; flex: 0 1 12rem; overflow: hidden; }
@@ -140,6 +196,23 @@ body .btn.btn-primary:hover {
 .laporan-page .laporan-table th:nth-child(8), .laporan-page .laporan-table td:nth-child(8) { width: 7%; }
 .laporan-page .laporan-table th:nth-child(9), .laporan-page .laporan-table td:nth-child(9) { width: 13%; }
 .laporan-page .laporan-table th:nth-child(10), .laporan-page .laporan-table td:nth-child(10) { width: 12%; }
+.laporan-page .laporan-credit-table { min-width: 1050px; table-layout: fixed; }
+.laporan-page .laporan-credit-table th:nth-child(1), .laporan-page .laporan-credit-table td:nth-child(1) { width: 4%; }
+.laporan-page .laporan-credit-table th:nth-child(2), .laporan-page .laporan-credit-table td:nth-child(2) { width: 9%; }
+.laporan-page .laporan-credit-table th:nth-child(3), .laporan-page .laporan-credit-table td:nth-child(3) { width: 19%; }
+.laporan-page .laporan-credit-table th:nth-child(4), .laporan-page .laporan-credit-table td:nth-child(4) { width: 18%; }
+.laporan-page .laporan-credit-table th:nth-child(5), .laporan-page .laporan-credit-table td:nth-child(5) { width: 15%; }
+.laporan-page .laporan-credit-table th:nth-child(6), .laporan-page .laporan-credit-table td:nth-child(6) { width: 16%; }
+.laporan-page .laporan-credit-table th:nth-child(7), .laporan-page .laporan-credit-table td:nth-child(7) { width: 10%; }
+.laporan-page .laporan-credit-table th:nth-child(8), .laporan-page .laporan-credit-table td:nth-child(8) { width: 9%; }
+.laporan-page .laporan-credit-table .badge {
+    display: inline-block;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: center;
+    line-height: 1.3;
+}
 .monitoring-kredit-page .card-title {
     margin-bottom: .35rem !important;
     color: var(--bs-heading-color, #1f2937);
@@ -295,10 +368,12 @@ html.dark .pemesanan-page .bg-white { background-color: #111c2e !important; }
 html.dark .pemesanan-page .bg-slate-50,
 html.dark .pemesanan-page .bg-slate-100,
 html.dark .pemesanan-page .bg-blue-50\/70 { background-color: #1e293b !important; }
+html.dark .pemesanan-page .bg-green-50\/70 { background-color: #142b21 !important; }
 html.dark .pemesanan-page .border-slate-100,
 html.dark .pemesanan-page .border-slate-200,
 html.dark .pemesanan-page .border-slate-300,
 html.dark .pemesanan-page .border-blue-200 { border-color: #334155 !important; }
+html.dark .pemesanan-page .border-green-200 { border-color: #275c3b !important; }
 html.dark .pemesanan-page .text-slate-900,
 html.dark .pemesanan-page .text-slate-800,
 html.dark .pemesanan-page .text-slate-700 { color: #e2e8f0 !important; }
@@ -306,6 +381,8 @@ html.dark .pemesanan-page .text-slate-600,
 html.dark .pemesanan-page .text-slate-500 { color: #a8b5c7 !important; }
 html.dark .pemesanan-page .text-blue-700,
 html.dark .pemesanan-page .text-blue-800 { color: #86efac !important; }
+html.dark .pemesanan-page .bg-green-100 { background-color: #173824 !important; }
+html.dark .pemesanan-page .text-green-700 { color: #86efac !important; }
 html.dark .pemesanan-page input:not([type="file"]),
 html.dark .pemesanan-page select,
 html.dark .pemesanan-page textarea { background-color: #0f172a; color: #f1f5f9; border-color: #475569; }

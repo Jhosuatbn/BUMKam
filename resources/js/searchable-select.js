@@ -1,13 +1,22 @@
 function initSearchableSelect(wrapper) {
+    if (wrapper.dataset.searchableInitialized === 'true') return;
+
     const input = wrapper.querySelector('[data-searchable-input]');
     const select = wrapper.querySelector('[data-searchable-options]');
     const results = wrapper.querySelector('[data-searchable-results]');
 
     if (!input || !select || !results) return;
+    wrapper.dataset.searchableInitialized = 'true';
 
     function closeResults() {
         results.classList.add('hidden');
         input.setAttribute('aria-expanded', 'false');
+    }
+
+    function selectedLabel(option) {
+        return input.hasAttribute('data-search-name-only')
+            ? (option.dataset.namaBarang || option.textContent.trim())
+            : option.textContent.trim();
     }
 
     let controller = null;
@@ -34,6 +43,18 @@ function initSearchableSelect(wrapper) {
         } catch (error) {
             if (error.name === 'AbortError') return;
         }
+        if (input.hasAttribute('data-dedupe-name-price')) {
+            const seen = new Set();
+            records = records.filter(record => {
+                const nama = (record.nama_barang || '').trim().replace(/[\s\u00a0]+/g, ' ').toLocaleLowerCase('id-ID');
+                // Match the displayed rupiah amount so hidden decimal differences do not create duplicate rows.
+                const harga = Math.round(Number(record.harga || 0));
+                const key = `${nama}|${harga}`;
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+            });
+        }
         if (records.length === 0) {
             const emptyMessage = document.createElement('div');
             emptyMessage.className = 'px-4 py-3 text-sm text-slate-500';
@@ -44,6 +65,7 @@ function initSearchableSelect(wrapper) {
                 const option = document.createElement('option');
                 option.value = record.id_barang || record.id_pelanggan;
                 if (record.id_barang) {
+                    option.dataset.namaBarang = record.nama_barang;
                     option.dataset.harga = record.harga;
                     const stock = record.stok === null ? 'Stok belum diatur' : `Stok ${Number(record.stok).toLocaleString('id-ID')}`;
                     option.textContent = `${record.nama_barang} · Rp ${Number(record.harga).toLocaleString('id-ID')} · ${stock}`;
@@ -59,7 +81,7 @@ function initSearchableSelect(wrapper) {
                 button.addEventListener('click', () => {
                     select.replaceChildren(new Option('-- Pilih --', ''), option);
                     select.value = option.value;
-                    input.value = option.textContent.trim();
+                    input.value = selectedLabel(option);
                     input.setCustomValidity('');
                     input.removeAttribute('aria-invalid');
                     select.dispatchEvent(new Event('change', { bubbles: true }));
@@ -126,14 +148,14 @@ function initSearchableSelect(wrapper) {
         const selectedOption = select.options[select.selectedIndex];
 
         if (selectedOption?.value) {
-            input.value = selectedOption.textContent.trim();
+            input.value = selectedLabel(selectedOption);
             input.setCustomValidity('');
             input.removeAttribute('aria-invalid');
         }
     });
 
     input.form?.addEventListener('submit', event => {
-        if (!select.value) {
+        if (input.required && !select.value) {
             event.preventDefault();
             input.setCustomValidity('Pilih salah satu data dari daftar.');
             input.setAttribute('aria-invalid', 'true');
@@ -150,6 +172,8 @@ function initSearchableSelect(wrapper) {
         input.value = selectedOption.textContent.trim();
     }
 }
+
+window.initSearchableSelect = initSearchableSelect;
 
 function initInstallmentDisplays() {
     document.querySelectorAll('[data-installment-select]').forEach(select => {

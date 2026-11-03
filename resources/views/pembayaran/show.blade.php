@@ -37,14 +37,14 @@
                     </dd>
                 </div>
             </dl>
-            <div class="flex flex-wrap gap-3 border-t border-slate-200 px-5 py-4 sm:px-6">
+            <div class="flex flex-wrap justify-end gap-3 border-t border-slate-200 px-5 py-4 sm:px-6">
                 @if ($pembayaran->metode_pembayaran !== 'online')
-                    <a href="{{ route('pembayaran.edit', $pembayaran->id_pembayaran) }}" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Edit</a>
+                    <a href="{{ route('pembayaran.edit', $pembayaran->id_pembayaran) }}" class="bumkam-green-action inline-flex min-h-10 items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold shadow-sm transition">Edit</a>
                 @endif
                 @if ($pembayaran->metode_pembayaran === 'online' && $pembayaran->status_gateway === 'pending' && $pembayaran->snap_token)
                     <a href="{{ route('pembayaran.online', $pembayaran->id_pembayaran) }}" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-800">Lanjut Bayar</a>
                 @endif
-                <a href="{{ route('pembayaran.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Kembali</a>
+                <a href="{{ route('pembayaran.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-black shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Kembali</a>
             </div>
         </section>
     </div>

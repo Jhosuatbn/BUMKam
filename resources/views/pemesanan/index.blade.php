@@ -12,11 +12,11 @@
             @if (($halamanPersetujuan ?? false) && auth()->user()?->peran === 'Pimpinan')
                 <nav aria-label="Filter status persetujuan" class="flex flex-wrap gap-2 border-b border-slate-200 px-5 py-3 sm:px-6">
                     @foreach (['Menunggu Persetujuan', 'Disetujui', 'Ditolak'] as $statusTab)
-                        <a href="{{ route('pemesanan.persetujuan', ['status' => $statusTab]) }}" @class(['inline-flex min-h-10 items-center rounded-lg px-4 py-2 text-sm font-semibold transition', 'bg-emerald-700 text-white' => $status === $statusTab, 'bg-slate-100 text-slate-700 hover:bg-slate-200' => $status !== $statusTab])>{{ $statusTab }}</a>
+                        <a href="{{ route('pemesanan.persetujuan', ['status' => $statusTab]) }}" @class(['inline-flex min-h-10 items-center rounded-xl border px-4 py-2 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700', 'border-blue-700 bg-blue-700 text-white shadow-sm hover:bg-blue-800' => $status === $statusTab, 'border-slate-300 bg-white text-slate-700 hover:bg-slate-100' => $status !== $statusTab])>{{ $statusTab }}</a>
                     @endforeach
                 </nav>
             @endif
-            <div class="flex flex-col gap-3 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-6">
+            <div class="flex flex-col gap-3 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
                 <div>
                     <h2 id="pemesanan-list-heading" class="text-base font-semibold text-slate-900">{{ ($halamanPersetujuan ?? false) ? 'Pengajuan ' . $status : 'Daftar Pemesanan' }}</h2>
                     <p class="mt-1 text-sm text-slate-500">{{ ($halamanPersetujuan ?? false) ? 'Periksa pelanggan, barang, tenor, DP, simulasi angsuran, dan informasi jaminan.' : 'Rincian nilai, skema, dan status setiap pemesanan.' }}</p>

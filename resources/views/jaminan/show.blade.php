@@ -10,8 +10,6 @@
             default => 'warning',
         };
         $statusPengembalianClass = $jaminan->status_pengembalian === 'Sudah Dikembalikan' ? 'success' : 'secondary';
-        $ekstensiDokumen = strtolower(pathinfo($jaminan->file_path ?? '', PATHINFO_EXTENSION));
-        $dokumenGambar = in_array($ekstensiDokumen, ['jpg', 'jpeg', 'png', 'webp'], true);
     @endphp
     <div class="space-y-6">
         @if (session('success'))
@@ -29,7 +27,7 @@
                     <h1 id="jaminan-detail-heading" class="card-title mb-1">Detail Jaminan · {{ $jaminan->id_jaminan }}</h1>
                     <p class="mb-0 text-body-secondary">Pemesanan {{ $jaminan->id_pemesanan }} · {{ $jaminan->pemesanan->pelanggan?->nama_pelanggan ?? 'Pelanggan tidak ditemukan' }}</p>
                 </div>
-                <a class="btn btn-success" href="{{ route('jaminan.index') }}"><i class="icon-base bx bx-arrow-back me-1" aria-hidden="true"></i>Kembali</a>
+                <a class="btn bumkam-green-action" href="{{ route('jaminan.index') }}"><i class="icon-base bx bx-arrow-back me-1" aria-hidden="true"></i>Kembali</a>
             </div>
 
             <div class="card-body">
@@ -65,9 +63,6 @@
                         <dd class="mb-0 whitespace-pre-line fw-semibold">{{ $jaminan->catatan ?: '—' }}</dd>
                     </div>
                 </dl>
-                <button type="button" class="btn btn-outline-primary mt-4" id="open-jaminan-preview" data-document-src="{{ route('jaminan.document', $jaminan) }}" data-document-type="{{ $dokumenGambar ? 'image' : 'file' }}">
-                    <i class="icon-base bx bx-file me-1" aria-hidden="true"></i>Buka Dokumen Jaminan
-                </button>
             </div>
 
             @if (auth()->user()->peran === 'Pimpinan')
@@ -84,7 +79,7 @@
                             </select>
                             <label class="sr-only" for="alasan_penolakan">Alasan penolakan</label>
                             <input id="alasan_penolakan" class="form-control" name="alasan_penolakan" maxlength="2000" placeholder="Wajib diisi jika dokumen ditolak" value="{{ old('alasan_penolakan') }}">
-                            <button class="btn btn-success" type="submit">Simpan Keputusan</button>
+                            <button class="btn bumkam-green-action" data-no-auto-icon type="submit">Simpan Keputusan</button>
                         </form>
                     </div>
                 @endif
@@ -116,7 +111,7 @@
                                     <label class="form-label" for="catatan">Keterangan tambahan</label>
                                     <textarea id="catatan" class="form-control" name="catatan" rows="2" maxlength="2000">{{ old('catatan', $jaminan->catatan) }}</textarea>
                                 </div>
-                                <button class="btn btn-success md:col-span-2" type="submit">Simpan Perbaikan</button>
+                                <button class="btn bumkam-green-action md:col-span-2" data-no-auto-icon type="submit">Simpan Perbaikan</button>
                             </form>
                         </div>
 
@@ -133,68 +128,5 @@
             @endif
         </section>
 
-        <div id="jaminan-preview-dialog" class="hidden fixed inset-0 z-[9999] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="jaminan-preview-title">
-            <div id="jaminan-preview-backdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"></div>
-            <div class="flex min-h-screen items-center justify-center p-3 sm:p-6">
-                <section class="relative z-10 my-auto w-full overflow-hidden rounded-2xl border border-slate-300 bg-slate-100 text-left shadow-2xl" style="width: min(28rem, calc(100vw - 1.5rem)); max-width: 28rem">
-                    <div class="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-4 sm:px-6">
-                        <h2 id="jaminan-preview-title" class="min-w-0 flex-1 truncate text-sm font-semibold text-slate-800" style="font-size: 14px; line-height: 1.25rem">Preview Dokumen Jaminan</h2>
-                        <button type="button" id="close-jaminan-preview" class="shrink-0 rounded-full p-2 text-slate-500 transition hover:bg-slate-200 hover:text-slate-800" aria-label="Tutup preview dokumen" title="Tutup">
-                            <i class="icon-base bx bx-x text-2xl" aria-hidden="true"></i>
-                        </button>
-                    </div>
-                    <div class="max-h-[78vh] overflow-auto p-3 sm:p-4">
-                        <div class="flex min-h-[55vh] items-center justify-center rounded-xl bg-slate-200 p-2 sm:p-3">
-                            <img id="jaminan-preview-image" alt="Preview gambar dokumen jaminan" src="about:blank" class="hidden max-h-[68vh] max-w-full object-contain">
-                            <iframe id="jaminan-preview-frame" title="Preview file dokumen jaminan" src="about:blank" class="hidden w-full rounded border bg-white" style="height: min(68vh, 48rem)"></iframe>
-                        </div>
-                    </div>
-                </section>
-            </div>
-        </div>
     </div>
-
-    <script>
-        (() => {
-            const dialog = document.getElementById('jaminan-preview-dialog');
-            const openButton = document.getElementById('open-jaminan-preview');
-            const closeButton = document.getElementById('close-jaminan-preview');
-            const frame = document.getElementById('jaminan-preview-frame');
-            const image = document.getElementById('jaminan-preview-image');
-            const backdrop = document.getElementById('jaminan-preview-backdrop');
-
-            if (!dialog || !openButton || !closeButton || !frame || !image || !backdrop) return;
-
-            openButton.addEventListener('click', () => {
-                const documentUrl = openButton.dataset.documentSrc;
-                if (openButton.dataset.documentType === 'image') {
-                    image.src = documentUrl;
-                    image.classList.remove('hidden');
-                    frame.classList.add('hidden');
-                } else {
-                    frame.src = documentUrl;
-                    frame.classList.remove('hidden');
-                    image.classList.add('hidden');
-                }
-                dialog.classList.remove('hidden');
-                document.body.classList.add('overflow-hidden');
-            });
-
-            const closePreview = () => {
-                dialog.classList.add('hidden');
-                document.body.classList.remove('overflow-hidden');
-                frame.src = 'about:blank';
-                image.src = 'about:blank';
-                frame.classList.add('hidden');
-                image.classList.add('hidden');
-                openButton.focus();
-            };
-
-            closeButton.addEventListener('click', closePreview);
-            backdrop.addEventListener('click', closePreview);
-            document.addEventListener('keydown', (event) => {
-                if (event.key === 'Escape' && !dialog.classList.contains('hidden')) closePreview();
-            });
-        })();
-    </script>
 @endsection
