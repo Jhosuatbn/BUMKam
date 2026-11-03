@@ -11,10 +11,17 @@ use App\Http\Controllers\PenggunaController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\JaminanController;
 use App\Http\Controllers\AuditTrailController;
+use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\BarangMasukController;
+use App\Http\Controllers\MonitoringStokController;
 
 Route::get('/', function () {
-    return view('welcome');
-});
+    return view('public.home');
+})->name('public.home');
+
+Route::view('/unit-usaha', 'public.unit-usaha')->name('public.unit-usaha');
+Route::view('/profil', 'public.profil')->name('public.profil');
+Route::view('/berita', 'public.berita')->name('public.berita');
 
 // Login
 Route::get('/login', [LoginController::class, 'showLogin'])
@@ -40,7 +47,24 @@ Route::middleware(['auth', 'pimpinan.access', 'audit.trail'])->group(function ()
 
     Route::resource('barang', BarangController::class);
 
+    Route::get('/supplier', [SupplierController::class, 'index'])->name('supplier.index');
+    Route::get('/supplier/create', [SupplierController::class, 'create'])->name('supplier.create');
+    Route::post('/supplier', [SupplierController::class, 'store'])->name('supplier.store');
+    Route::get('/supplier/{supplier}', [SupplierController::class, 'show'])->name('supplier.show');
+    Route::get('/supplier/{supplier}/edit', [SupplierController::class, 'edit'])->name('supplier.edit');
+    Route::put('/supplier/{supplier}', [SupplierController::class, 'update'])->name('supplier.update');
+    Route::delete('/supplier/{supplier}', [SupplierController::class, 'destroy'])->name('supplier.destroy');
+
+    Route::get('/barang-masuk', [BarangMasukController::class, 'index'])->name('barang-masuk.index');
+    Route::get('/barang-masuk/create', [BarangMasukController::class, 'create'])->name('barang-masuk.create');
+    Route::post('/barang-masuk', [BarangMasukController::class, 'store'])->name('barang-masuk.store');
+    Route::get('/barang-masuk/{barangMasuk}', [BarangMasukController::class, 'show'])->name('barang-masuk.show');
+    Route::get('/monitoring-stok', [MonitoringStokController::class, 'index'])->name('monitoring-stok.index');
+
     Route::resource('pemesanan', PemesananController::class);
+    Route::get('/persetujuan-pemesanan', [PemesananController::class, 'persetujuan'])->name('pemesanan.persetujuan');
+    Route::get('/pemesanan/cari/pelanggan', [PemesananController::class, 'cariPelanggan'])->name('pemesanan.cari-pelanggan');
+    Route::get('/pemesanan/cari/barang', [PemesananController::class, 'cariBarang'])->name('pemesanan.cari-barang');
     Route::put('/pemesanan/{pemesanan}/approval', [PemesananController::class, 'approve'])
         ->name('pemesanan.approve');
 

@@ -186,6 +186,35 @@
             box-shadow: 0 10px 18px rgba(7, 138, 70, 0.2);
         }
 
+        .back-home {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            margin-top: 14px;
+            padding: 12px 16px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            color: #315243;
+            background: rgba(255, 255, 255, .55);
+            font-size: .92rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background-color .2s, border-color .2s, transform .2s;
+        }
+
+        .back-home:hover {
+            background: #fff;
+            border-color: #078a46;
+            transform: translateY(-1px);
+        }
+
+        .back-home:focus-visible {
+            outline: 2px solid #078a46;
+            outline-offset: 3px;
+        }
+
         .alert {
             margin-bottom: 18px;
             background: #fff1f2;
@@ -286,6 +315,10 @@
 
                     <button class="btn" type="submit">Login</button>
                 </form>
+                <a class="back-home" href="{{ route('public.home') }}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/><path d="M9 12h12"/></svg>
+                    Kembali ke Landing Page
+                </a>
             </div>
         </div>
     </div>

@@ -75,10 +75,7 @@ class PelangganController extends Controller
 
     public function create()
     {
-        // Hanya pratinjau; ID final dibuat ulang saat data disimpan.
-        $nextId = Pelanggan::generateId();
-
-        return view('pelanggan.create', compact('nextId'));
+        return view('pelanggan.create');
     }
 
     public function store(Request $request)
@@ -109,7 +106,7 @@ class PelangganController extends Controller
 
         return redirect()
             ->route('pelanggan.index')
-            ->with('success', "Pelanggan {$pelanggan->id_pelanggan} berhasil ditambahkan.");
+            ->with('success', "Pelanggan {$pelanggan->nama_pelanggan} berhasil ditambahkan.");
     }
 
     public function show(Pelanggan $pelanggan)
@@ -180,7 +177,7 @@ class PelangganController extends Controller
             Pelanggan::cari($request->q)
                 ->orderBy('nama_pelanggan')
                 ->limit(20)
-                ->get(['id_pelanggan', 'nama_pelanggan', 'nik', 'no_telepon', 'alamat'])
+                ->get(['id_pelanggan', 'nama_pelanggan'])
         );
     }
 }

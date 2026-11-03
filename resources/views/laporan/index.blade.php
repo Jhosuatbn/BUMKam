@@ -72,6 +72,7 @@
 
         @if ($tabAktif === 'pemesanan')
             <section class="card laporan-print-area" aria-labelledby="daftar-pemesanan-heading">
+                <div class="laporan-official-header"><img src="{{ asset('assets/img/bumkam-mark.png') }}" alt=""><div><strong>BUMKam Tuah Rezeki</strong><span>Badan Usaha Milik Kampung · Rantau Bertuah</span><span>Laporan Pemesanan · Dicetak {{ now()->locale('id')->translatedFormat('d F Y, H:i') }}</span></div></div>
                 <div class="card-header d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2 border-bottom">
                     <div>
                         <h2 id="daftar-pemesanan-heading" class="card-title mb-1">Daftar Pemesanan</h2>
@@ -129,10 +130,12 @@
                     <span>Menampilkan {{ $pemesananTerbaru->count() }} data pemesanan terbaru.</span>
                     <span>Total nilai pada daftar: <strong class="text-heading">Rp {{ number_format($pemesananTerbaru->sum('total_harga'), 0, ',', '.') }}</strong></span>
                 </div>
+                <div class="laporan-signature"><p>Rantau Bertuah, {{ now()->locale('id')->translatedFormat('d F Y') }}</p><p>Pimpinan BUMKam Tuah Rezeki</p><div class="signature-space"></div><strong>( ........................................ )</strong></div>
             </section>
         @elseif ($tabAktif === 'kredit')
             @unless ($dendaAktif)<div role="status" class="alert alert-warning">Migration fitur denda belum diterapkan. Ringkasan denda akan aktif setelah migration dijalankan.</div>@endunless
             <section class="card laporan-print-area" aria-labelledby="daftar-kredit-heading">
+                <div class="laporan-official-header"><img src="{{ asset('assets/img/bumkam-mark.png') }}" alt=""><div><strong>BUMKam Tuah Rezeki</strong><span>Badan Usaha Milik Kampung · Rantau Bertuah</span><span>Laporan Kredit · Dicetak {{ now()->locale('id')->translatedFormat('d F Y, H:i') }}</span></div></div>
                 <div class="card-header d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2 border-bottom">
                     <div>
                         <h2 id="daftar-kredit-heading" class="card-title mb-1">Daftar Kredit</h2>
@@ -198,6 +201,7 @@
                     <span>Menampilkan {{ $daftarKredit->count() }} data kredit.</span>
                     <span>Total angsuran per bulan: <strong class="text-heading">Rp {{ number_format($totalAngsuranBulanan ?? 0, 0, ',', '.') }}</strong></span>
                 </div>
+                <div class="laporan-signature"><p>Rantau Bertuah, {{ now()->locale('id')->translatedFormat('d F Y') }}</p><p>Pimpinan BUMKam Tuah Rezeki</p><div class="signature-space"></div><strong>( ........................................ )</strong></div>
             </section>
 
             <div class="alert alert-primary mt-4 mb-0 d-flex align-items-start gap-2" role="note">
@@ -210,14 +214,25 @@
     <style>
         .laporan-table { min-width: 980px; }
         .laporan-table th { white-space: nowrap; font-size: .75rem; }
+        .laporan-official-header, .laporan-signature { display: none; }
         @media print {
+            @page { size: A4 landscape; margin: 12mm; }
             body * { visibility: hidden !important; }
             .laporan-print-area, .laporan-print-area * { visibility: visible !important; }
-            .laporan-print-area { position: absolute; inset: 0; width: 100%; border: 0 !important; box-shadow: none !important; }
+            .laporan-print-area { position: absolute; inset: 0; width: 100%; border: 0 !important; box-shadow: none !important; color: #172b25 !important; }
             .laporan-tabs-card, #filter-laporan-heading, .laporan-print-area .card-footer { break-inside: avoid; }
             .laporan-print-action { display: none !important; }
             .table-responsive { overflow: visible !important; }
-            .laporan-table { min-width: 0; font-size: 9px; }
+            .laporan-table { min-width: 0; width: 100%; font-size: 8px; }
+            .laporan-table th, .laporan-table td { padding: 4px 5px !important; }
+            .laporan-official-header { display: flex; align-items: center; gap: 14px; border-bottom: 2px solid #177245; padding: 0 0 9px; margin-bottom: 12px; color: #172b25 !important; }
+            .laporan-official-header img { width: 52px; height: 52px; object-fit: contain; }
+            .laporan-official-header div { display: grid; gap: 2px; }
+            .laporan-official-header strong { font-size: 18px; }
+            .laporan-official-header span { font-size: 9px; }
+            .laporan-signature { display: block; width: 220px; margin: 24px 20px 0 auto; text-align: center; font-size: 10px; break-inside: avoid; color: #172b25 !important; }
+            .laporan-signature p { margin: 0 0 3px; }
+            .laporan-signature .signature-space { height: 54px; }
         }
     </style>
 @endsection

@@ -20,11 +20,18 @@
             ['label' => 'Pelanggan', 'route' => 'pelanggan.index', 'active' => 'pelanggan.*', 'icon' => 'bx-group'],
             ['label' => 'Barang', 'route' => 'barang.index', 'active' => 'barang.*', 'icon' => 'bx-package'],
         ];
+        $navigationItems[] = ['label' => 'Supplier', 'route' => 'supplier.index', 'active' => 'supplier.*', 'icon' => 'bx-store'];
+        if ($authenticatedUser?->peran !== 'Pimpinan') {
+            $navigationItems[] = ['label' => 'Barang Masuk', 'route' => 'barang-masuk.index', 'active' => 'barang-masuk.*', 'icon' => 'bx-log-in-circle'];
+        } else {
+            $navigationItems[] = ['label' => 'Barang Masuk', 'route' => 'barang-masuk.index', 'active' => 'barang-masuk.*', 'icon' => 'bx-log-in-circle'];
+        }
+        $navigationItems[] = ['label' => 'Monitoring Stok', 'route' => 'monitoring-stok.index', 'active' => 'monitoring-stok.*', 'icon' => 'bx-bar-chart-alt-2'];
         $jumlahPersetujuanMenunggu = $authenticatedUser?->peran === 'Pimpinan'
             ? \App\Models\Pemesanan::where('status_persetujuan', 'Menunggu Persetujuan')->count()
             : 0;
         if ($authenticatedUser?->peran === 'Pimpinan') {
-            $navigationItems[] = ['label' => 'Persetujuan Pemesanan', 'route' => 'pemesanan.index', 'active' => 'pemesanan.*', 'icon' => 'bx-check-shield'];
+            $navigationItems[] = ['label' => 'Persetujuan Pemesanan', 'route' => 'pemesanan.persetujuan', 'active' => 'pemesanan.persetujuan', 'icon' => 'bx-check-shield'];
         }
         if ($authenticatedUser?->peran !== 'Pimpinan') {
             $navigationItems = array_merge($navigationItems, [
@@ -43,6 +50,10 @@
         $currentPageTitle = match (true) {
             request()->routeIs('pelanggan.index') => 'Data Pelanggan',
             request()->routeIs('barang.index') => 'Data Barang',
+            request()->routeIs('supplier.*') => 'Data Supplier',
+            request()->routeIs('barang-masuk.*') => 'Barang Masuk',
+            request()->routeIs('monitoring-stok.*') => 'Monitoring Stok',
+            request()->routeIs('pemesanan.persetujuan') => 'Persetujuan Pemesanan',
             request()->routeIs('pemesanan.index') => 'Data Pemesanan',
             request()->routeIs('pembayaran.index') => 'Data Pembayaran',
             request()->routeIs('pengguna.index') => 'Data Pengguna',
@@ -56,6 +67,9 @@
             request()->routeIs('dashboard') => 'bx-home-smile',
             request()->routeIs('pelanggan.*') => 'bx-group',
             request()->routeIs('barang.*') => 'bx-package',
+            request()->routeIs('supplier.*') => 'bx-store',
+            request()->routeIs('barang-masuk.*') => 'bx-log-in-circle',
+            request()->routeIs('monitoring-stok.*') => 'bx-bar-chart-alt-2',
             request()->routeIs('pemesanan.*') => 'bx-cart-alt',
             request()->routeIs('pembayaran.*') => 'bx-wallet',
             request()->routeIs('monitoring-kredit.*') => 'bx-line-chart',
@@ -84,6 +98,7 @@
                     @foreach ($navigationItems as $navigationItem)
                         @php($active = request()->routeIs($navigationItem['active']))
                         @if ($navigationItem['label'] === 'Pelanggan')<li class="menu-header small text-uppercase"><span class="menu-header-text">Data Usaha</span></li>@endif
+                        @if ($navigationItem['label'] === 'Supplier')<li class="menu-header small text-uppercase"><span class="menu-header-text">Persediaan</span></li>@endif
                         @if ($navigationItem['label'] === 'Monitoring Kredit')<li class="menu-header small text-uppercase"><span class="menu-header-text">Pengawasan</span></li>@endif
                         @if ($navigationItem['label'] === 'Laporan')<li class="menu-header small text-uppercase"><span class="menu-header-text">Laporan</span></li>@endif
                         @if ($navigationItem['label'] === 'Pengguna')<li class="menu-header small text-uppercase"><span class="menu-header-text">Pengelolaan</span></li>@endif
@@ -102,7 +117,6 @@
                                 <a href="javascript:void(0);" class="menu-link menu-toggle"><i class="menu-icon tf-icons bx bx-line-chart"></i><div class="text-truncate">Monitoring Kredit</div></a>
                                 <ul class="menu-sub">
                                     <li @class(['menu-item', 'active' => request()->routeIs('monitoring-kredit.index') || request()->routeIs('monitoring-kredit.show')])><a href="{{ route('monitoring-kredit.index') }}" class="menu-link"><div>Daftar Kredit</div></a></li>
-                                    <li @class(['menu-item', 'active' => request()->routeIs('monitoring-kredit.jadwal')])><a href="{{ route('monitoring-kredit.jadwal') }}" class="menu-link"><div>Jadwal Angsuran</div></a></li>
                                     <li @class(['menu-item', 'active' => request()->routeIs('monitoring-kredit.denda')])><a href="{{ route('monitoring-kredit.denda') }}" class="menu-link"><div>Denda Keterlambatan</div></a></li>
                                 </ul>
                             </li>

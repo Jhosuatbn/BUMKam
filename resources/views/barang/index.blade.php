@@ -7,6 +7,9 @@
         @if (session('success'))
             <div role="status" class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900">{{ session('success') }}</div>
         @endif
+        @if (session('error'))
+            <div role="alert" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-900">{{ session('error') }}</div>
+        @endif
 
         <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-labelledby="barang-list-heading">
             <div class="flex flex-col gap-4 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-end sm:justify-between sm:px-6">
@@ -110,7 +113,7 @@
     <div id="tambahBarangModal" class="hidden fixed inset-0 z-[9999] overflow-y-auto">
         <div onclick="closeModal()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"></div>
         <div class="flex min-h-screen items-center justify-center p-4">
-            <div class="relative w-full max-w-md transform rounded-2xl bg-slate-100 p-6 text-left shadow-2xl transition-all border border-slate-300 z-10">
+            <div class="relative w-full max-w-xl transform rounded-2xl bg-slate-100 p-6 text-left shadow-2xl transition-all border border-slate-300 z-10">
                 <div class="mb-5 flex items-center justify-between">
                     <h3 class="text-xl font-bold text-slate-800">Tambah Barang</h3>
                     <button onclick="closeModal()" type="button" class="text-slate-400 hover:text-slate-600 focus:outline-none">

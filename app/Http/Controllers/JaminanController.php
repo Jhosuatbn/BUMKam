@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Jaminan;
 use App\Models\Pembayaran;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class JaminanController extends Controller
@@ -28,7 +27,7 @@ class JaminanController extends Controller
     public function index()
     {
         $this->pastikanRoleDiizinkan();
-        $jaminan = Jaminan::with('pemesanan.pelanggan', 'verifier')
+        $jaminan = Jaminan::with('pemesanan.pelanggan', 'verifier', 'penerima')
             ->latest('created_at')
             ->paginate(15);
 
@@ -38,7 +37,7 @@ class JaminanController extends Controller
     public function show(Jaminan $jaminan)
     {
         $this->pastikanRoleDiizinkan();
-        $jaminan->load('pemesanan.pelanggan', 'verifier');
+        $jaminan->load('pemesanan.pelanggan', 'verifier', 'penerima');
         abort_unless($jaminan->pemesanan, 404);
         $jaminan->pemesanan->loadMissing('pembayaran');
 
@@ -62,7 +61,7 @@ class JaminanController extends Controller
         return Storage::disk('local')->response($jaminan->file_path, $namaUnduhan);
     }
 
-    public function update(Request $request, Jaminan $jaminan)
+    public function update(Request $request, Jaminan $jaminan, \App\Services\AuditTrailWriter $audit)
     {
         $this->pastikanStaff();
         $this->pastikanTerhubungKePemesanan($jaminan);
@@ -71,39 +70,18 @@ class JaminanController extends Controller
         $data = $request->validate([
             'jenis_dokumen' => ['required', Rule::in(['BPKB', 'Surat Tanah'])],
             'nomor_dokumen' => ['required', 'string', 'max:100'],
-            'nama_pemilik' => ['required', 'string', 'max:100'],
-            'file_dokumen' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:5120'],
             'tanggal_penyerahan' => ['required', 'date'],
             'catatan' => ['nullable', 'string', 'max:2000'],
         ]);
-
-        $oldPath = null;
-        $newPath = null;
-        if ($request->hasFile('file_dokumen')) {
-            $newPath = $request->file('file_dokumen')->store('jaminan', 'local');
-            abort_unless($newPath, 500, 'Dokumen jaminan gagal disimpan.');
-            $oldPath = $jaminan->file_path;
-            $data['file_path'] = $newPath;
-        }
 
         // Every staff correction returns the same linked document to the verification queue.
         $data['status_verifikasi'] = 'Menunggu Verifikasi';
         $data['alasan_penolakan'] = null;
         $data['diverifikasi_oleh'] = null;
 
-        try {
-            $jaminan->update($data);
-        } catch (\Throwable $exception) {
-            if ($newPath) {
-                Storage::disk('local')->delete($newPath);
-            }
-            throw $exception;
-        }
-
-        if ($oldPath) {
-            Storage::disk('local')->delete($oldPath);
-        }
-
+        $data['diterima_oleh'] ??= $request->user()->id_pengguna;
+        $jaminan->update($data);
+        $audit->record($request->user(), $request, 'update', 'Jaminan', 'Data identitas jaminan diperbarui; tidak ada salinan dokumen yang diunggah.');
         return back()->with('success', 'Data jaminan berhasil diperbarui dan dikirim kembali untuk verifikasi.');
     }
 

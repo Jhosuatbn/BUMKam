@@ -16,6 +16,7 @@ class Jaminan extends Model
         'nama_pemilik', 'file_path', 'tanggal_penyerahan', 'status_verifikasi',
         'alasan_penolakan', 'catatan', 'status_pengembalian', 'tanggal_pengembalian',
         'diverifikasi_oleh',
+        'diterima_oleh',
     ];
 
     protected $casts = [
@@ -31,6 +32,11 @@ class Jaminan extends Model
     public function verifier()
     {
         return $this->belongsTo(Pengguna::class, 'diverifikasi_oleh', 'id_pengguna');
+    }
+
+    public function penerima()
+    {
+        return $this->belongsTo(Pengguna::class, 'diterima_oleh', 'id_pengguna');
     }
 
     /**

@@ -16,7 +16,7 @@
     @endif
 
     <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-        <form action="{{ route('pemesanan.store') }}" method="POST" enctype="multipart/form-data" id="formPemesanan" class="space-y-8">
+        <form action="{{ route('pemesanan.store') }}" method="POST" id="formPemesanan" class="space-y-8">
             @csrf
 
             <fieldset>
@@ -40,7 +40,7 @@
 
                     <div class="relative">
                         <label for="cari_pelanggan" class="block text-sm font-semibold text-slate-700">Pelanggan</label>
-                        <input id="cari_pelanggan" type="text" placeholder="Cari atau pilih nama/ID pelanggan..."
+                        <input id="cari_pelanggan" type="text" placeholder="Ketik minimal 3 karakter nama pelanggan..." data-search-url="{{ route('pemesanan.cari-pelanggan') }}"
                                autocomplete="off" aria-autocomplete="list" aria-expanded="false"
                                class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                         <div id="daftarPelanggan" class="absolute z-30 mt-1 hidden max-h-60 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-lg"></div>
@@ -48,18 +48,18 @@
                             <option value="">-- Pilih Pelanggan --</option>
                             @foreach ($pelanggan as $item)
                                 <option value="{{ $item->id_pelanggan }}"
-                                        data-search="{{ strtolower($item->id_pelanggan . ' ' . $item->nama_pelanggan) }}"
+                                        data-search="{{ strtolower($item->nama_pelanggan) }}"
                                         {{ old('id_pelanggan') == $item->id_pelanggan ? 'selected' : '' }}>
-                                    {{ $item->nama_pelanggan }} ({{ $item->id_pelanggan }})
+                                    {{ $item->nama_pelanggan }}
                                 </option>
                             @endforeach
                         </select>
-                        <p class="mt-1 text-xs text-slate-500">Ketik untuk mencari, lalu pilih pelanggan dari daftar.</p>
+                        <p class="mt-1 text-xs text-slate-500">Ketik minimal 3 karakter nama, lalu pilih hasil yang sesuai.</p>
                     </div>
 
                     <div class="relative">
                         <label for="cari_barang" class="block text-sm font-semibold text-slate-700">Barang</label>
-                        <input id="cari_barang" type="text" placeholder="Cari atau pilih nama/ID barang..."
+                        <input id="cari_barang" type="text" placeholder="Ketik minimal 3 karakter nama barang..." data-search-url="{{ route('pemesanan.cari-barang') }}"
                                autocomplete="off" aria-autocomplete="list" aria-expanded="false"
                                class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                         <div id="daftarBarang" class="absolute z-30 mt-1 hidden max-h-60 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-lg"></div>
@@ -137,7 +137,7 @@
 
             <fieldset class="border-t border-slate-200 pt-6">
                 <legend class="text-sm font-semibold text-slate-900">Informasi Jaminan</legend>
-                <p class="mt-1 text-sm text-slate-500">Lengkapi data jaminan untuk pengajuan kredit. Dokumen tersimpan secara privat dan selanjutnya dikelola dari menu Manajemen Jaminan.</p>
+                <p class="mt-1 text-sm text-slate-500">Catat identitas jaminan. Foto atau salinan dokumen pribadi tidak disimpan di dalam sistem.</p>
                 <div class="mt-4 grid grid-cols-1 gap-x-6 gap-y-6 md:grid-cols-2">
                     <div>
                         <label for="jenis_jaminan" class="block text-sm font-semibold text-slate-700">Jenis Jaminan</label>
@@ -149,25 +149,13 @@
                         <p id="nomor_jaminan_hint" class="mt-1 text-xs text-slate-500">Isi nomor yang tercetak pada BPKB atau sertifikat, bukan nomor pemesanan.</p>
                     </div>
                     <div>
-                        <label for="pemilik_jaminan" class="block text-sm font-semibold text-slate-700">Nama Pemilik Dokumen</label>
-                        <input id="pemilik_jaminan" name="pemilik_jaminan" required value="{{ old('pemilik_jaminan') }}" maxlength="100" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
-                    </div>
-                    <div>
                         <label for="tanggal_penyerahan" class="block text-sm font-semibold text-slate-700">Tanggal Penyerahan</label>
                         <input id="tanggal_penyerahan" name="tanggal_penyerahan" type="date" required value="{{ old('tanggal_penyerahan', date('Y-m-d')) }}" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                     </div>
                     <div>
-                        <label for="file_jaminan" class="block text-sm font-semibold text-slate-700">Foto / Scan Dokumen (JPG, PNG, WEBP, PDF; maks. 5 MB)</label>
-                        <input id="file_jaminan" name="file_jaminan" type="file" required accept="image/jpeg,image/png,image/webp,application/pdf" data-upload-preview-input data-max-size="5242880" data-allowed-label="JPG, PNG, WEBP, atau PDF" class="form-control mt-2">
-                        <div data-upload-preview-box class="hidden mt-3 flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white p-3" aria-live="polite">
-                            <button type="button" data-upload-preview-image-button class="hidden cursor-zoom-in rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700" aria-label="Perbesar pratinjau dokumen jaminan">
-                                <img data-upload-preview-image src="" alt="Pratinjau gambar dokumen jaminan" class="h-36 w-56 rounded-lg bg-slate-100 object-contain">
-                            </button>
-                            <button type="button" data-upload-preview-file-button class="hidden rounded-lg bg-slate-100 px-4 py-3 text-sm font-semibold text-blue-800"><i class="icon-base bx bx-file-pdf me-1" aria-hidden="true"></i>Lihat PDF</button>
-                            <span class="min-w-0 flex-1"><span class="block text-xs font-medium text-slate-500">File siap diunggah</span><span data-upload-preview-name class="mt-0.5 block truncate text-sm font-semibold text-slate-800"></span></span>
-                            <button type="button" data-clear-upload-preview class="inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-xl leading-none text-slate-500 shadow-sm transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700" aria-label="Hapus file yang dipilih" title="Hapus file yang dipilih">&times;</button>
-                        </div>
-                        <p data-upload-preview-error role="alert" class="mt-1 hidden text-xs font-medium text-rose-700"></p>
+                        <label for="petugas_jaminan" class="block text-sm font-semibold text-slate-700">Petugas Penerima</label>
+                        <input id="petugas_jaminan" value="{{ auth()->user()?->nama_lengkap ?? auth()->user()?->username }}" readonly class="mt-2 block min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-600">
+                        <p class="mt-1 text-xs text-slate-500">Diisi otomatis dari akun yang mencatat jaminan.</p>
                     </div>
                     <div class="md:col-span-2">
                         <label for="catatan_jaminan" class="block text-sm font-semibold text-slate-700">Keterangan Tambahan (Opsional)</label>
@@ -212,9 +200,9 @@
                 </div>
             </section>
 
-            <div class="flex flex-wrap gap-3 border-t border-slate-200 pt-5">
-                <button type="submit" class="inline-flex min-h-11 items-center justify-center rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Simpan Pemesanan</button>
-                <a href="{{ route('pemesanan.index') }}" class="inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50">Batal</a>
+            <div class="flex flex-wrap justify-end gap-3 border-t border-slate-200 pt-5">
+                <a href="{{ route('pemesanan.index') }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50">Batal</a>
+                <button type="submit" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"><i class="icon-base bx bx-check" aria-hidden="true"></i>Simpan Pemesanan</button>
             </div>
         </form>
     </section>
@@ -246,34 +234,59 @@ document.addEventListener('DOMContentLoaded', function () {
     const pakaiDP = () => ['DP', 'Sebagian'].includes(skemaInput.value);
 
     function aktifkanDropdown(input, select, dropdown, setelahPilih = null) {
+        let controller = null;
         function sembunyikan() {
             dropdown.classList.add('hidden');
             input.setAttribute('aria-expanded', 'false');
         }
 
-        function tampilkanDaftar() {
-            const kataKunci = input.value.trim().toLocaleLowerCase('id-ID');
-            const pilihan = Array.from(select.options).filter(option => {
-                if (!option.value) return false;
-                const teks = (option.dataset.search || option.textContent).toLocaleLowerCase('id-ID');
-                return !kataKunci || teks.includes(kataKunci);
-            });
-
+        async function tampilkanDaftar() {
+            const kataKunci = input.value.trim();
+            controller?.abort();
             dropdown.innerHTML = '';
-
-            if (pilihan.length === 0) {
+            if (kataKunci.length < 3) {
+                const hint = document.createElement('div');
+                hint.className = 'px-4 py-3 text-sm text-slate-500';
+                hint.textContent = 'Ketik minimal 3 karakter untuk mencari.';
+                dropdown.appendChild(hint);
+                dropdown.classList.remove('hidden');
+                input.setAttribute('aria-expanded', 'true');
+                return;
+            }
+            controller = new AbortController();
+            let pilihan = [];
+            try {
+                const url = new URL(input.dataset.searchUrl, window.location.origin);
+                url.searchParams.set('q', kataKunci);
+                const response = await fetch(url, { headers: { Accept: 'application/json' }, signal: controller.signal });
+                pilihan = (await response.json()).data || [];
+            } catch (error) {
+                if (error.name === 'AbortError') return;
+                pilihan = [];
+            }
+            if (!pilihan.length) {
                 const kosong = document.createElement('div');
                 kosong.className = 'px-4 py-3 text-sm text-slate-500';
-                kosong.textContent = 'Data tidak ditemukan.';
+                kosong.textContent = 'Tidak ada hasil yang cocok.';
                 dropdown.appendChild(kosong);
             } else {
-                pilihan.forEach(option => {
+                pilihan.forEach(record => {
                     const tombol = document.createElement('button');
                     tombol.type = 'button';
                     tombol.className = 'block w-full px-4 py-3 text-left text-sm text-slate-700 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none';
-                    tombol.textContent = option.textContent.trim();
+                    const option = document.createElement('option');
+                    option.value = record.id_barang || record.id_pelanggan;
+                    if (record.id_barang) {
+                        option.dataset.harga = record.harga;
+                        const stok = record.stok === null ? 'stok belum diatur' : `stok ${Number(record.stok).toLocaleString('id-ID')}`;
+                        option.textContent = `${record.nama_barang} - Rp ${Number(record.harga).toLocaleString('id-ID')} — ${stok}`;
+                    } else {
+                        option.textContent = record.nama_pelanggan;
+                    }
+                    tombol.textContent = option.textContent;
 
                     tombol.addEventListener('click', function () {
+                        select.replaceChildren(new Option('-- Pilih --', ''), option);
                         select.value = option.value;
                         input.value = option.textContent.trim();
                         sembunyikan();
@@ -292,6 +305,7 @@ document.addEventListener('DOMContentLoaded', function () {
         input.addEventListener('focus', tampilkanDaftar);
         input.addEventListener('input', function () {
             select.value = '';
+            select.dispatchEvent(new Event('change', { bubbles: true }));
             tampilkanDaftar();
             if (setelahPilih) setelahPilih();
         });

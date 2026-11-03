@@ -10,7 +10,7 @@
             default => 'warning',
         };
         $statusPengembalianClass = $jaminan->status_pengembalian === 'Sudah Dikembalikan' ? 'success' : 'secondary';
-        $ekstensiDokumen = strtolower(pathinfo($jaminan->file_path, PATHINFO_EXTENSION));
+        $ekstensiDokumen = strtolower(pathinfo($jaminan->file_path ?? '', PATHINFO_EXTENSION));
         $dokumenGambar = in_array($ekstensiDokumen, ['jpg', 'jpeg', 'png', 'webp'], true);
     @endphp
     <div class="space-y-6">
@@ -38,7 +38,7 @@
                     <div class="border-b border-slate-200 pb-3"><dt class="mb-1 text-body-secondary">Nomor Pemesanan</dt><dd class="mb-0 fw-semibold">{{ $jaminan->id_pemesanan }}</dd></div>
                     <div class="border-b border-slate-200 pb-3"><dt class="mb-1 text-body-secondary">Jenis Dokumen</dt><dd class="mb-0 fw-semibold">{{ $jaminan->jenis_dokumen === 'Surat Tanah' ? 'Sertifikat Tanah' : $jaminan->jenis_dokumen }}</dd></div>
                     <div class="border-b border-slate-200 pb-3"><dt class="mb-1 text-body-secondary">Nomor Dokumen</dt><dd class="mb-0 fw-semibold">{{ $jaminan->nomor_dokumen }}</dd></div>
-                    <div class="border-b border-slate-200 pb-3"><dt class="mb-1 text-body-secondary">Nama Pemilik</dt><dd class="mb-0 fw-semibold">{{ $jaminan->nama_pemilik }}</dd></div>
+                    <div class="border-b border-slate-200 pb-3"><dt class="mb-1 text-body-secondary">Petugas Penerima</dt><dd class="mb-0 fw-semibold">{{ $jaminan->penerima?->nama_lengkap ?? $jaminan->penerima?->username ?? '—' }}</dd></div>
                     <div class="border-b border-slate-200 pb-3"><dt class="mb-1 text-body-secondary">Tanggal Penyerahan</dt><dd class="mb-0 fw-semibold">{{ $jaminan->tanggal_penyerahan?->format('d/m/Y') ?? '—' }}</dd></div>
                     <div>
                         <dt class="text-body-secondary">Status Verifikasi</dt>
@@ -94,7 +94,7 @@
                         <div>
                             <h2 class="h6 mb-1">Perbaikan Data Jaminan</h2>
                             <p class="mb-3 text-sm text-body-secondary">Perubahan akan mengirim dokumen kembali ke antrean verifikasi Pimpinan.</p>
-                            <form method="POST" enctype="multipart/form-data" action="{{ route('jaminan.update', $jaminan) }}" class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                            <form method="POST" action="{{ route('jaminan.update', $jaminan) }}" class="grid grid-cols-1 gap-3 md:grid-cols-2">
                                 @csrf
                                 @method('PUT')
                                 <div>
@@ -109,17 +109,8 @@
                                     <input id="nomor_dokumen" class="form-control" name="nomor_dokumen" required maxlength="100" value="{{ old('nomor_dokumen', $jaminan->nomor_dokumen) }}">
                                 </div>
                                 <div>
-                                    <label class="form-label" for="nama_pemilik">Nama pemilik dokumen</label>
-                                    <input id="nama_pemilik" class="form-control" name="nama_pemilik" required maxlength="100" value="{{ old('nama_pemilik', $jaminan->nama_pemilik) }}">
-                                </div>
-                                <div>
                                     <label class="form-label" for="tanggal_penyerahan">Tanggal penyerahan</label>
                                     <input id="tanggal_penyerahan" class="form-control" type="date" name="tanggal_penyerahan" required value="{{ old('tanggal_penyerahan', $jaminan->tanggal_penyerahan?->toDateString()) }}">
-                                </div>
-                                <div>
-                                    <label class="form-label" for="file_dokumen">Ganti foto / scan dokumen</label>
-                                    <input id="file_dokumen" class="form-control" type="file" name="file_dokumen" accept="image/jpeg,image/png,image/webp,application/pdf">
-                                    <small class="text-body-secondary">Kosongkan untuk memakai dokumen saat ini. JPG, PNG, WEBP, atau PDF; maksimal 5 MB.</small>
                                 </div>
                                 <div>
                                     <label class="form-label" for="catatan">Keterangan tambahan</label>

@@ -9,17 +9,24 @@
         @endif
 
         <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-labelledby="pemesanan-list-heading">
+            @if (($halamanPersetujuan ?? false) && auth()->user()?->peran === 'Pimpinan')
+                <nav aria-label="Filter status persetujuan" class="flex flex-wrap gap-2 border-b border-slate-200 px-5 py-3 sm:px-6">
+                    @foreach (['Menunggu Persetujuan', 'Disetujui', 'Ditolak'] as $statusTab)
+                        <a href="{{ route('pemesanan.persetujuan', ['status' => $statusTab]) }}" @class(['inline-flex min-h-10 items-center rounded-lg px-4 py-2 text-sm font-semibold transition', 'bg-emerald-700 text-white' => $status === $statusTab, 'bg-slate-100 text-slate-700 hover:bg-slate-200' => $status !== $statusTab])>{{ $statusTab }}</a>
+                    @endforeach
+                </nav>
+            @endif
             <div class="flex flex-col gap-3 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-6">
                 <div>
-                    <h2 id="pemesanan-list-heading" class="text-base font-semibold text-slate-900">Daftar Pemesanan</h2>
-                    <p class="mt-1 text-sm text-slate-500">Rincian nilai dan skema setiap pemesanan.</p>
+                    <h2 id="pemesanan-list-heading" class="text-base font-semibold text-slate-900">{{ ($halamanPersetujuan ?? false) ? 'Pengajuan ' . $status : 'Daftar Pemesanan' }}</h2>
+                    <p class="mt-1 text-sm text-slate-500">{{ ($halamanPersetujuan ?? false) ? 'Periksa pelanggan, barang, tenor, DP, simulasi angsuran, dan informasi jaminan.' : 'Rincian nilai, skema, dan status setiap pemesanan.' }}</p>
                 </div>
-                @if (auth()->user()?->peran !== 'Pimpinan')
-                    <a href="{{ route('pemesanan.create') }}" class="inline-flex min-h-11 shrink-0 self-start items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"><i class="icon-base bx bx-plus" aria-hidden="true"></i>Tambah Pemesanan</a>
+                @if (auth()->user()?->peran !== 'Pimpinan' && !($halamanPersetujuan ?? false))
+                    <a href="{{ route('pemesanan.create') }}" style="margin-top: 20px !important" class="inline-flex min-h-11 shrink-0 self-start items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"><i class="icon-base bx bx-plus" aria-hidden="true"></i>Tambah Pemesanan</a>
                 @endif
             </div>
             <div class="overflow-x-auto">
-                <table class="pemesanan-list-table min-w-[1000px] divide-y divide-slate-200 text-left text-sm">
+                <table class="pemesanan-list-table w-full min-w-[1100px] divide-y divide-slate-200 text-left text-sm">
                     <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-600">
                         <tr>
                             <th scope="col" class="px-4 py-3 font-semibold sm:px-6">ID</th>
@@ -80,7 +87,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="8" class="px-6 py-12 text-center text-sm text-slate-500">Belum ada data pemesanan.</td></tr>
+                            <tr><td colspan="8" class="px-6 py-12 text-center text-sm text-slate-500">{{ ($halamanPersetujuan ?? false) ? 'Belum ada pengajuan dengan status ' . strtolower($status) . '.' : 'Belum ada data pemesanan.' }}</td></tr>
                         @endforelse
                     </tbody>
                 </table>

@@ -28,7 +28,7 @@
                             <th scope="col">Pelanggan</th>
                             <th scope="col">Jenis Dokumen</th>
                             <th scope="col">Nomor Dokumen</th>
-                            <th scope="col">Pemilik</th>
+                            <th scope="col">Petugas Penerima</th>
                             <th scope="col">Verifikasi</th>
                             <th scope="col">Pengembalian</th>
                             <th scope="col">Aksi</th>
@@ -49,7 +49,7 @@
                                 <td>{{ $item->pemesanan?->pelanggan?->nama_pelanggan ?? '—' }}</td>
                                 <td>{{ $item->jenis_dokumen === 'Surat Tanah' ? 'Sertifikat Tanah' : $item->jenis_dokumen }}</td>
                                 <td>{{ $item->nomor_dokumen }}</td>
-                                <td>{{ $item->nama_pemilik }}</td>
+                                <td>{{ $item->penerima?->nama_lengkap ?? $item->penerima?->username ?? '—' }}</td>
                                 <td>
                                     <span class="badge bg-label-{{ $statusVerifikasiClass }}">{{ $item->status_verifikasi_label }}</span>
                                     @if ($item->alasan_penolakan)

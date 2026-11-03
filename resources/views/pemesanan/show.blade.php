@@ -37,12 +37,16 @@
                 @if ($pemesanan->jaminanDokumen)
                     <div class="border-b border-slate-100 px-5 py-4 sm:px-6">
                         <h3 class="text-sm font-semibold text-slate-800">Dokumen Jaminan</h3>
-                        <p class="mt-1 text-sm text-slate-600">{{ $pemesanan->jaminanDokumen->jenis_dokumen === 'Surat Tanah' ? 'Sertifikat Tanah' : $pemesanan->jaminanDokumen->jenis_dokumen }} · No. {{ $pemesanan->jaminanDokumen->nomor_dokumen }} · Pemilik {{ $pemesanan->jaminanDokumen->nama_pemilik }}</p>
+                        <p class="mt-1 text-sm text-slate-600">{{ $pemesanan->jaminanDokumen->jenis_dokumen === 'Surat Tanah' ? 'Sertifikat Tanah' : $pemesanan->jaminanDokumen->jenis_dokumen }} · No. {{ $pemesanan->jaminanDokumen->nomor_dokumen }} · Diterima oleh {{ $pemesanan->jaminanDokumen->penerima?->nama_lengkap ?? $pemesanan->jaminanDokumen->penerima?->username ?? 'belum tercatat' }}</p>
                         <p class="mt-1 text-xs text-slate-500">Verifikasi: {{ $pemesanan->jaminanDokumen->status_verifikasi_label }} · Pengembalian: {{ $pemesanan->jaminanDokumen->status_pengembalian_label }}</p>
                         @if ($pemesanan->jaminanDokumen->alasan_penolakan)
                             <p class="mt-1 text-xs text-rose-700">Alasan penolakan: {{ $pemesanan->jaminanDokumen->alasan_penolakan }}</p>
                         @endif
-                        <a href="{{ route('jaminan.document', $pemesanan->jaminanDokumen) }}" target="_blank" rel="noopener" class="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:text-blue-900"><i class="icon-base bx bx-file" aria-hidden="true"></i>Lihat dokumen jaminan</a>
+                        @if ($pemesanan->jaminanDokumen->file_path)
+                            <a href="{{ route('jaminan.document', $pemesanan->jaminanDokumen) }}" target="_blank" rel="noopener" class="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:text-blue-900"><i class="icon-base bx bx-file" aria-hidden="true"></i>Lihat dokumen lama</a>
+                        @else
+                            <p class="mt-2 text-xs text-slate-500">Salinan fisik jaminan tidak disimpan di sistem.</p>
+                        @endif
                     </div>
                 @else
                     <p class="border-b border-slate-100 px-5 py-4 text-sm text-slate-500 sm:px-6">Dokumen jaminan belum diunggah.</p>

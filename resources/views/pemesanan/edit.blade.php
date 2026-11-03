@@ -37,11 +37,11 @@
                         <div class="md:col-span-2">
                             <label for="cari_pelanggan" class="block text-sm font-semibold text-slate-700">Pelanggan</label>
                             <div class="relative mt-2" data-searchable-select>
-                                <input id="cari_pelanggan" type="search" required role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="daftarPelanggan" autocomplete="off" placeholder="Cari nama atau ID pelanggan..." data-searchable-input class="block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                                <input id="cari_pelanggan" type="search" required role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="daftarPelanggan" autocomplete="off" placeholder="Ketik minimal 3 karakter nama pelanggan..." data-search-url="{{ route('pemesanan.cari-pelanggan') }}" data-searchable-input class="block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                                 <div id="daftarPelanggan" role="listbox" class="absolute z-30 mt-1 hidden max-h-60 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-lg" data-searchable-results></div>
                                 <select id="id_pelanggan" name="id_pelanggan" class="hidden" tabindex="-1" aria-hidden="true" data-searchable-options>
                                 @foreach ($pelanggan as $item)
-                                    <option value="{{ $item->id_pelanggan }}" data-search="{{ strtolower($item->id_pelanggan . ' ' . $item->nama_pelanggan) }}" {{ $pemesanan->id_pelanggan == $item->id_pelanggan ? 'selected' : '' }}>{{ $item->nama_pelanggan }} ({{ $item->id_pelanggan }})</option>
+                                    <option value="{{ $item->id_pelanggan }}" data-search="{{ strtolower($item->nama_pelanggan) }}" {{ $pemesanan->id_pelanggan == $item->id_pelanggan ? 'selected' : '' }}>{{ $item->nama_pelanggan }}</option>
                                 @endforeach
                                 </select>
                             </div>
@@ -56,7 +56,7 @@
                         <div class="md:col-span-2">
                             <label for="cari_barang" class="block text-sm font-semibold text-slate-700">Barang</label>
                             <div class="relative mt-2" data-searchable-select>
-                                <input id="cari_barang" type="search" required role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="daftarBarang" autocomplete="off" placeholder="Cari nama atau ID barang..." data-searchable-input class="block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                                <input id="cari_barang" type="search" required role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="daftarBarang" autocomplete="off" placeholder="Ketik minimal 3 karakter nama barang..." data-search-url="{{ route('pemesanan.cari-barang') }}" data-searchable-input class="block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                                 <div id="daftarBarang" role="listbox" class="absolute z-30 mt-1 hidden max-h-60 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-lg" data-searchable-results></div>
                                 <select id="id_barang" name="id_barang" class="hidden" tabindex="-1" aria-hidden="true" data-searchable-options>
                                 @foreach ($barang as $item)
@@ -64,7 +64,7 @@
                                 @endforeach
                                 </select>
                             </div>
-                            <p class="mt-1 text-xs text-slate-500">Ketik nama atau ID, lalu pilih barang dari daftar.</p>
+                            <p class="mt-1 text-xs text-slate-500">Ketik minimal 3 karakter nama barang, lalu pilih hasilnya.</p>
                         </div>
                         <div>
                             <label for="jumlah" class="block text-sm font-semibold text-slate-700">Jumlah</label>
@@ -111,9 +111,9 @@
                     </div>
                 </fieldset>
 
-                <div class="flex flex-wrap gap-3 border-t border-slate-200 pt-5">
-                    <button type="submit" class="inline-flex min-h-11 items-center justify-center rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Update Pemesanan</button>
-                    <a href="{{ route('pemesanan.index') }}" class="inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Batal</a>
+                <div class="flex flex-wrap justify-end gap-3 border-t border-slate-200 pt-5">
+                    <a href="{{ route('pemesanan.index') }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700">Batal</a>
+                    <button type="submit" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"><i class="icon-base bx bx-check" aria-hidden="true"></i>Update Pemesanan</button>
                 </div>
             </form>
         </section>

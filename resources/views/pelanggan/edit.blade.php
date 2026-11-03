@@ -26,12 +26,6 @@
 
                     {{-- ID tidak bisa diubah; hanya ditampilkan --}}
                     <div>
-                        <label for="id_pelanggan_display" class="block text-sm font-semibold text-slate-700">ID Pelanggan</label>
-                        <input id="id_pelanggan_display" type="text" value="{{ $pelanggan->id_pelanggan }}" disabled aria-describedby="id_pelanggan_hint" class="mt-2 block min-h-11 w-full cursor-not-allowed rounded-xl border border-slate-200 bg-slate-100 px-3.5 py-2.5 text-sm font-semibold text-slate-500">
-                        <p id="id_pelanggan_hint" class="mt-1.5 text-xs text-slate-500">ID dibuat otomatis dan tidak dapat diubah.</p>
-                    </div>
-
-                    <div>
                         <label for="no_telepon" class="block text-sm font-semibold text-slate-700">No. Telepon</label>
                         <input id="no_telepon" type="text" name="no_telepon" value="{{ old('no_telepon', $pelanggan->no_telepon) }}" required inputmode="numeric" minlength="10" maxlength="13" pattern="[0-9]{10,13}" autocomplete="tel" placeholder="08xxxxxxxxxx" aria-describedby="no_telepon_hint" oninput="this.value = this.value.replace(/\D/g, '')" class="mt-2 block min-h-11 w-full rounded-xl border bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 @error('no_telepon') border-rose-400 focus:border-rose-600 focus:ring-rose-600/20 @else border-slate-300 focus:border-blue-600 focus:ring-blue-600/20 @enderror">
                         <p id="no_telepon_hint" class="mt-1.5 text-xs text-slate-500">Hanya angka, 10 sampai 13 digit.</p>
