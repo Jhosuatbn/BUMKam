@@ -147,11 +147,29 @@
                     </div>
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0 laporan-table">
+                    <table class="table table-hover align-middle mb-0 laporan-table laporan-kredit-table">
+                        <colgroup>
+                            <col style="width: 4%">
+                            <col style="width: 15%">
+                            <col style="width: 10%">
+                            <col style="width: 13%">
+                            <col style="width: 14%">
+                            <col style="width: 10%">
+                            <col style="width: 14%">
+                            <col style="width: 10%">
+                            <col style="width: 10%">
+                        </colgroup>
                         <thead>
                             <tr>
-                                <th scope="col">No.</th><th scope="col">Barang</th><th scope="col">Total Harga</th><th scope="col">DP</th><th scope="col">Nominal Angsuran</th>
-                                <th scope="col">Tenor</th><th scope="col">Angsuran Tercatat</th><th scope="col">Sisa Angsuran + Denda</th><th scope="col">Denda Dikenakan</th><th scope="col">Denda Dibayar</th><th scope="col">Denda Belum Dibayar</th><th scope="col">Denda Dikurangi</th><th scope="col">Status</th><th scope="col">Jaminan</th>
+                                <th scope="col">No.</th>
+                                <th scope="col">Pemesanan / Pelanggan</th>
+                                <th scope="col">Barang</th>
+                                <th scope="col">Nilai Pembiayaan</th>
+                                <th scope="col">Angsuran</th>
+                                <th scope="col">Sisa Kewajiban</th>
+                                <th scope="col">Rincian Denda</th>
+                                <th scope="col">Status Kredit</th>
+                                <th scope="col">Jaminan</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -164,35 +182,48 @@
                                 @endphp
                                 <tr>
                                     <td class="text-body-secondary">{{ $loop->iteration }}</td>
-                                    <td class="fw-semibold">
+                                    <td>
+                                        <span class="d-block fw-semibold text-heading">{{ $kredit->id_pemesanan }}</span>
+                                        <span class="d-block small text-body-secondary">{{ $kredit->pelanggan->nama_pelanggan ?? 'Pelanggan tidak tersedia' }}</span>
+                                        <span class="d-block small text-body-secondary">{{ $kredit->tanggal_pemesanan ? \Illuminate\Support\Carbon::parse($kredit->tanggal_pemesanan)->format('d/m/Y') : '—' }}</span>
+                                    </td>
+                                    <td class="kredit-barang-cell">
                                         @forelse ($kredit->detailPemesanan as $detail)
-                                            {{ $detail->barang->nama_barang ?? '—' }}@if (!$loop->last), @endif
+                                            <span class="d-block">{{ $detail->barang->nama_barang ?? '—' }}</span>
                                         @empty
                                             —
                                         @endforelse
                                     </td>
-                                    <td class="text-nowrap">Rp {{ number_format($kredit->total_harga ?? 0, 0, ',', '.') }}</td>
-                                    <td class="text-nowrap">Rp {{ number_format($kredit->dp ?? 0, 0, ',', '.') }}</td>
-                                    <td class="text-nowrap">Rp {{ number_format($kredit->angsuran ?? 0, 0, ',', '.') }}</td>
-                                    <td class="text-nowrap">{{ $kredit->tenor ?? '—' }} bln</td>
-                                    <td class="text-nowrap">{{ $kredit->pembayaran->count() }} / {{ $kredit->tenor ?? 0 }}</td>
-                                    <td class="text-nowrap fw-semibold">Rp {{ number_format($sisaTagihan, 0, ',', '.') }}</td>
-                                    <td class="text-nowrap">Rp {{ number_format($monitoringKredit['total_denda_dikenakan'], 0, ',', '.') }}</td>
-                                    <td class="text-nowrap">Rp {{ number_format($monitoringKredit['total_denda_dibayar'], 0, ',', '.') }}</td>
-                                    <td class="text-nowrap">Rp {{ number_format($monitoringKredit['total_denda_belum_dibayar'], 0, ',', '.') }}</td>
-                                    <td class="text-nowrap">Rp {{ number_format($monitoringKredit['total_denda_dikurangi'], 0, ',', '.') }}</td>
-                                    <td><span class="badge bg-label-{{ $statusKreditClass }}">{{ $statusKredit }}</span></td>
+                                    <td>
+                                        <span class="d-block fw-semibold">Rp {{ number_format($kredit->total_harga ?? 0, 0, ',', '.') }}</span>
+                                        <span class="d-block small text-body-secondary">DP: Rp {{ number_format($kredit->dp ?? 0, 0, ',', '.') }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="d-block fw-semibold">Rp {{ number_format($kredit->angsuran ?? 0, 0, ',', '.') }} / bln</span>
+                                        <span class="d-block small text-body-secondary">{{ $kredit->pembayaran->count() }} pembayaran</span>
+                                        <span class="d-block small text-body-secondary">Tenor {{ $kredit->tenor ?? 0 }} bulan</span>
+                                    </td>
+                                    <td class="fw-semibold">Rp {{ number_format($sisaTagihan, 0, ',', '.') }}</td>
+                                    <td class="kredit-denda-cell">
+                                        <span class="d-block small">Dikenakan: <strong>Rp {{ number_format($monitoringKredit['total_denda_dikenakan'], 0, ',', '.') }}</strong></span>
+                                        <span class="d-block small">Dibayar: Rp {{ number_format($monitoringKredit['total_denda_dibayar'], 0, ',', '.') }}</span>
+                                        <span class="d-block small">Sisa: Rp {{ number_format($monitoringKredit['total_denda_belum_dibayar'], 0, ',', '.') }}</span>
+                                        @if ($monitoringKredit['total_denda_dikurangi'] > 0)
+                                            <span class="d-block small">Dikurangi: Rp {{ number_format($monitoringKredit['total_denda_dikurangi'], 0, ',', '.') }}</span>
+                                        @endif
+                                    </td>
+                                    <td><span class="badge bg-label-{{ $statusKreditClass }} kredit-status-badge">{{ $statusKredit }}</span></td>
                                     <td>
                                         @if ($kredit->jaminanDokumen)
-                                            {{ $kredit->jaminanDokumen->jenis_dokumen === 'Surat Tanah' ? 'Sertifikat Tanah' : $kredit->jaminanDokumen->jenis_dokumen }}
-                                            <small class="d-block text-body-secondary">{{ $kredit->jaminanDokumen->nomor_dokumen }}</small>
+                                            <span class="d-block">{{ $kredit->jaminanDokumen->jenis_dokumen === 'Surat Tanah' ? 'Sertifikat Tanah' : $kredit->jaminanDokumen->jenis_dokumen }}</span>
+                                            <small class="d-block text-body-secondary">No. {{ $kredit->jaminanDokumen->nomor_dokumen }}</small>
                                         @else
                                             {{ $kredit->jaminan ?: '—' }}
                                         @endif
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="14" class="py-5 text-center text-body-secondary">Belum ada data kredit untuk filter ini.</td></tr>
+                                <tr><td colspan="9" class="py-5 text-center text-body-secondary">Belum ada data kredit untuk filter ini.</td></tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -214,6 +245,12 @@
     <style>
         .laporan-table { min-width: 980px; }
         .laporan-table th { white-space: nowrap; font-size: .75rem; }
+        .laporan-kredit-table { width: 100%; min-width: 1480px; table-layout: fixed; }
+        .laporan-kredit-table th,
+        .laporan-kredit-table td { white-space: normal; overflow-wrap: anywhere; vertical-align: middle; }
+        .laporan-kredit-table td { padding: .85rem .7rem; }
+        .laporan-kredit-table .kredit-denda-cell { line-height: 1.55; }
+        .laporan-kredit-table .kredit-status-badge { display: inline-block; max-width: 100%; white-space: normal; text-align: center; line-height: 1.35; }
         .laporan-official-header, .laporan-signature { display: none; }
         @media print {
             @page { size: A4 landscape; margin: 12mm; }
@@ -224,6 +261,8 @@
             .laporan-print-action { display: none !important; }
             .table-responsive { overflow: visible !important; }
             .laporan-table { min-width: 0; width: 100%; font-size: 8px; }
+            .laporan-kredit-table { min-width: 0; table-layout: fixed; }
+            .laporan-kredit-table th, .laporan-kredit-table td { overflow-wrap: anywhere; }
             .laporan-table th, .laporan-table td { padding: 4px 5px !important; }
             .laporan-official-header { display: flex; align-items: center; gap: 14px; border-bottom: 2px solid #177245; padding: 0 0 9px; margin-bottom: 12px; color: #172b25 !important; }
             .laporan-official-header img { width: 52px; height: 52px; object-fit: contain; }
