@@ -7,6 +7,9 @@ use Carbon\CarbonImmutable;
 
 class MonitoringKreditService
 {
+    public function __construct(private readonly DendaKeterlambatanService $denda)
+    {
+    }
     /**
      * Susun jadwal angsuran dari tanggal pemesanan dan alokasikan hanya
      * pembayaran yang sudah terverifikasi (status_gateway = settlement).
@@ -20,17 +23,25 @@ class MonitoringKreditService
             - (float) $pemesanan->dp
         ) * 100));
         $angsuranSen = max(0, (int) round((float) $pemesanan->angsuran * 100));
-        $pembayaranTerverifikasi = $pemesanan->pembayaran->values();
-        $totalTerbayarSen = (int) round((float) $pembayaranTerverifikasi->sum('nominal') * 100);
+        $pembayaranTerverifikasi = $pemesanan->pembayaran
+            ->where('status_gateway', 'settlement')
+            ->values();
+        foreach ($pembayaranTerverifikasi as $pembayaran) {
+            $alokasi = $pembayaran->relationLoaded('alokasiDenda') ? $pembayaran->alokasiDenda : collect();
+            $pembayaran->setAttribute('_pokok_monitoring', $alokasi->isNotEmpty()
+                ? (float) $alokasi->sum('alokasi_angsuran')
+                : (float) $pembayaran->nominal);
+        }
+        $totalTerbayarSen = (int) round((float) $pembayaranTerverifikasi->sum('_pokok_monitoring') * 100);
         $indeksPembayaran = 0;
         $sisaPembayaranSen = $pembayaranTerverifikasi->isNotEmpty()
-            ? (int) round((float) $pembayaranTerverifikasi[0]->nominal * 100)
+            ? (int) round((float) $pembayaranTerverifikasi[0]->_pokok_monitoring * 100)
             : 0;
         $sisaKewajibanSen = max(0, $totalKewajibanSen - $totalTerbayarSen);
 
-        $tanggalPesan = CarbonImmutable::parse($pemesanan->tanggal_pemesanan);
-        // Due dates are evaluated using WIB, the local operating timezone for this BUMKam.
-        $hariIni = CarbonImmutable::today('Asia/Jakarta');
+        $timezone = config('kredit.zona_waktu', 'Asia/Jakarta');
+        $tanggalPesan = CarbonImmutable::parse($pemesanan->tanggal_pemesanan, $timezone)->startOfDay();
+        $hariIni = CarbonImmutable::today($timezone);
         $jadwal = [];
 
         for ($nomor = 1; $nomor <= $tenor; $nomor++) {
@@ -48,7 +59,7 @@ class MonitoringKreditService
                     if ($indeksPembayaran >= $pembayaranTerverifikasi->count()) {
                         break;
                     }
-                    $sisaPembayaranSen = (int) round((float) $pembayaranTerverifikasi[$indeksPembayaran]->nominal * 100);
+                    $sisaPembayaranSen = (int) round((float) $pembayaranTerverifikasi[$indeksPembayaran]->_pokok_monitoring * 100);
                     continue;
                 }
 
@@ -81,14 +92,18 @@ class MonitoringKreditService
             ];
         }
 
+        $denda = $this->denda->hitung($pemesanan, $jadwal);
+        $jadwal = $denda['jadwal'];
         $angsuranBelumLunas = collect($jadwal)->where('status', '!=', 'Lunas');
         $angsuranTerbayar = $tenor - $angsuranBelumLunas->count();
         $jadwalBelumLunas = $angsuranBelumLunas->first();
 
-        if ($sisaKewajibanSen <= 0 || $tenor === 0) {
+        if (($sisaKewajibanSen / 100) + $denda['total_denda_belum_dibayar'] <= 0 || $tenor === 0) {
             $statusKredit = 'Lunas';
         } elseif (collect($jadwal)->contains('status', 'Terlambat')) {
             $statusKredit = 'Terlambat';
+        } elseif (collect($jadwal)->contains('status', 'Dalam Masa Tenggang')) {
+            $statusKredit = 'Dalam Masa Tenggang';
         } elseif (collect($jadwal)->contains('status', 'Jatuh Tempo Hari Ini')) {
             $statusKredit = 'Jatuh Tempo Hari Ini';
         } else {
@@ -96,10 +111,10 @@ class MonitoringKreditService
         }
 
         return [
-            'jadwal' => $jadwal,
-            'total_kewajiban' => $totalKewajibanSen / 100,
-            'total_terbayar' => $totalTerbayarSen / 100,
-            'sisa_kewajiban' => $sisaKewajibanSen / 100,
+            ...$denda,
+            'total_kewajiban' => ($totalKewajibanSen / 100) + $denda['total_denda_dikenakan'] - $denda['total_denda_dikurangi'],
+            'total_terbayar' => ($totalTerbayarSen / 100) + $denda['total_denda_dibayar'],
+            'sisa_kewajiban' => ($sisaKewajibanSen / 100) + $denda['total_denda_belum_dibayar'],
             'angsuran_terbayar' => $angsuranTerbayar,
             'angsuran_belum_dibayar' => $tenor - $angsuranTerbayar,
             'angsuran_jatuh_tempo_hari_ini' => collect($jadwal)->where('status', 'Jatuh Tempo Hari Ini')->count(),

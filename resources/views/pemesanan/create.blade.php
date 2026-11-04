@@ -3,15 +3,7 @@
 @section('title', 'Tambah Pemesanan')
 
 @section('content')
-<div class="space-y-6">
-    <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-        <div>
-            <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Tambah Pemesanan</h1>
-            <p class="mt-2 text-sm text-slate-600">Isi data pelanggan, barang, dan skema pembayaran.</p>
-        </div>
-        <a href="{{ route('pemesanan.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50">Kembali</a>
-    </header>
-
+<div class="pemesanan-page space-y-6">
     @if ($errors->any())
         <div role="alert" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900">
             <p class="font-semibold">Terjadi kesalahan:</p>
@@ -29,7 +21,7 @@
 
             <fieldset>
                 <legend class="text-base font-semibold text-slate-900">Informasi Pemesanan</legend>
-                <div class="mt-4 grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2">
+                <div class="mt-4 grid grid-cols-1 gap-x-6 gap-y-6 md:grid-cols-2">
                     <div>
                         <label for="id_pemesanan" class="block text-sm font-semibold text-slate-700">ID Pemesanan</label>
                         <input id="id_pemesanan" name="id_pemesanan" type="text"
@@ -46,9 +38,9 @@
                                class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                     </div>
 
-                    <div class="relative md:col-span-2">
+                    <div class="relative">
                         <label for="cari_pelanggan" class="block text-sm font-semibold text-slate-700">Pelanggan</label>
-                        <input id="cari_pelanggan" type="text" placeholder="Cari atau pilih nama/ID pelanggan..."
+                        <input id="cari_pelanggan" type="text" placeholder="Ketik minimal 3 karakter nama pelanggan..." data-search-url="{{ route('pemesanan.cari-pelanggan') }}"
                                autocomplete="off" aria-autocomplete="list" aria-expanded="false"
                                class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                         <div id="daftarPelanggan" class="absolute z-30 mt-1 hidden max-h-60 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-lg"></div>
@@ -56,23 +48,18 @@
                             <option value="">-- Pilih Pelanggan --</option>
                             @foreach ($pelanggan as $item)
                                 <option value="{{ $item->id_pelanggan }}"
-                                        data-search="{{ strtolower($item->id_pelanggan . ' ' . $item->nama_pelanggan) }}"
+                                        data-search="{{ strtolower($item->nama_pelanggan) }}"
                                         {{ old('id_pelanggan') == $item->id_pelanggan ? 'selected' : '' }}>
-                                    {{ $item->nama_pelanggan }} ({{ $item->id_pelanggan }})
+                                    {{ $item->nama_pelanggan }}
                                 </option>
                             @endforeach
                         </select>
-                        <p class="mt-1 text-xs text-slate-500">Ketik untuk mencari, lalu pilih pelanggan dari daftar.</p>
+                        <p class="mt-1 text-xs text-slate-500">Ketik minimal 3 karakter nama, lalu pilih hasil yang sesuai.</p>
                     </div>
-                </div>
-            </fieldset>
 
-            <fieldset class="border-t border-slate-200 pt-6">
-                <legend class="text-base font-semibold text-slate-900">Barang</legend>
-                <div class="mt-4 grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2">
-                    <div class="relative md:col-span-2">
+                    <div class="relative">
                         <label for="cari_barang" class="block text-sm font-semibold text-slate-700">Barang</label>
-                        <input id="cari_barang" type="text" placeholder="Cari atau pilih nama/ID barang..."
+                        <input id="cari_barang" type="text" placeholder="Ketik minimal 3 karakter nama barang..." data-search-url="{{ route('pemesanan.cari-barang') }}"
                                autocomplete="off" aria-autocomplete="list" aria-expanded="false"
                                class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                         <div id="daftarBarang" class="absolute z-30 mt-1 hidden max-h-60 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-lg"></div>
@@ -90,7 +77,12 @@
                         <p id="hargaSatuan" class="mt-2 text-sm text-slate-500">Harga satuan: -</p>
                         <p class="mt-1 text-xs text-slate-500">Ketik untuk mencari, lalu pilih barang dari daftar.</p>
                     </div>
+                </div>
+            </fieldset>
 
+            <fieldset class="border-t border-slate-200 pt-6">
+                <legend class="text-sm font-semibold text-slate-900">Rincian Barang</legend>
+                <div class="mt-4 grid grid-cols-1 gap-x-6 gap-y-6 md:grid-cols-2">
                     <div>
                         <label for="jumlah" class="block text-sm font-semibold text-slate-700">Jumlah</label>
                         <input id="jumlah" type="number" name="jumlah" value="{{ old('jumlah', 1) }}" min="1" step="1" required
@@ -106,8 +98,8 @@
             </fieldset>
 
             <fieldset class="border-t border-slate-200 pt-6">
-                <legend class="text-base font-semibold text-slate-900">Skema Pembayaran</legend>
-                <div class="mt-4 grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2">
+                <legend class="text-sm font-semibold text-slate-900">Skema Pembayaran</legend>
+                <div class="mt-4 grid grid-cols-1 gap-x-6 gap-y-6 md:grid-cols-2">
                     <div>
                         <label for="skema_pembayaran" class="block text-sm font-semibold text-slate-700">Skema Pembayaran</label>
                         <select id="skema_pembayaran" name="skema_pembayaran" required
@@ -140,17 +132,42 @@
                         </select>
                     </div>
 
+                </div>
+            </fieldset>
+
+            <fieldset class="border-t border-slate-200 pt-6">
+                <legend class="text-sm font-semibold text-slate-900">Informasi Jaminan</legend>
+                <p class="mt-1 text-sm text-slate-500">Catat identitas jaminan. Foto atau salinan dokumen pribadi tidak disimpan di dalam sistem.</p>
+                <div class="mt-4 grid grid-cols-1 gap-x-6 gap-y-6 md:grid-cols-2">
+                    <div>
+                        <label for="jenis_jaminan" class="block text-sm font-semibold text-slate-700">Jenis Jaminan</label>
+                        <select id="jenis_jaminan" name="jenis_jaminan" required class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20"><option value="">Pilih jenis dokumen</option><option value="BPKB" @selected(old('jenis_jaminan') === 'BPKB')>BPKB</option><option value="Surat Tanah" @selected(old('jenis_jaminan') === 'Surat Tanah')>Sertifikat Tanah</option></select>
+                    </div>
+                    <div>
+                        <label for="nomor_jaminan" class="block text-sm font-semibold text-slate-700">Nomor Resmi Dokumen</label>
+                        <input id="nomor_jaminan" name="nomor_jaminan" required value="{{ old('nomor_jaminan') }}" maxlength="100" aria-describedby="nomor_jaminan_hint" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                        <p id="nomor_jaminan_hint" class="mt-1 text-xs text-slate-500">Isi nomor yang tercetak pada BPKB atau sertifikat, bukan nomor pemesanan.</p>
+                    </div>
+                    <div>
+                        <label for="tanggal_penyerahan" class="block text-sm font-semibold text-slate-700">Tanggal Penyerahan</label>
+                        <input id="tanggal_penyerahan" name="tanggal_penyerahan" type="date" required value="{{ old('tanggal_penyerahan', date('Y-m-d')) }}" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                    </div>
+                    <div>
+                        <label for="petugas_jaminan" class="block text-sm font-semibold text-slate-700">Petugas Penerima</label>
+                        <input id="petugas_jaminan" value="{{ auth()->user()?->nama_lengkap ?? auth()->user()?->username }}" readonly class="mt-2 block min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-600">
+                        <p class="mt-1 text-xs text-slate-500">Diisi otomatis dari akun yang mencatat jaminan.</p>
+                    </div>
                     <div class="md:col-span-2">
-                        <label for="jaminan" class="block text-sm font-semibold text-slate-700">Jaminan</label>
-                        <textarea id="jaminan" name="jaminan" rows="3" placeholder="Masukkan jaminan jika ada"
-                                  class="mt-2 block w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">{{ old('jaminan') }}</textarea>
+                        <label for="catatan_jaminan" class="block text-sm font-semibold text-slate-700">Keterangan Tambahan (Opsional)</label>
+                        <textarea id="catatan_jaminan" name="catatan_jaminan" rows="3" placeholder="Catatan tambahan tentang dokumen jaminan"
+                                  class="mt-2 block w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">{{ old('catatan_jaminan') }}</textarea>
                     </div>
                 </div>
             </fieldset>
 
-            <section class="rounded-2xl border border-blue-200 bg-blue-50/70 p-5 sm:p-6">
+            <section class="rounded-2xl border border-green-200 bg-green-50/70 p-5 sm:p-6">
                 <div class="flex items-center gap-2">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-green-100 text-green-700">
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect width="16" height="20" x="4" y="2" rx="2"/>
                             <line x1="8" x2="16" y1="6" y2="6"/>
@@ -160,8 +177,8 @@
                         </svg>
                     </div>
                     <div>
-                        <h2 class="font-bold text-slate-900">Ringkasan Angsuran</h2>
-                        <p class="text-xs text-slate-600">Perhitungan diperbarui otomatis saat data berubah.</p>
+                        <h2 class="mb-0 text-sm font-semibold text-slate-900">Ringkasan Angsuran</h2>
+                        <p class="mb-0 text-xs text-slate-600">Perhitungan diperbarui otomatis saat data berubah.</p>
                     </div>
                 </div>
 
@@ -175,17 +192,17 @@
                         <p id="ringkasanTotal" class="mt-1 text-lg font-bold text-slate-800">Rp 0</p>
                         <p class="mt-1 text-xs text-slate-500">Total harga + bunga, belum dikurangi DP.</p>
                     </div>
-                    <div class="rounded-xl border border-blue-200 bg-white p-4 sm:col-span-2">
+                    <div class="rounded-xl border border-green-200 bg-white p-4 sm:col-span-2">
                         <p class="text-sm font-medium text-slate-600">Angsuran per Bulan</p>
-                        <p id="ringkasanAngsuran" aria-live="polite" class="mt-2 text-3xl font-extrabold tracking-tight text-blue-700">Rp 0</p>
+                        <p id="ringkasanAngsuran" aria-live="polite" class="mt-2 text-3xl font-extrabold tracking-tight text-green-700">Rp 0</p>
                         <p id="keteranganAngsuran" class="mt-2 text-sm text-slate-500">Pilih barang, skema pembayaran, dan isi tenor untuk melihat angsuran.</p>
                     </div>
                 </div>
             </section>
 
-            <div class="flex flex-wrap gap-3 border-t border-slate-200 pt-5">
-                <button type="submit" class="inline-flex min-h-11 items-center justify-center rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Simpan Pemesanan</button>
-                <a href="{{ route('pemesanan.index') }}" class="inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50">Batal</a>
+            <div class="flex flex-wrap justify-end gap-3 border-t border-slate-200 pt-5">
+                <a href="{{ route('pemesanan.index') }}" class="bumkam-cancel-button inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-bold text-black shadow-sm transition hover:bg-slate-50">Batal</a>
+                <button type="submit" data-no-auto-icon class="bumkam-green-action inline-flex min-h-11 items-center justify-center rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">Simpan Pemesanan</button>
             </div>
         </form>
     </section>
@@ -217,34 +234,59 @@ document.addEventListener('DOMContentLoaded', function () {
     const pakaiDP = () => ['DP', 'Sebagian'].includes(skemaInput.value);
 
     function aktifkanDropdown(input, select, dropdown, setelahPilih = null) {
+        let controller = null;
         function sembunyikan() {
             dropdown.classList.add('hidden');
             input.setAttribute('aria-expanded', 'false');
         }
 
-        function tampilkanDaftar() {
-            const kataKunci = input.value.trim().toLocaleLowerCase('id-ID');
-            const pilihan = Array.from(select.options).filter(option => {
-                if (!option.value) return false;
-                const teks = (option.dataset.search || option.textContent).toLocaleLowerCase('id-ID');
-                return !kataKunci || teks.includes(kataKunci);
-            });
-
+        async function tampilkanDaftar() {
+            const kataKunci = input.value.trim();
+            controller?.abort();
             dropdown.innerHTML = '';
-
-            if (pilihan.length === 0) {
+            if (kataKunci.length < 3) {
+                const hint = document.createElement('div');
+                hint.className = 'px-4 py-3 text-sm text-slate-500';
+                hint.textContent = 'Ketik minimal 3 karakter untuk mencari.';
+                dropdown.appendChild(hint);
+                dropdown.classList.remove('hidden');
+                input.setAttribute('aria-expanded', 'true');
+                return;
+            }
+            controller = new AbortController();
+            let pilihan = [];
+            try {
+                const url = new URL(input.dataset.searchUrl, window.location.origin);
+                url.searchParams.set('q', kataKunci);
+                const response = await fetch(url, { headers: { Accept: 'application/json' }, signal: controller.signal });
+                pilihan = (await response.json()).data || [];
+            } catch (error) {
+                if (error.name === 'AbortError') return;
+                pilihan = [];
+            }
+            if (!pilihan.length) {
                 const kosong = document.createElement('div');
                 kosong.className = 'px-4 py-3 text-sm text-slate-500';
-                kosong.textContent = 'Data tidak ditemukan.';
+                kosong.textContent = 'Tidak ada hasil yang cocok.';
                 dropdown.appendChild(kosong);
             } else {
-                pilihan.forEach(option => {
+                pilihan.forEach(record => {
                     const tombol = document.createElement('button');
                     tombol.type = 'button';
                     tombol.className = 'block w-full px-4 py-3 text-left text-sm text-slate-700 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none';
-                    tombol.textContent = option.textContent.trim();
+                    const option = document.createElement('option');
+                    option.value = record.id_barang || record.id_pelanggan;
+                    if (record.id_barang) {
+                        option.dataset.harga = record.harga;
+                        const stok = record.stok === null ? 'stok belum diatur' : `stok ${Number(record.stok).toLocaleString('id-ID')}`;
+                        option.textContent = `${record.nama_barang} - Rp ${Number(record.harga).toLocaleString('id-ID')} — ${stok}`;
+                    } else {
+                        option.textContent = record.nama_pelanggan;
+                    }
+                    tombol.textContent = option.textContent;
 
                     tombol.addEventListener('click', function () {
+                        select.replaceChildren(new Option('-- Pilih --', ''), option);
                         select.value = option.value;
                         input.value = option.textContent.trim();
                         sembunyikan();
@@ -263,6 +305,7 @@ document.addEventListener('DOMContentLoaded', function () {
         input.addEventListener('focus', tampilkanDaftar);
         input.addEventListener('input', function () {
             select.value = '';
+            select.dispatchEvent(new Event('change', { bubbles: true }));
             tampilkanDaftar();
             if (setelahPilih) setelahPilih();
         });

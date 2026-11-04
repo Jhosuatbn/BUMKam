@@ -20,6 +20,19 @@
             ['label' => 'Pelanggan', 'route' => 'pelanggan.index', 'active' => 'pelanggan.*', 'icon' => 'bx-group'],
             ['label' => 'Barang', 'route' => 'barang.index', 'active' => 'barang.*', 'icon' => 'bx-package'],
         ];
+        $navigationItems[] = ['label' => 'Supplier', 'route' => 'supplier.index', 'active' => 'supplier.*', 'icon' => 'bx-store'];
+        if ($authenticatedUser?->peran !== 'Pimpinan') {
+            $navigationItems[] = ['label' => 'Barang Masuk', 'route' => 'barang-masuk.index', 'active' => 'barang-masuk.*', 'icon' => 'bx-log-in-circle'];
+        } else {
+            $navigationItems[] = ['label' => 'Barang Masuk', 'route' => 'barang-masuk.index', 'active' => 'barang-masuk.*', 'icon' => 'bx-log-in-circle'];
+        }
+        $navigationItems[] = ['label' => 'Monitoring Stok', 'route' => 'monitoring-stok.index', 'active' => 'monitoring-stok.*', 'icon' => 'bx-bar-chart-alt-2'];
+        $jumlahPersetujuanMenunggu = $authenticatedUser?->peran === 'Pimpinan'
+            ? \App\Models\Pemesanan::where('status_persetujuan', 'Menunggu Persetujuan')->count()
+            : 0;
+        if ($authenticatedUser?->peran === 'Pimpinan') {
+            $navigationItems[] = ['label' => 'Persetujuan Pemesanan', 'route' => 'pemesanan.persetujuan', 'active' => 'pemesanan.persetujuan', 'icon' => 'bx-check-shield'];
+        }
         if ($authenticatedUser?->peran !== 'Pimpinan') {
             $navigationItems = array_merge($navigationItems, [
                 ['label' => 'Pemesanan', 'route' => 'pemesanan.index', 'active' => 'pemesanan.*', 'icon' => 'bx-cart-alt'],
@@ -27,18 +40,26 @@
             ]);
         }
         $navigationItems[] = ['label' => 'Monitoring Kredit', 'route' => 'monitoring-kredit.index', 'active' => 'monitoring-kredit.*', 'icon' => 'bx-line-chart'];
+        $navigationItems[] = ['label' => 'Manajemen Jaminan', 'route' => 'jaminan.index', 'active' => 'jaminan.*', 'icon' => 'bx-shield-quarter'];
         $navigationItems[] = ['label' => 'Laporan', 'route' => 'laporan.index', 'active' => 'laporan.*', 'icon' => 'bx-file'];
-        if ($authenticatedUser?->peran !== 'Pimpinan') {
+        if ($authenticatedUser?->peran === 'Pimpinan') {
+            $navigationItems[] = ['label' => 'Audit Trail', 'route' => 'audit-trail.index', 'active' => 'audit-trail.*', 'icon' => 'bx-history'];
             $navigationItems[] = ['label' => 'Pengguna', 'route' => 'pengguna.index', 'active' => 'pengguna.*', 'icon' => 'bx-user'];
         }
 
         $currentPageTitle = match (true) {
             request()->routeIs('pelanggan.index') => 'Data Pelanggan',
             request()->routeIs('barang.index') => 'Data Barang',
+            request()->routeIs('supplier.*') => 'Data Supplier',
+            request()->routeIs('barang-masuk.*') => 'Barang Masuk',
+            request()->routeIs('monitoring-stok.*') => 'Monitoring Stok',
+            request()->routeIs('pemesanan.persetujuan') => 'Persetujuan Pemesanan',
             request()->routeIs('pemesanan.index') => 'Data Pemesanan',
             request()->routeIs('pembayaran.index') => 'Data Pembayaran',
             request()->routeIs('pengguna.index') => 'Data Pengguna',
             request()->routeIs('monitoring-kredit.index') => 'Monitoring Kredit',
+        request()->routeIs('jaminan.*') => 'Manajemen Jaminan',
+            request()->routeIs('audit-trail.*') => 'Audit Trail',
             request()->routeIs('laporan.*') => 'Laporan',
             default => trim($__env->yieldContent('title')) ?: 'Dashboard',
         };
@@ -46,9 +67,14 @@
             request()->routeIs('dashboard') => 'bx-home-smile',
             request()->routeIs('pelanggan.*') => 'bx-group',
             request()->routeIs('barang.*') => 'bx-package',
+            request()->routeIs('supplier.*') => 'bx-store',
+            request()->routeIs('barang-masuk.*') => 'bx-log-in-circle',
+            request()->routeIs('monitoring-stok.*') => 'bx-bar-chart-alt-2',
             request()->routeIs('pemesanan.*') => 'bx-cart-alt',
             request()->routeIs('pembayaran.*') => 'bx-wallet',
             request()->routeIs('monitoring-kredit.*') => 'bx-line-chart',
+            request()->routeIs('jaminan.*') => 'bx-shield-quarter',
+            request()->routeIs('audit-trail.*') => 'bx-history',
             request()->routeIs('laporan.*') => 'bx-file',
             request()->routeIs('pengguna.*') => 'bx-user',
             default => 'bx-grid-alt',
@@ -72,14 +98,29 @@
                     @foreach ($navigationItems as $navigationItem)
                         @php($active = request()->routeIs($navigationItem['active']))
                         @if ($navigationItem['label'] === 'Pelanggan')<li class="menu-header small text-uppercase"><span class="menu-header-text">Data Usaha</span></li>@endif
+                        @if ($navigationItem['label'] === 'Supplier')<li class="menu-header small text-uppercase"><span class="menu-header-text">Persediaan</span></li>@endif
                         @if ($navigationItem['label'] === 'Monitoring Kredit')<li class="menu-header small text-uppercase"><span class="menu-header-text">Pengawasan</span></li>@endif
                         @if ($navigationItem['label'] === 'Laporan')<li class="menu-header small text-uppercase"><span class="menu-header-text">Laporan</span></li>@endif
                         @if ($navigationItem['label'] === 'Pengguna')<li class="menu-header small text-uppercase"><span class="menu-header-text">Pengelolaan</span></li>@endif
+                        @if ($navigationItem['label'] !== 'Monitoring Kredit')
                         <li @class(['menu-item', 'active' => $active])>
                             <a href="{{ route($navigationItem['route']) }}" class="menu-link" @if ($active) aria-current="page" @endif>
                                 <i class="menu-icon tf-icons bx {{ $navigationItem['icon'] }}"></i><div class="text-truncate">{{ $navigationItem['label'] }}</div>
+                                @if ($navigationItem['label'] === 'Persetujuan Pemesanan' && $jumlahPersetujuanMenunggu > 0)
+                                    <span class="badge bg-danger rounded-pill ms-auto">{{ $jumlahPersetujuanMenunggu }}</span>
+                                @endif
                             </a>
                         </li>
+                        @endif
+                        @if ($navigationItem['label'] === 'Monitoring Kredit')
+                            <li @class(['menu-item', 'menu-open' => request()->routeIs('monitoring-kredit.*')])>
+                                <a href="javascript:void(0);" class="menu-link menu-toggle"><i class="menu-icon tf-icons bx bx-line-chart"></i><div class="text-truncate">Monitoring Kredit</div></a>
+                                <ul class="menu-sub">
+                                    <li @class(['menu-item', 'active' => request()->routeIs('monitoring-kredit.index') || request()->routeIs('monitoring-kredit.show')])><a href="{{ route('monitoring-kredit.index') }}" class="menu-link"><div>Daftar Kredit</div></a></li>
+                                    <li @class(['menu-item', 'active' => request()->routeIs('monitoring-kredit.denda')])><a href="{{ route('monitoring-kredit.denda') }}" class="menu-link"><div>Denda Keterlambatan</div></a></li>
+                                </ul>
+                            </li>
+                        @endif
                     @endforeach
                 </ul>
             </aside>
@@ -96,6 +137,11 @@
                     </div>
                     <div class="navbar-nav-right d-flex flex-grow-0 flex-shrink-0 align-items-center justify-content-end ms-auto" id="navbar-collapse" style="flex-basis: auto">
                         <ul class="navbar-nav flex-row align-items-center ms-md-auto">
+                            <li class="nav-item me-2">
+                                <button type="button" class="btn btn-icon rounded-pill bumkam-theme-toggle" data-theme-toggle aria-label="Aktifkan mode gelap" title="Aktifkan mode gelap">
+                                    <i class="icon-base bx bx-moon" aria-hidden="true"></i>
+                                </button>
+                            </li>
                             <li class="nav-item navbar-dropdown dropdown-user dropdown">
                                 <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);" data-bs-toggle="dropdown"><div class="avatar avatar-online"><span class="avatar-initial rounded-circle bg-label-primary">{{ strtoupper(substr($displayName, 0, 1)) }}</span></div></a>
                                 <ul class="dropdown-menu dropdown-menu-end">
@@ -109,13 +155,15 @@
                 </nav>
                 <div class="content-wrapper">
                     <div class="container-xxl flex-grow-1 container-p-y">@yield('content')</div>
-                    <footer class="content-footer footer bg-footer-theme"><div class="container-xxl d-flex flex-wrap justify-content-between py-3 flex-md-row flex-column"><div class="mb-2 mb-md-0">© {{ date('Y') }} BUMKam Tuah Rezeki</div><div class="text-body-secondary">Template by <a href="https://themeselection.com/" target="_blank" rel="noopener">ThemeSelection</a></div></div></footer>
+                    <footer class="content-footer footer bg-footer-theme"><div class="container-xxl d-flex flex-wrap justify-content-between py-3 flex-md-row flex-column"><div class="mb-2 mb-md-0">© {{ date('Y') }} BUMKam Tuah Rezeki</div></div></footer>
                     <div class="content-backdrop fade"></div>
                 </div>
             </div>
         </div>
         <div class="layout-overlay layout-menu-toggle"></div><div class="drag-target"></div>
     </div>
+    @include('components.photo-preview-dialog')
+    @include('components.file-preview-dialog')
     @include('components.delete-confirmation-dialog')
 </body>
 </html>

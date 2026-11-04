@@ -3,15 +3,7 @@
 @section('title', 'Edit Pemesanan')
 
 @section('content')
-    <div class="space-y-6">
-        <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-            <div>
-                <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Edit Pemesanan</h1>
-                <p class="mt-2 text-sm text-slate-600">Perbarui data pemesanan, barang, dan skema pembayaran.</p>
-            </div>
-            <a href="{{ route('pemesanan.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Kembali</a>
-        </header>
-
+    <div class="pemesanan-page space-y-6">
         @if ($errors->any())
             <div role="alert" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900">
                 <p class="font-semibold">Terjadi kesalahan:</p>
@@ -28,7 +20,7 @@
         @endphp
 
         <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-            <form action="{{ route('pemesanan.update', $pemesanan->id_pemesanan) }}" method="POST" class="space-y-8">
+            <form action="{{ route('pemesanan.update', $pemesanan->id_pemesanan) }}" method="POST" enctype="multipart/form-data" class="space-y-8">
                 @csrf
                 @method('PUT')
                 <fieldset>
@@ -45,11 +37,11 @@
                         <div class="md:col-span-2">
                             <label for="cari_pelanggan" class="block text-sm font-semibold text-slate-700">Pelanggan</label>
                             <div class="relative mt-2" data-searchable-select>
-                                <input id="cari_pelanggan" type="search" required role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="daftarPelanggan" autocomplete="off" placeholder="Cari nama atau ID pelanggan..." data-searchable-input class="block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                                <input id="cari_pelanggan" type="search" required role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="daftarPelanggan" autocomplete="off" placeholder="Ketik minimal 3 karakter nama pelanggan..." data-search-url="{{ route('pemesanan.cari-pelanggan') }}" data-searchable-input class="block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                                 <div id="daftarPelanggan" role="listbox" class="absolute z-30 mt-1 hidden max-h-60 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-lg" data-searchable-results></div>
                                 <select id="id_pelanggan" name="id_pelanggan" class="hidden" tabindex="-1" aria-hidden="true" data-searchable-options>
                                 @foreach ($pelanggan as $item)
-                                    <option value="{{ $item->id_pelanggan }}" data-search="{{ strtolower($item->id_pelanggan . ' ' . $item->nama_pelanggan) }}" {{ $pemesanan->id_pelanggan == $item->id_pelanggan ? 'selected' : '' }}>{{ $item->nama_pelanggan }} ({{ $item->id_pelanggan }})</option>
+                                    <option value="{{ $item->id_pelanggan }}" data-search="{{ strtolower($item->nama_pelanggan) }}" {{ $pemesanan->id_pelanggan == $item->id_pelanggan ? 'selected' : '' }}>{{ $item->nama_pelanggan }}</option>
                                 @endforeach
                                 </select>
                             </div>
@@ -64,7 +56,7 @@
                         <div class="md:col-span-2">
                             <label for="cari_barang" class="block text-sm font-semibold text-slate-700">Barang</label>
                             <div class="relative mt-2" data-searchable-select>
-                                <input id="cari_barang" type="search" required role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="daftarBarang" autocomplete="off" placeholder="Cari nama atau ID barang..." data-searchable-input class="block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                                <input id="cari_barang" type="search" required role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="daftarBarang" autocomplete="off" placeholder="Ketik minimal 3 karakter nama barang..." data-search-url="{{ route('pemesanan.cari-barang') }}" data-searchable-input class="block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                                 <div id="daftarBarang" role="listbox" class="absolute z-30 mt-1 hidden max-h-60 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-lg" data-searchable-results></div>
                                 <select id="id_barang" name="id_barang" class="hidden" tabindex="-1" aria-hidden="true" data-searchable-options>
                                 @foreach ($barang as $item)
@@ -72,7 +64,7 @@
                                 @endforeach
                                 </select>
                             </div>
-                            <p class="mt-1 text-xs text-slate-500">Ketik nama atau ID, lalu pilih barang dari daftar.</p>
+                            <p class="mt-1 text-xs text-slate-500">Ketik minimal 3 karakter nama barang, lalu pilih hasilnya.</p>
                         </div>
                         <div>
                             <label for="jumlah" class="block text-sm font-semibold text-slate-700">Jumlah</label>
@@ -116,16 +108,12 @@
                             <label for="bunga" class="block text-sm font-semibold text-slate-700">Bunga</label>
                             <input id="bunga" type="number" name="bunga" value="{{ $pemesanan->bunga }}" min="0" step="0.01" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                         </div>
-                        <div class="md:col-span-2">
-                            <label for="jaminan" class="block text-sm font-semibold text-slate-700">Jaminan</label>
-                            <textarea id="jaminan" name="jaminan" rows="3" class="mt-2 block w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">{{ $pemesanan->jaminan }}</textarea>
-                        </div>
                     </div>
                 </fieldset>
 
-                <div class="flex flex-wrap gap-3 border-t border-slate-200 pt-5">
-                    <button type="submit" class="inline-flex min-h-11 items-center justify-center rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Update Pemesanan</button>
-                    <a href="{{ route('pemesanan.index') }}" class="inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Batal</a>
+                <div class="flex flex-wrap justify-end gap-3 border-t border-slate-200 pt-5">
+                    <a href="{{ route('pemesanan.index') }}" class="bumkam-cancel-button inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-bold text-black shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700">Batal</a>
+                    <button type="submit" data-no-auto-icon class="bumkam-green-action inline-flex min-h-11 items-center justify-center rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">Update Pemesanan</button>
                 </div>
             </form>
         </section>

@@ -37,4 +37,9 @@ class Pembayaran extends Model
             'id_pemesanan'
         );
     }
+
+    public function alokasiDenda()
+    {
+        return $this->hasMany(AlokasiPembayaran::class, 'id_pembayaran', 'id_pembayaran');
+    }
 }

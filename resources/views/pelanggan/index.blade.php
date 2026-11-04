@@ -30,7 +30,7 @@
                     {{-- Pencarian pelanggan --}}
                     <form action="{{ route('pelanggan.index') }}" method="GET" role="search" class="flex w-full min-w-0 flex-col gap-2 sm:flex-row">
                     <label for="q" class="sr-only">Cari pelanggan</label>
-                    <input id="q" type="search" name="q" value="{{ request('q') }}" placeholder="Cari nama, ID, NIK, atau no. telepon..." class="block min-h-11 w-full min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                    <input id="q" type="search" name="q" value="{{ request('q') }}" placeholder="Cari nama, NIK, atau no. telepon..." class="block min-h-11 w-full min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                     <div class="flex gap-2">
 <button type="submit" style="border-radius: 12px !important;" class="inline-flex min-h-11 items-center justify-center rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Cari</button>                        @if (request()->filled('q'))
                             <a href="{{ route('pelanggan.index') }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Reset</a>
@@ -44,7 +44,6 @@
                 <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
                     <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-600">
                         <tr>
-                            <th scope="col" class="px-4 py-3 font-semibold sm:px-6">ID Pelanggan</th>
                             <th scope="col" class="px-4 py-3 font-semibold sm:px-6">Nama</th>
                             <th scope="col" class="px-4 py-3 font-semibold sm:px-6">NIK</th>
                             <th scope="col" class="px-4 py-3 font-semibold sm:px-6">No. Telepon</th>
@@ -55,7 +54,6 @@
                     <tbody class="divide-y divide-slate-100 text-slate-700">
                         @forelse ($pelanggan as $p)
                             <tr class="hover:bg-slate-50/70">
-                                <td class="whitespace-nowrap px-4 py-3.5 font-medium text-slate-900 sm:px-6">{{ $p->id_pelanggan }}</td>
                                 <td class="px-4 py-3.5 font-medium text-slate-900 sm:px-6">{{ $p->nama_pelanggan }}</td>
                                 <td class="whitespace-nowrap px-4 py-3.5 tabular-nums sm:px-6">{{ $p->nik }}</td>
                                 <td class="whitespace-nowrap px-4 py-3.5 sm:px-6">{{ $p->no_telepon }}</td>
@@ -81,7 +79,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-12 text-center text-sm text-slate-500">
+                                <td colspan="5" class="px-6 py-12 text-center text-sm text-slate-500">
                                     @if (request()->filled('q'))
                                         Tidak ada pelanggan yang cocok dengan "{{ request('q') }}".
                                     @else

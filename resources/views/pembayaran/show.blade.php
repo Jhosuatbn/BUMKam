@@ -3,15 +3,7 @@
 @section('title', 'Detail Pembayaran')
 
 @section('content')
-    <div class="space-y-6">
-        <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-            <div>
-                <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Detail Pembayaran</h1>
-                <p class="mt-2 text-sm text-slate-600">Rincian pembayaran dan status pemesanan.</p>
-            </div>
-            <a href="{{ route('pembayaran.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Kembali</a>
-        </header>
-
+    <div class="pembayaran-page space-y-6">
         <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-labelledby="pembayaran-detail-heading">
             <h2 id="pembayaran-detail-heading" class="border-b border-slate-200 px-5 py-4 text-base font-semibold text-slate-900 sm:px-6">Informasi Pembayaran</h2>
             <dl class="grid grid-cols-1 gap-x-10 px-5 sm:grid-cols-2 sm:px-6">
@@ -23,6 +15,13 @@
                 <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Total Pembayaran</dt><dd class="mt-1 tabular-nums text-sm font-semibold text-slate-900">Rp {{ number_format($pembayaran->total_pembayaran, 0, ',', '.') }}</dd></div>
                 <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Sisa Pembayaran</dt><dd class="mt-1 tabular-nums text-sm font-semibold text-slate-900">Rp {{ number_format($pembayaran->sisa_pembayaran, 0, ',', '.') }}</dd></div>
                 <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Status</dt><dd class="mt-1 text-sm font-semibold text-slate-900">{{ $pembayaran->status_pembayaran }}</dd></div>
+                <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Rincian Alokasi</dt><dd class="mt-1 text-sm text-slate-900">
+                    @forelse ($pembayaran->alokasiDenda as $alokasi)
+                        <span class="mb-1 block">Angsuran {{ $alokasi->nomor_angsuran }}: pokok Rp {{ number_format($alokasi->alokasi_angsuran, 0, ',', '.') }} · denda Rp {{ number_format($alokasi->alokasi_denda, 0, ',', '.') }}</span>
+                    @empty
+                        @if ($pembayaran->status_gateway === 'settlement')Pembayaran lama: seluruh nominal dihitung sebagai pokok angsuran.@else Belum dialokasikan sebelum pembayaran settlement.@endif
+                    @endforelse
+                </dd></div>
                 <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Metode Pembayaran</dt><dd class="mt-1 text-sm font-semibold text-slate-900">{{ $pembayaran->metode_pembayaran === 'online' ? 'Online · Midtrans' : 'Tunai / di tempat' }}</dd></div>
                 @if ($pembayaran->metode_pembayaran === 'online')
                     <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Status Gateway</dt><dd class="mt-1 text-sm font-semibold text-slate-900">{{ ucfirst($pembayaran->status_gateway) }}</dd></div>
@@ -38,14 +37,14 @@
                     </dd>
                 </div>
             </dl>
-            <div class="flex flex-wrap gap-3 border-t border-slate-200 px-5 py-4 sm:px-6">
+            <div class="flex flex-wrap justify-end gap-3 border-t border-slate-200 px-5 py-4 sm:px-6">
                 @if ($pembayaran->metode_pembayaran !== 'online')
-                    <a href="{{ route('pembayaran.edit', $pembayaran->id_pembayaran) }}" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Edit</a>
+                    <a href="{{ route('pembayaran.edit', $pembayaran->id_pembayaran) }}" class="bumkam-green-action inline-flex min-h-10 items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold shadow-sm transition">Edit</a>
                 @endif
                 @if ($pembayaran->metode_pembayaran === 'online' && $pembayaran->status_gateway === 'pending' && $pembayaran->snap_token)
                     <a href="{{ route('pembayaran.online', $pembayaran->id_pembayaran) }}" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-800">Lanjut Bayar</a>
                 @endif
-                <a href="{{ route('pembayaran.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Daftar Pembayaran</a>
+                <a href="{{ route('pembayaran.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-black shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Kembali</a>
             </div>
         </section>
     </div>

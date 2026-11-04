@@ -234,6 +234,8 @@ class DashboardController extends Controller
         // Data tambahan hanya dimuat untuk ringkasan Dashboard Pimpinan.
         $barangBelumTerjual = collect();
         $barangStokHabis = collect();
+        $pengajuanMenungguPersetujuan = collect();
+        $jumlahPersetujuanMenunggu = 0;
         if (auth()->user()?->peran === 'Pimpinan') {
             $ringkasanBarang = Barang::query()
                 ->withSum('detailPemesanan as jumlah_dipesan', 'jumlah')
@@ -246,6 +248,13 @@ class DashboardController extends Controller
                 ->filter(fn ($barang) => $barang->stok !== null && (int) $barang->stok === 0)
                 ->take(4)
                 ->values();
+
+            $pengajuanMenungguPersetujuan = Pemesanan::with('pelanggan')
+                ->where('status_persetujuan', 'Menunggu Persetujuan')
+                ->latest('created_at')
+                ->limit(5)
+                ->get();
+            $jumlahPersetujuanMenunggu = Pemesanan::where('status_persetujuan', 'Menunggu Persetujuan')->count();
         }
 
         // Lima transaksi terbaru
@@ -281,6 +290,8 @@ class DashboardController extends Controller
             'barangTerlaris',
             'barangBelumTerjual',
             'barangStokHabis',
+            'pengajuanMenungguPersetujuan',
+            'jumlahPersetujuanMenunggu',
             'transaksiTerbaru',
             'maxBarangDipesan'
         ));

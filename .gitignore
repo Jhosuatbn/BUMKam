@@ -3,6 +3,7 @@
 .env
 .env.backup
 .env.production
+/.mysql_root_password
 .phpactor.json
 .phpunit.result.cache
 /.fleet

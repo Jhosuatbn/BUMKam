@@ -20,10 +20,15 @@ class Pengguna extends Authenticatable
         'password',
         'nama_lengkap',
         'peran',
+        'is_active',
     ];
 
     protected $hidden = [
         'password',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
     ];
 
     public function getAuthIdentifierName()

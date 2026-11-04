@@ -12,6 +12,62 @@
 
 html, body { font-family: 'Public Sans', ui-sans-serif, system-ui, sans-serif; }
 
+.pelanggan-save-button { border-radius: 1rem !important; }
+.bumkam-green-action {
+    color: #fff !important;
+    border: 1px solid #078a46 !important;
+    border-radius: .75rem !important;
+    background: linear-gradient(135deg, #078a46, #65a30d) !important;
+}
+.bumkam-green-action:hover,
+.bumkam-green-action:focus-visible {
+    color: #fff !important;
+    border-color: #056b38 !important;
+    background: linear-gradient(135deg, #056b38, #4d7c0f) !important;
+}
+.bumkam-cancel-button {
+    color: #8492a6 !important;
+    border-color: #8492a6 !important;
+    background-color: #fff !important;
+}
+.bumkam-cancel-button:hover,
+.bumkam-cancel-button:focus-visible {
+    color: #fff !important;
+    border-color: #7f8b9b !important;
+    background-color: #7f8b9b !important;
+}
+.barang-modal-action { border-radius: 1rem !important; }
+.bumkam-laporan-tab-active,
+.bumkam-laporan-tab-active.active {
+    color: #fff !important;
+    border: 1px solid #078a46 !important;
+    border-radius: .75rem !important;
+    background: linear-gradient(135deg, #078a46, #65a30d) !important;
+}
+.monitoring-credit-table td { padding-block: .85rem; line-height: 1.4; }
+.monitoring-credit-table .monitoring-credit-identity { min-width: 13rem; }
+.monitoring-credit-table .monitoring-credit-identity a { color: #087a40; }
+
+dialog[data-delete-confirmation-dialog] .delete-confirmation-question {
+    color: #0f172a !important;
+    font-weight: 700 !important;
+}
+dialog[data-delete-confirmation-dialog] .delete-confirmation-cancel {
+    color: #111827 !important;
+    font-weight: 700 !important;
+}
+dialog[data-delete-confirmation-dialog] .delete-confirmation-warning {
+    color: #334155 !important;
+    font-weight: 600 !important;
+}
+html.dark dialog[data-delete-confirmation-dialog] .delete-confirmation-question,
+html.dark dialog[data-delete-confirmation-dialog] .delete-confirmation-cancel {
+    color: #f8fafc !important;
+}
+html.dark dialog[data-delete-confirmation-dialog] .delete-confirmation-warning {
+    color: #cbd5e1 !important;
+}
+
 /* Keep dashboard charts inside their cards when the viewport or browser zoom changes. */
 .bumkam-order-status-summary { min-width: 0; flex-wrap: wrap; }
 .bumkam-order-status-plot { width: min(100%, 12rem); min-width: 0; flex: 0 1 12rem; overflow: hidden; }
@@ -32,6 +88,9 @@ body .layout-menu .menu-item.active > .menu-link {
     color: #087a40 !important;
     background-color: #edf7e7 !important;
 }
+body .layout-menu .menu-item.active::before {
+    background-color: #078a46 !important;
+}
 body .layout-menu .menu-item.active > .menu-link .menu-icon { color: #078a46 !important; }
 body .bg-label-primary { color: #087a40 !important; background-color: #e9f7ef !important; }
 body .text-primary { color: #087a40 !important; }
@@ -40,13 +99,418 @@ body .btn.btn-primary {
     border-color: #078a46 !important;
     background: linear-gradient(135deg, #078a46, #65a30d) !important;
 }
+/* Samakan tombol aksi Tailwind biru dengan warna utama BUMKam. */
+body .content-wrapper a.bg-blue-700,
+body .content-wrapper button.bg-blue-700,
+body .content-wrapper input[type="submit"].bg-blue-700,
+body .content-wrapper a.bg-blue-600,
+body .content-wrapper button.bg-blue-600,
+body .content-wrapper input[type="submit"].bg-blue-600 {
+    color: #fff !important;
+    border-color: #078a46 !important;
+    background: linear-gradient(135deg, #078a46, #65a30d) !important;
+}
+body .content-wrapper a.bg-blue-700:hover,
+body .content-wrapper button.bg-blue-700:hover,
+body .content-wrapper input[type="submit"].bg-blue-700:hover,
+body .content-wrapper a.bg-blue-600:hover,
+body .content-wrapper button.bg-blue-600:hover,
+body .content-wrapper input[type="submit"].bg-blue-600:hover {
+    color: #fff !important;
+    border-color: #056b38 !important;
+    background: linear-gradient(135deg, #056b38, #4d7c0f) !important;
+}
+.btn.bumkam-theme-toggle {
+    color: #fff !important;
+    border: 1px solid #078a46 !important;
+    background: linear-gradient(135deg, #078a46, #65a30d) !important;
+    box-shadow: 0 3px 8px rgb(8 122 64 / 22%);
+}
+.btn.bumkam-theme-toggle:hover,
+.btn.bumkam-theme-toggle:focus-visible {
+    color: #fff !important;
+    border-color: #056b38 !important;
+    background: linear-gradient(135deg, #056b38, #4d7c0f) !important;
+}
 body .btn.btn-primary:hover {
     border-color: #056b38 !important;
     background: linear-gradient(135deg, #056b38, #4d7c0f) !important;
 }
+.pengguna-page #pengguna-list-heading {
+    margin: 0;
+    color: var(--bs-heading-color, #0f172a);
+    font-size: 1.25rem !important;
+    line-height: 1.4;
+}
+.pengguna-page table { width: 100%; }
+.pengguna-page .pengguna-role { color: #087a40; background-color: #e9f7ef; }
+.pengguna-page .pengguna-action {
+    display: inline-flex;
+    min-height: 2rem;
+    align-items: center;
+    gap: .35rem;
+    padding: .35rem .65rem;
+    border: 1px solid #c8e7d2;
+    border-radius: .55rem;
+    background: #f0fdf4;
+    color: #087a40;
+    font-size: .75rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color .15s ease, border-color .15s ease;
+}
+.pengguna-page .pengguna-action:hover { border-color: #86c99d; background: #dcfce7; }
+.laporan-page .card-title {
+    margin-bottom: .35rem !important;
+    font-size: 1.25rem !important;
+    line-height: 1.4;
+}
+.laporan-page .laporan-filter-card > .card-body {
+    padding-top: 2rem !important;
+}
+.laporan-page .laporan-table {
+    width: 100%;
+    min-width: 1050px;
+    table-layout: fixed;
+}
+.laporan-page .laporan-table th {
+    padding: .8rem .65rem;
+    white-space: normal;
+    font-size: .7rem;
+    line-height: 1.35;
+    vertical-align: middle;
+}
+.laporan-page .laporan-table td {
+    padding: .85rem .65rem;
+    font-size: .82rem;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+.laporan-page .laporan-table th:nth-child(1), .laporan-page .laporan-table td:nth-child(1) { width: 4%; }
+.laporan-page .laporan-table th:nth-child(2), .laporan-page .laporan-table td:nth-child(2) { width: 10%; }
+.laporan-page .laporan-table th:nth-child(3), .laporan-page .laporan-table td:nth-child(3) { width: 13%; }
+.laporan-page .laporan-table th:nth-child(4), .laporan-page .laporan-table td:nth-child(4) { width: 11%; }
+.laporan-page .laporan-table th:nth-child(5), .laporan-page .laporan-table td:nth-child(5) { width: 12%; }
+.laporan-page .laporan-table th:nth-child(6), .laporan-page .laporan-table td:nth-child(6) { width: 8%; }
+.laporan-page .laporan-table th:nth-child(7), .laporan-page .laporan-table td:nth-child(7) { width: 10%; }
+.laporan-page .laporan-table th:nth-child(8), .laporan-page .laporan-table td:nth-child(8) { width: 7%; }
+.laporan-page .laporan-table th:nth-child(9), .laporan-page .laporan-table td:nth-child(9) { width: 13%; }
+.laporan-page .laporan-table th:nth-child(10), .laporan-page .laporan-table td:nth-child(10) { width: 12%; }
+.laporan-page .laporan-credit-table { min-width: 1050px; table-layout: fixed; }
+.laporan-page .laporan-credit-table th:nth-child(1), .laporan-page .laporan-credit-table td:nth-child(1) { width: 4%; }
+.laporan-page .laporan-credit-table th:nth-child(2), .laporan-page .laporan-credit-table td:nth-child(2) { width: 9%; }
+.laporan-page .laporan-credit-table th:nth-child(3), .laporan-page .laporan-credit-table td:nth-child(3) { width: 19%; }
+.laporan-page .laporan-credit-table th:nth-child(4), .laporan-page .laporan-credit-table td:nth-child(4) { width: 18%; }
+.laporan-page .laporan-credit-table th:nth-child(5), .laporan-page .laporan-credit-table td:nth-child(5) { width: 15%; }
+.laporan-page .laporan-credit-table th:nth-child(6), .laporan-page .laporan-credit-table td:nth-child(6) { width: 16%; }
+.laporan-page .laporan-credit-table th:nth-child(7), .laporan-page .laporan-credit-table td:nth-child(7) { width: 10%; }
+.laporan-page .laporan-credit-table th:nth-child(8), .laporan-page .laporan-credit-table td:nth-child(8) { width: 9%; }
+.laporan-page .laporan-credit-table .badge {
+    display: inline-block;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: center;
+    line-height: 1.3;
+}
+.monitoring-kredit-page .card-title {
+    margin-bottom: .35rem !important;
+    color: var(--bs-heading-color, #1f2937);
+    font-size: 1.25rem !important;
+    line-height: 1.4;
+}
+.monitoring-kredit-page .card-header {
+    padding: 1.25rem 1.5rem;
+}
+.monitoring-kredit-page .monitoring-summary-grid {
+    padding: .75rem 1.25rem 1rem;
+}
+.monitoring-kredit-page .monitoring-summary-item {
+    min-height: 5rem;
+    padding: .85rem .5rem;
+    border-bottom: 1px solid var(--bs-border-color, #e5e7eb);
+}
+.monitoring-kredit-page .monitoring-summary-icon {
+    width: 2rem;
+    text-align: center;
+}
+.monitoring-kredit-page .monitoring-summary-item p:last-child {
+    color: var(--bs-heading-color, #111827);
+    font-size: 1.15rem;
+    line-height: 1.35;
+}
+.monitoring-kredit-page .table-responsive {
+    border-top: 1px solid var(--bs-border-color, #e5e7eb);
+}
+.monitoring-kredit-page .monitoring-credit-table {
+    min-width: 1120px;
+    font-size: .82rem;
+}
+.monitoring-kredit-page .monitoring-credit-table th {
+    padding: .9rem .8rem;
+    color: var(--bs-secondary-color, #64748b);
+    font-size: .7rem;
+    font-weight: 700;
+    line-height: 1.35;
+    white-space: nowrap;
+}
+.monitoring-kredit-page .monitoring-credit-table td {
+    padding: .95rem .8rem;
+    vertical-align: middle;
+}
+.monitoring-kredit-page .monitoring-credit-table td:first-child { min-width: 190px; }
+.monitoring-kredit-page .monitoring-credit-table td:nth-child(2) { min-width: 140px; }
+.monitoring-kredit-page .monitoring-credit-table td:nth-child(9) { min-width: 145px; }
+.monitoring-kredit-page .monitoring-credit-table td:last-child { min-width: 100px; }
+@media (min-width: 640px) and (max-width: 1279px) {
+    .monitoring-kredit-page .monitoring-summary-item:nth-last-child(-n + 2) { border-bottom: 0; }
+}
+@media (min-width: 1280px) {
+    .monitoring-kredit-page .monitoring-summary-item:nth-last-child(-n + 3) { border-bottom: 0; }
+}
+@media (max-width: 639px) {
+    .monitoring-kredit-page .card-header { padding: 1rem; }
+    .monitoring-kredit-page .monitoring-summary-grid { padding: .5rem 1rem .75rem; }
+    .monitoring-kredit-page .monitoring-summary-item:last-child { border-bottom: 0; }
+    .monitoring-kredit-page .card-header form { gap: .65rem; }
+}
+.pembayaran-page .payment-list-table {
+    min-width: 1120px;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+.pembayaran-page .payment-list-table th {
+    padding: .85rem .8rem;
+    color: var(--bs-secondary-color, #64748b);
+    font-size: .7rem;
+    font-weight: 700;
+    line-height: 1.35;
+    white-space: nowrap;
+}
+.pembayaran-page .payment-list-table td {
+    padding: .95rem .8rem;
+    vertical-align: middle;
+    line-height: 1.45;
+}
+.pembayaran-page .payment-list-table td:nth-child(2) { min-width: 150px; }
+.pembayaran-page .payment-list-table td:nth-child(7) { min-width: 145px; }
+.pembayaran-page .payment-list-table td:nth-child(8) { min-width: 155px; }
+.pembayaran-page .payment-list-table td:last-child { min-width: 180px; }
+.pembayaran-page input:not([type="file"]),
+.pembayaran-page select,
+.pembayaran-page textarea {
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+.pembayaran-page input:focus,
+.pembayaran-page select:focus,
+.pembayaran-page textarea:focus {
+    border-color: #078a46;
+    box-shadow: 0 0 0 .2rem rgb(8 138 70 / 12%);
+}
+html.dark .pembayaran-page .bg-white { background-color: #111c2e !important; }
+html.dark .pembayaran-page .bg-slate-50,
+html.dark .pembayaran-page .bg-slate-100 { background-color: #1e293b !important; }
+html.dark .pembayaran-page .border-slate-100,
+html.dark .pembayaran-page .border-slate-200,
+html.dark .pembayaran-page .border-slate-300 { border-color: #334155 !important; }
+html.dark .pembayaran-page .text-slate-900,
+html.dark .pembayaran-page .text-slate-700 { color: #e2e8f0 !important; }
+html.dark .pembayaran-page .text-slate-600,
+html.dark .pembayaran-page .text-slate-500 { color: #a8b5c7 !important; }
+html.dark .pembayaran-page .payment-list-table tbody { color: #cbd5e1; }
+html.dark .pembayaran-page .payment-list-table thead { background-color: #1e293b; }
+html.dark .pembayaran-page .payment-list-table tr:hover { background-color: #1e293b !important; }
+html.dark .pembayaran-page input:not([type="file"]),
+html.dark .pembayaran-page select,
+html.dark .pembayaran-page textarea { background-color: #0f172a; color: #f1f5f9; border-color: #475569; }
+html.dark .pembayaran-page input[readonly] { background-color: #1e293b; }
+.pemesanan-page .pemesanan-list-table {
+    width: 100%;
+    min-width: 1100px;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: auto;
+}
+.pemesanan-page .pemesanan-list-table th {
+    padding: .85rem .8rem;
+    color: var(--bs-secondary-color, #64748b);
+    font-size: .7rem;
+    font-weight: 700;
+    line-height: 1.35;
+    white-space: nowrap;
+}
+.pemesanan-page .pemesanan-list-table td {
+    padding: .95rem .8rem;
+    vertical-align: middle;
+    line-height: 1.45;
+}
+.pemesanan-page .pemesanan-list-table th:last-child,
+.pemesanan-page .pemesanan-list-table td:last-child { width: 150px; }
+.pemesanan-page .pemesanan-list-table td:nth-child(1) { min-width: 155px; }
+.pemesanan-page .pemesanan-list-table td:nth-child(2) { min-width: 190px; }
+.pemesanan-page .pemesanan-list-table td:nth-child(5),
+.pemesanan-page .pemesanan-list-table td:nth-child(6) { white-space: nowrap; }
+.pemesanan-page .pemesanan-list-table td:nth-child(7) { min-width: 175px; }
+.pemesanan-page input:not([type="file"]),
+.pemesanan-page select,
+.pemesanan-page textarea {
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+.pemesanan-page input:focus,
+.pemesanan-page select:focus,
+.pemesanan-page textarea:focus {
+    border-color: #078a46;
+    box-shadow: 0 0 0 .2rem rgb(8 138 70 / 12%);
+}
+.pemesanan-page fieldset > legend { margin-bottom: .25rem; }
+.pemesanan-page fieldset + fieldset { margin-top: .25rem; }
+html.dark .pemesanan-page .bg-white { background-color: #111c2e !important; }
+html.dark .pemesanan-page .bg-slate-50,
+html.dark .pemesanan-page .bg-slate-100,
+html.dark .pemesanan-page .bg-blue-50\/70 { background-color: #1e293b !important; }
+html.dark .pemesanan-page .bg-green-50\/70 { background-color: #142b21 !important; }
+html.dark .pemesanan-page .border-slate-100,
+html.dark .pemesanan-page .border-slate-200,
+html.dark .pemesanan-page .border-slate-300,
+html.dark .pemesanan-page .border-blue-200 { border-color: #334155 !important; }
+html.dark .pemesanan-page .border-green-200 { border-color: #275c3b !important; }
+html.dark .pemesanan-page .text-slate-900,
+html.dark .pemesanan-page .text-slate-800,
+html.dark .pemesanan-page .text-slate-700 { color: #e2e8f0 !important; }
+html.dark .pemesanan-page .text-slate-600,
+html.dark .pemesanan-page .text-slate-500 { color: #a8b5c7 !important; }
+html.dark .pemesanan-page .text-blue-700,
+html.dark .pemesanan-page .text-blue-800 { color: #86efac !important; }
+html.dark .pemesanan-page .bg-green-100 { background-color: #173824 !important; }
+html.dark .pemesanan-page .text-green-700 { color: #86efac !important; }
+html.dark .pemesanan-page input:not([type="file"]),
+html.dark .pemesanan-page select,
+html.dark .pemesanan-page textarea { background-color: #0f172a; color: #f1f5f9; border-color: #475569; }
+html.dark .pemesanan-page input[readonly],
+html.dark .pemesanan-page input:disabled { background-color: #1e293b; }
+html.dark .pemesanan-page [role="listbox"] { background-color: #111c2e; border-color: #334155; }
+html.dark .pemesanan-page [role="listbox"] button { color: #e2e8f0; }
+html.dark .pemesanan-page [role="listbox"] button:hover,
+html.dark .pemesanan-page [role="listbox"] button:focus { background-color: #1e293b; }
+.theme-icon-light { display: none; }
+html.dark .theme-icon-dark { display: none; }
+html.dark .theme-icon-light { display: inline-block; }
 
 /* Tema gelap tetap memakai kontras tinggi untuk teks dan kontrol utama. */
 html.dark body { background: #0b1220; color: #e2e8f0; }
+/* Sneat membaca warna dari token Bootstrap sendiri, jadi atur permukaan dan teksnya juga. */
+html.dark {
+    color-scheme: dark;
+    --bs-body-bg: #0b1220 !important;
+    --bs-body-color: #cbd5e1 !important;
+    --bs-emphasis-color: #f1f5f9 !important;
+    --bs-secondary-color: #94a3b8 !important;
+    --bs-tertiary-color: #94a3b8 !important;
+    --bs-secondary-bg: #1e293b !important;
+    --bs-tertiary-bg: #172337 !important;
+    --bs-border-color: #334155 !important;
+    --bs-paper-bg: #111c2e !important;
+    --bs-paper-bg-rgb: 17, 28, 46 !important;
+    --bs-card-bg: #111c2e !important;
+    --bs-navbar-bg: #111c2e !important;
+    --bs-body-color-rgb: 203, 213, 225 !important;
+    --bs-heading-color: #f1f5f9 !important;
+    --bs-base-color: #e2e8f0 !important;
+    --bs-base-color-rgb: 226, 232, 240 !important;
+    --bs-menu-bg: #111c2e !important;
+    --bs-menu-bg-rgb: 17, 28, 46 !important;
+    --bs-menu-color: #cbd5e1 !important;
+    --bs-menu-hover-bg: #1e293b !important;
+    --bs-menu-hover-color: #f8fafc !important;
+    --bs-menu-active-bg: #173824 !important;
+    --bs-menu-active-color: #86efac !important;
+    --bs-menu-divider-color: #334155 !important;
+    --bs-primary: #22a45a !important;
+    --bs-primary-rgb: 34, 164, 90 !important;
+}
+html.dark body,
+html.dark .layout-wrapper,
+html.dark .layout-page,
+html.dark .content-wrapper,
+html.dark .layout-menu,
+html.dark .layout-navbar,
+html.dark .bg-menu-theme,
+html.dark .bg-navbar-theme,
+html.dark .card,
+html.dark .dropdown-menu,
+html.dark .modal-content,
+html.dark .popover,
+html.dark .table,
+html.dark .table-responsive {
+    color: #cbd5e1;
+}
+html.dark .layout-menu,
+html.dark .bg-menu-theme,
+html.dark .layout-navbar,
+html.dark .bg-navbar-theme,
+html.dark .card,
+html.dark .dropdown-menu,
+html.dark .modal-content,
+html.dark .popover {
+    background-color: #111c2e;
+    border-color: #334155;
+}
+html.dark .app-brand-text,
+html.dark .menu-link,
+html.dark .menu-header-text,
+html.dark .text-heading,
+html.dark .card-title,
+html.dark .dropdown-item,
+html.dark .modal-title,
+html.dark .form-label,
+html.dark label {
+    color: #e2e8f0;
+}
+html.dark .text-body-secondary,
+html.dark .text-muted,
+html.dark .card-subtitle,
+html.dark .menu-header-text {
+    color: #94a3b8 !important;
+}
+html.dark .layout-menu .menu-item.active > .menu-link {
+    color: #86efac !important;
+    background-color: #173824 !important;
+}
+html.dark .layout-menu .menu-item.active::before { background-color: #22a45a !important; }
+html.dark .layout-menu .menu-item.active > .menu-link .menu-icon { color: #4ade80 !important; }
+html.dark body .bg-label-primary { color: #86efac !important; background-color: #173824 !important; }
+html.dark body .bg-label-info { color: #67e8f9 !important; background-color: #123344 !important; }
+html.dark .menu-divider,
+html.dark .dropdown-divider { border-color: #334155 !important; }
+html.dark .form-control,
+html.dark .form-select,
+html.dark .input-group-text {
+    color: #e2e8f0;
+    background-color: #0f172a;
+    border-color: #475569;
+}
+html.dark .form-control::placeholder { color: #94a3b8; }
+html.dark .table {
+    --bs-table-color: #cbd5e1;
+    --bs-table-bg: #111c2e;
+    --bs-table-border-color: #334155;
+    --bs-table-striped-bg: #172337;
+    --bs-table-striped-color: #e2e8f0;
+    --bs-table-hover-bg: #1e293b;
+    --bs-table-hover-color: #f8fafc;
+}
+html.dark .apexcharts-text,
+html.dark .apexcharts-legend-text,
+html.dark .apexcharts-xaxis text,
+html.dark .apexcharts-yaxis text { fill: #94a3b8 !important; color: #94a3b8 !important; }
+html.dark .apexcharts-gridline { stroke: #334155 !important; }
+html.dark .apexcharts-tooltip,
+html.dark .apexcharts-xaxistooltip,
+html.dark .apexcharts-yaxistooltip {
+    color: #e2e8f0 !important;
+    background: #111c2e !important;
+    border-color: #334155 !important;
+}
 html.dark header.sticky { background: rgb(15 23 42 / 95%); border-color: #334155; }
 html.dark main { background: #0b1220; }
 html.dark [class~="bg-white"] { background-color: #111c2e; }
@@ -59,3 +523,20 @@ html.dark input:not([type="checkbox"]), html.dark select, html.dark textarea { b
 html.dark input::placeholder, html.dark textarea::placeholder { color: #94a3b8; }
 html.dark table thead { background-color: #172337; }
 html.dark table tbody tr:hover { background-color: rgb(30 64 175 / 15%); }
+/* Tailwind page sections need explicit surface colors inside the Sneat content area. */
+html.dark .content-wrapper .bg-white { background-color: #111c2e !important; }
+html.dark .content-wrapper .bg-slate-50,
+html.dark .content-wrapper .bg-slate-100 { background-color: #1e293b !important; }
+html.dark .content-wrapper .text-slate-950,
+html.dark .content-wrapper .text-slate-900,
+html.dark .content-wrapper .text-slate-800 { color: #f1f5f9 !important; }
+html.dark .content-wrapper .text-slate-700,
+html.dark .content-wrapper .text-slate-600 { color: #cbd5e1 !important; }
+html.dark .content-wrapper .text-slate-500,
+html.dark .content-wrapper .text-slate-400 { color: #94a3b8 !important; }
+html.dark .content-wrapper [class*="border-slate-"] { border-color: #334155 !important; }
+html.dark .content-wrapper table thead { background-color: #1e293b !important; color: #cbd5e1 !important; }
+html.dark .content-wrapper table tbody { color: #cbd5e1 !important; }
+html.dark .pengguna-page .pengguna-role { color: #86efac; background-color: #173824; }
+html.dark .pengguna-page .pengguna-action { border-color: #28583d; background: #173824; color: #86efac; }
+html.dark .pengguna-page .pengguna-action:hover { border-color: #3d8058; background: #1e4930; }

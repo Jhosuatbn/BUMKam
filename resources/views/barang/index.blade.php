@@ -7,9 +7,12 @@
         @if (session('success'))
             <div role="status" class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900">{{ session('success') }}</div>
         @endif
+        @if (session('error'))
+            <div role="alert" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-900">{{ session('error') }}</div>
+        @endif
 
         <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-labelledby="barang-list-heading">
-            <div class="flex flex-col gap-4 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <div class="flex flex-col gap-4 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-end sm:justify-between sm:px-6">
                 <div>
                     <h2 id="barang-list-heading" class="text-base font-semibold text-slate-900">Daftar Barang</h2>
                     <p class="mt-1 text-sm text-slate-500">Informasi barang yang tersedia.</p>
@@ -22,7 +25,7 @@
                     @endif
                     {{-- Form Pencarian Barang --}}
                     <form action="{{ route('barang.index') }}" method="GET" class="flex w-full min-w-0 flex-col gap-2 sm:flex-row">
-                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari ID, nama, atau kategori..." class="block w-full min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari ID, nama, atau kategori..." class="block min-h-11 w-full min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                         <button type="submit" style="border-radius: 12px !important;" class="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border-0 bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">
     <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
         <circle cx="11" cy="11" r="7"/>
@@ -91,8 +94,8 @@
                                             </form>
                                         </div>
                                     @else
-                                        <a href="{{ route('barang.show', $item->id_barang) }}" class="inline-flex items-center gap-1 text-sm font-semibold text-blue-800 hover:underline" aria-label="Lihat detail {{ $item->nama_barang }}">
-                                            Detail <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                        <a href="{{ route('barang.show', $item->id_barang) }}" class="inline-flex items-center justify-center text-blue-700 transition hover:text-blue-900" aria-label="Lihat {{ $item->nama_barang }}" title="Lihat">
+                                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
                                         </a>
                                     @endif
                                 </td>
@@ -110,7 +113,7 @@
     <div id="tambahBarangModal" class="hidden fixed inset-0 z-[9999] overflow-y-auto">
         <div onclick="closeModal()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"></div>
         <div class="flex min-h-screen items-center justify-center p-4">
-            <div class="relative w-full max-w-md transform rounded-2xl bg-slate-100 p-6 text-left shadow-2xl transition-all border border-slate-300 z-10">
+            <div class="relative w-full max-w-xl transform rounded-2xl bg-slate-100 p-6 text-left shadow-2xl transition-all border border-slate-300 z-10">
                 <div class="mb-5 flex items-center justify-between">
                     <h3 class="text-xl font-bold text-slate-800">Tambah Barang</h3>
                     <button onclick="closeModal()" type="button" class="text-slate-400 hover:text-slate-600 focus:outline-none">
@@ -158,8 +161,8 @@
                     <p class="text-xs italic text-slate-500">*ID Barang akan dibuat otomatis berdasarkan kategori pilihan.</p>
 
                     <div class="mt-6 flex justify-end gap-3 pt-2">
-                        <button onclick="closeModal()" type="button" class="min-w-24 rounded-xl bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm border border-slate-300 hover:bg-slate-50 transition">Batal</button>
-                        <button type="submit" class="min-w-24 rounded-xl bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-800 transition">Simpan</button>
+                        <button onclick="closeModal()" data-no-auto-icon type="button" class="bumkam-cancel-button barang-modal-action min-w-24 rounded-2xl bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm border border-slate-300 hover:bg-slate-50 transition">Batal</button>
+                        <button data-no-auto-icon type="submit" class="barang-modal-action bumkam-green-action min-w-24 rounded-2xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition">Simpan</button>
                     </div>
                 </form>
             </div>

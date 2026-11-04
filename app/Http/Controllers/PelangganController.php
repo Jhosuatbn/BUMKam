@@ -38,6 +38,8 @@ class PelangganController extends Controller
             // No. telepon: angka, maksimal 13 digit.
             'no_telepon' => ['required', 'digits_between:10,13'],
 
+            'wa_reminder_opt_in' => ['nullable', 'boolean'],
+
             'alamat' => ['required', 'string', 'max:255'],
 
             // Foto KTP: opsional, gambar JPG/PNG/WEBP, maksimal 2 MB.
@@ -75,10 +77,7 @@ class PelangganController extends Controller
 
     public function create()
     {
-        // Hanya pratinjau; ID final dibuat ulang saat data disimpan.
-        $nextId = Pelanggan::generateId();
-
-        return view('pelanggan.create', compact('nextId'));
+        return view('pelanggan.create');
     }
 
     public function store(Request $request)
@@ -86,6 +85,11 @@ class PelangganController extends Controller
         $data = $request->validate($this->rules(), $this->messages());
 
         unset($data['foto_ktp'], $data['hapus_foto']);
+
+        $data['wa_reminder_opt_in'] = $request->boolean('wa_reminder_opt_in');
+        $data['wa_reminder_opted_in_at'] = $data['wa_reminder_opt_in']
+            ? now(config('kredit.zona_waktu', 'Asia/Jakarta'))
+            : null;
 
         if ($request->hasFile('foto_ktp')) {
             // Disimpan di storage/app/public/pelanggan
@@ -109,7 +113,7 @@ class PelangganController extends Controller
 
         return redirect()
             ->route('pelanggan.index')
-            ->with('success', "Pelanggan {$pelanggan->id_pelanggan} berhasil ditambahkan.");
+            ->with('success', "Pelanggan {$pelanggan->nama_pelanggan} berhasil ditambahkan.");
     }
 
     public function show(Pelanggan $pelanggan)
@@ -127,6 +131,13 @@ class PelangganController extends Controller
         $data = $request->validate($this->rules($pelanggan), $this->messages());
 
         unset($data['foto_ktp'], $data['hapus_foto']);
+
+        $data['wa_reminder_opt_in'] = $request->boolean('wa_reminder_opt_in');
+        $data['wa_reminder_opted_in_at'] = $data['wa_reminder_opt_in']
+            ? ($pelanggan->wa_reminder_opt_in
+                ? $pelanggan->wa_reminder_opted_in_at
+                : now(config('kredit.zona_waktu', 'Asia/Jakarta')))
+            : null;
 
         if ($request->hasFile('foto_ktp')) {
             // Ganti foto: hapus file lama, simpan yang baru.
@@ -180,7 +191,7 @@ class PelangganController extends Controller
             Pelanggan::cari($request->q)
                 ->orderBy('nama_pelanggan')
                 ->limit(20)
-                ->get(['id_pelanggan', 'nama_pelanggan', 'nik', 'no_telepon', 'alamat'])
+                ->get(['id_pelanggan', 'nama_pelanggan'])
         );
     }
 }

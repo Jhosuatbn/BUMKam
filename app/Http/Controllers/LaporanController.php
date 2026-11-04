@@ -2,10 +2,12 @@
 namespace App\Http\Controllers;
 use App\Models\Pemesanan;
 use App\Models\Pembayaran;
+use App\Services\MonitoringKreditService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 class LaporanController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, MonitoringKreditService $monitoring)
     {
         /*
         |--------------------------------------------------------------------------
@@ -122,12 +124,16 @@ class LaporanController extends Controller
         |
         */
 
-        $kreditQuery = Pemesanan::query()
-            ->with([
+        $relasiKredit = [
                 'pelanggan',
                 'detailPemesanan.barang',
-                'pembayaran' => fn ($query) => $query->where('status_gateway', 'settlement'),
-            ])
+                'jaminanDokumen',
+                'pembayaran' => fn ($query) => $query->where('status_gateway', 'settlement')->when(Schema::hasTable('alokasi_pembayaran'), fn ($query) => $query->with('alokasiDenda')),
+        ];
+        if (Schema::hasTable('penyesuaian_denda')) $relasiKredit[] = 'penyesuaianDenda';
+        if (Schema::hasTable('denda_angsuran')) $relasiKredit[] = 'dendaAngsuran';
+        $kreditQuery = Pemesanan::query()
+            ->with($relasiKredit)
             ->whereNotNull('tenor')
             ->where('tenor', '>', 0);
 
@@ -165,6 +171,16 @@ class LaporanController extends Controller
             ->orderByDesc('tanggal_pemesanan')
             ->get();
 
+        $daftarKredit->each(function (Pemesanan $order) use ($monitoring) {
+            $order->setAttribute('monitoring_kredit', $monitoring->hitung($order));
+        });
+
+        $totalDendaDikenakan = $daftarKredit->sum(fn (Pemesanan $order) => $order->monitoring_kredit['total_denda_dikenakan']);
+        $totalDendaDibayar = $daftarKredit->sum(fn (Pemesanan $order) => $order->monitoring_kredit['total_denda_dibayar']);
+        $totalDendaBelumDibayar = $daftarKredit->sum(fn (Pemesanan $order) => $order->monitoring_kredit['total_denda_belum_dibayar']);
+        $totalDendaDikurangi = $daftarKredit->sum(fn (Pemesanan $order) => $order->monitoring_kredit['total_denda_dikurangi']);
+        $dendaAktif = app(\App\Services\DendaKeterlambatanService::class)->tersedia();
+
         $totalAngsuranBulanan = (clone $kreditQuery)
             ->sum('angsuran');
 
@@ -183,6 +199,11 @@ class LaporanController extends Controller
             'pembayaranTerbaru' => $pembayaranTerbaru,
             'daftarKredit' => $daftarKredit,
             'totalAngsuranBulanan' => $totalAngsuranBulanan,
+            'totalDendaDikenakan' => $totalDendaDikenakan,
+            'totalDendaDibayar' => $totalDendaDibayar,
+            'totalDendaBelumDibayar' => $totalDendaBelumDibayar,
+            'totalDendaDikurangi' => $totalDendaDikurangi,
+            'dendaAktif' => $dendaAktif,
         ]);
     }
 }

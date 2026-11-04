@@ -3,7 +3,7 @@
 @section('title', 'Monitoring Kredit')
 
 @section('content')
-    <div class="space-y-6">
+    <div class="monitoring-kredit-page space-y-6">
         <section class="card overflow-hidden" aria-labelledby="ringkasan-kredit-heading">
             <div class="card-header border-b">
                 <h2 id="ringkasan-kredit-heading" class="card-title mb-1">Ringkasan Kredit</h2>
@@ -19,10 +19,10 @@
                     ['label' => 'Total Sisa Piutang', 'nilai' => 'Rp ' . number_format($ringkasan['total_piutang'], 0, ',', '.'), 'ikon' => 'bx-wallet', 'warna' => 'var(--bs-primary)'],
                 ];
             @endphp
-            <div class="grid grid-cols-1 gap-x-6 gap-y-2 px-4 py-3 sm:grid-cols-2 sm:px-5 xl:grid-cols-3">
+            <div class="monitoring-summary-grid grid grid-cols-1 gap-x-6 gap-y-2 px-4 py-3 sm:grid-cols-2 sm:px-5 xl:grid-cols-3">
                 @foreach ($kartu as $item)
-                    <article class="flex min-w-0 items-center gap-3 py-3">
-                        <i class="icon-base bx {{ $item['ikon'] }} shrink-0 text-2xl" style="color: {{ $item['warna'] }}" aria-hidden="true"></i>
+                    <article class="monitoring-summary-item flex min-w-0 items-center gap-3 py-3">
+                        <i class="icon-base bx {{ $item['ikon'] }} monitoring-summary-icon shrink-0 text-2xl" style="color: {{ $item['warna'] }}" aria-hidden="true"></i>
                         <div class="min-w-0">
                             <p class="mb-1 text-sm leading-snug text-body-secondary">{{ $item['label'] }}</p>
                             <p class="mb-0 break-words text-xl font-bold text-slate-900 tabular-nums">{{ $item['nilai'] }}</p>
@@ -44,7 +44,7 @@
                     <label class="sr-only" for="status">Filter status kredit</label>
                     <select id="status" name="status" class="form-select">
                         <option value="">Semua status</option>
-                        @foreach (['Belum Jatuh Tempo', 'Jatuh Tempo Hari Ini', 'Terlambat', 'Lunas'] as $status)
+                        @foreach (['Belum Jatuh Tempo', 'Jatuh Tempo Hari Ini', 'Dalam Masa Tenggang', 'Terlambat', 'Lunas'] as $status)
                             <option value="{{ $status }}" @selected($statusFilter === $status)>{{ $status }}</option>
                         @endforeach
                     </select>
@@ -53,7 +53,7 @@
             </div>
 
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+                <table class="table table-hover align-middle mb-0 monitoring-credit-table">
                     <thead>
                         <tr>
                             <th scope="col">Pemesanan / Pelanggan</th>
@@ -74,10 +74,12 @@
                             @php($statusClass = match ($monitoringItem['status']) { 'Lunas' => 'success', 'Terlambat' => 'danger', 'Jatuh Tempo Hari Ini' => 'warning', default => 'info' })
                             @php($namaBarang = $item->detailPemesanan->pluck('barang.nama_barang')->filter()->implode(', '))
                             <tr>
-                                <td>
+                                <td class="monitoring-credit-identity">
+                                    <div class="d-flex flex-column gap-1">
                                     <a href="{{ route('monitoring-kredit.show', $item->id_pemesanan) }}" class="fw-semibold">{{ $item->id_pemesanan }}</a>
                                     <span class="d-block text-body-secondary">{{ $item->pelanggan?->nama_pelanggan ?? 'Pelanggan tidak ditemukan' }}</span>
-                                    <span class="d-block text-body-secondary small">{{ \Carbon\Carbon::parse($item->tanggal_pemesanan)->format('d/m/Y') }}</span>
+                                    <span class="d-block small text-body-secondary">Tanggal pemesanan · {{ \Carbon\Carbon::parse($item->tanggal_pemesanan)->format('d/m/Y') }}</span>
+                                    </div>
                                 </td>
                                 <td>{{ $namaBarang !== '' ? $namaBarang : '—' }}</td>
                                 <td class="text-nowrap">Rp {{ number_format($monitoringItem['total_kewajiban'], 0, ',', '.') }}</td>

@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+
         // Akun Pimpinan
         Pengguna::firstOrCreate(
             ['username' => 'pimpinan'],

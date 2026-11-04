@@ -130,7 +130,9 @@
                     </div>
 
                     <div class="flex shrink-0 items-center gap-3 sm:gap-4">
-                        <button type="button" data-theme-toggle aria-label="Ganti tema" title="Ganti tema" class="grid size-10 place-items-center rounded-lg border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg></button>
+                        <button type="button" data-theme-toggle aria-label="Ganti tema" title="Ganti tema" class="grid size-10 place-items-center rounded-lg border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600">
+                            <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20.9 13.1A8.5 8.5 0 0 1 10.9 3.1 8.5 8.5 0 1 0 20.9 13.1Z"/></svg>
+                        </button>
                         <div class="flex min-w-0 items-center gap-2 sm:gap-3">
                             <span class="grid size-9 place-items-center rounded-full bg-blue-100 text-sm font-semibold text-blue-800" aria-hidden="true">
                                 {{ strtoupper(substr($displayName, 0, 1)) }}

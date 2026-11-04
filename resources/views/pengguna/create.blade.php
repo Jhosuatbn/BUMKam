@@ -4,14 +4,6 @@
 
 @section('content')
     <div class="space-y-6">
-        <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-            <div>
-                <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Tambah Pengguna</h1>
-                <p class="mt-2 text-sm text-slate-600">Buat akun untuk mengakses sistem BUMKam.</p>
-            </div>
-            <a href="{{ route('pengguna.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Kembali</a>
-        </header>
-
         @if ($errors->any())
             <div role="alert" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900">
                 <p class="font-semibold">Terjadi kesalahan:</p>
@@ -30,32 +22,25 @@
                 <div class="grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2">
                     <div>
                         <label for="id_pengguna" class="block text-sm font-semibold text-slate-700">ID Pengguna</label>
-                        <input id="id_pengguna" type="text" name="id_pengguna" value="{{ old('id_pengguna') }}" placeholder="Contoh: PGN-001" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                        <input id="id_pengguna" type="text" value="{{ $idPengguna }}" readonly class="mt-2 block min-h-11 w-full rounded-xl border border-slate-200 bg-slate-100 px-3.5 py-2.5 text-sm text-slate-600">
                     </div>
-                    <div>
-                        <label for="peran" class="block text-sm font-semibold text-slate-700">Peran</label>
-                        <select id="peran" name="peran" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
-                            <option value="">-- Pilih Peran --</option>
-                            <option value="Staff" {{ old('peran') == 'Staff' ? 'selected' : '' }}>Staff</option>
-                            <option value="Pimpinan" {{ old('peran') == 'Pimpinan' ? 'selected' : '' }}>Pimpinan</option>
-                        </select>
-                    </div>
+                    <div><label class="block text-sm font-semibold text-slate-700">Peran</label><div class="mt-2 flex min-h-11 items-center rounded-xl border border-slate-200 bg-slate-100 px-3.5 text-sm font-semibold text-slate-700">Staff</div></div>
                     <div>
                         <label for="username" class="block text-sm font-semibold text-slate-700">Username</label>
                         <input id="username" type="text" name="username" value="{{ old('username') }}" placeholder="Masukkan username" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                     </div>
                     <div>
                         <label for="password" class="block text-sm font-semibold text-slate-700">Password</label>
-                        <input id="password" type="password" name="password" placeholder="Masukkan password" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                        <input id="password" type="password" name="password" minlength="10" required autocomplete="new-password" placeholder="Buat password awal (minimal 10 karakter)" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                     </div>
                     <div class="md:col-span-2">
                         <label for="nama_lengkap" class="block text-sm font-semibold text-slate-700">Nama Lengkap</label>
                         <input id="nama_lengkap" type="text" name="nama_lengkap" value="{{ old('nama_lengkap') }}" placeholder="Masukkan nama lengkap" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                     </div>
                 </div>
-                <div class="mt-8 flex flex-wrap gap-3 border-t border-slate-200 pt-5">
-                    <button type="submit" class="inline-flex min-h-11 items-center justify-center rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Simpan Pengguna</button>
-                    <a href="{{ route('pengguna.index') }}" class="inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Batal</a>
+                <div class="mt-8 flex flex-wrap justify-end gap-3 border-t border-slate-200 pt-5">
+                    <a href="{{ route('pengguna.index') }}" class="bumkam-cancel-button inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-bold text-slate-900 shadow-sm transition hover:bg-slate-100">Batal</a>
+                    <button data-no-auto-icon type="submit" class="bumkam-green-action inline-flex min-h-11 items-center justify-center rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition">Simpan Pengguna</button>
                 </div>
             </form>
         </section>
