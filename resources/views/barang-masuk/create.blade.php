@@ -9,6 +9,16 @@
             <p class="mb-0 text-body-secondary">Simpan pembelian dan tambah stok secara otomatis.</p>
         </div>
         <div class="card-body">
+            @if ($errors->any())
+                <div role="alert" class="alert alert-danger" aria-live="assertive">
+                    <div class="fw-semibold">Penerimaan belum dapat disimpan. Periksa kembali data berikut:</div>
+                    <ul class="mb-0 mt-2 ps-3">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
             <form method="POST" action="{{ route('barang-masuk.store') }}" id="receipt-form" class="row g-3">
                 @csrf
 

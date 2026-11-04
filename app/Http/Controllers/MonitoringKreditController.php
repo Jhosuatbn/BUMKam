@@ -16,49 +16,81 @@ class MonitoringKreditController extends Controller
 {
     public function index(Request $request, MonitoringKreditService $monitoring)
     {
-        $pemesanan = Pemesanan::with(array_merge([
+        $perPage = 15;
+        $page = Paginator::resolveCurrentPage();
+        $offset = ($page - 1) * $perPage;
+        $kataKunci = trim((string) $request->query('q', ''));
+        $kataKunciNormal = mb_strtolower($kataKunci);
+        $statusFilter = (string) $request->query('status', '');
+        $ringkasan = [
+            'pelanggan_aktif' => 0,
+            'kredit_lunas' => 0,
+            'kredit_belum_lunas' => 0,
+            'jatuh_tempo_hari_ini' => 0,
+            'angsuran_terlambat' => 0,
+            'total_piutang' => 0.0,
+        ];
+        $pelangganAktif = [];
+        $pageItems = collect();
+        $jumlahCocok = 0;
+
+        $this->queryKreditAktif()->with(array_merge([
             'pelanggan',
             'detailPemesanan.barang',
             'pembayaran' => fn ($query) => $query
-                ->where('status_gateway', 'settlement')
+                ->whereIn('status_gateway', ['settlement', 'partial_refund'])
                 ->when(Schema::hasTable('alokasi_pembayaran'), fn ($query) => $query->with('alokasiDenda'))
                 ->orderBy('tanggal_pembayaran')
                 ->orderBy('id_pembayaran'),
-        ], $this->relasiDendaTersedia()))->where('tenor', '>', 0)->orderByDesc('tanggal_pemesanan')->get();
+        ], $this->relasiDendaTersedia()))
+            ->orderByDesc('tanggal_pemesanan')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id_pemesanan')
+            ->chunk(100, function ($pemesanan) use (
+                $monitoring,
+                $kataKunciNormal,
+                $statusFilter,
+                $offset,
+                $perPage,
+                &$ringkasan,
+                &$pelangganAktif,
+                &$pageItems,
+                &$jumlahCocok
+            ) {
+                foreach ($pemesanan as $item) {
+                    $dataMonitoring = $monitoring->hitung($item);
+                    $item->setAttribute('monitoring_kredit', $dataMonitoring);
+                    $sisaKewajiban = (float) $dataMonitoring['sisa_kewajiban'];
 
-        $kredit = $pemesanan->map(function (Pemesanan $item) use ($monitoring) {
-            $item->setAttribute('monitoring_kredit', $monitoring->hitung($item));
+                    if ($sisaKewajiban > 0) {
+                        $pelangganAktif[$item->id_pelanggan] = true;
+                        $ringkasan['kredit_belum_lunas']++;
+                    }
+                    if ($dataMonitoring['status'] === 'Lunas') {
+                        $ringkasan['kredit_lunas']++;
+                    }
+                    $ringkasan['jatuh_tempo_hari_ini'] += (int) $dataMonitoring['angsuran_jatuh_tempo_hari_ini'];
+                    $ringkasan['angsuran_terlambat'] += (int) $dataMonitoring['angsuran_terlambat'];
+                    $ringkasan['total_piutang'] += $sisaKewajiban;
 
-            return $item;
-        });
+                    $cocokDenganPencarian = $kataKunciNormal === ''
+                        || str_contains(mb_strtolower($item->id_pemesanan), $kataKunciNormal)
+                        || str_contains(mb_strtolower((string) $item->pelanggan?->nama_pelanggan), $kataKunciNormal);
+                    $cocokDenganStatus = $statusFilter === '' || $dataMonitoring['status'] === $statusFilter;
 
-        $ringkasan = [
-            'pelanggan_aktif' => $kredit->where('monitoring_kredit.sisa_kewajiban', '>', 0)
-                ->pluck('id_pelanggan')->unique()->count(),
-            'kredit_lunas' => $kredit->where('monitoring_kredit.status', 'Lunas')->count(),
-            'kredit_belum_lunas' => $kredit->where('monitoring_kredit.sisa_kewajiban', '>', 0)->count(),
-            'jatuh_tempo_hari_ini' => $kredit->sum('monitoring_kredit.angsuran_jatuh_tempo_hari_ini'),
-            'angsuran_terlambat' => $kredit->sum('monitoring_kredit.angsuran_terlambat'),
-            'total_piutang' => $kredit->sum('monitoring_kredit.sisa_kewajiban'),
-        ];
+                    if ($cocokDenganPencarian && $cocokDenganStatus) {
+                        if ($jumlahCocok >= $offset && $jumlahCocok < $offset + $perPage) {
+                            $pageItems->push($item);
+                        }
+                        $jumlahCocok++;
+                    }
+                }
+            });
 
-        $kataKunci = trim((string) $request->query('q', ''));
-        $statusFilter = (string) $request->query('status', '');
-        $kredit = $kredit
-            ->when($kataKunci !== '', fn ($items) => $items->filter(fn (Pemesanan $item) =>
-                str_contains(mb_strtolower($item->id_pemesanan), mb_strtolower($kataKunci))
-                || str_contains(mb_strtolower((string) $item->pelanggan?->nama_pelanggan), mb_strtolower($kataKunci))
-            ))
-            ->when($statusFilter !== '', fn ($items) => $items->filter(fn (Pemesanan $item) =>
-                $item->monitoring_kredit['status'] === $statusFilter
-            ))
-            ->values();
-
-        $perPage = 15;
-        $page = Paginator::resolveCurrentPage();
+        $ringkasan['pelanggan_aktif'] = count($pelangganAktif);
         $paginator = new Paginator(
-            $kredit->forPage($page, $perPage)->values(),
-            $kredit->count(),
+            $pageItems,
+            $jumlahCocok,
             $perPage,
             $page,
             ['path' => $request->url(), 'query' => $request->query()]
@@ -74,13 +106,13 @@ class MonitoringKreditController extends Controller
 
     public function show(Pemesanan $pemesanan, MonitoringKreditService $monitoring)
     {
-        abort_if((int) $pemesanan->tenor <= 0, 404);
+        abort_unless($this->dapatDimonitor($pemesanan), 404);
 
         $pemesanan->load(array_merge([
             'pelanggan',
             'detailPemesanan.barang',
             'pembayaran' => fn ($query) => $query
-                ->where('status_gateway', 'settlement')
+                ->whereIn('status_gateway', ['settlement', 'partial_refund'])
                 ->when(Schema::hasTable('alokasi_pembayaran'), fn ($query) => $query->with('alokasiDenda'))
                 ->orderBy('tanggal_pembayaran')
                 ->orderBy('id_pembayaran'),
@@ -92,10 +124,10 @@ class MonitoringKreditController extends Controller
 
     public function jadwal(MonitoringKreditService $monitoring)
     {
-        $orders = Pemesanan::with(array_merge([
+        $orders = $this->queryKreditAktif()->with(array_merge([
             'pelanggan',
-            'pembayaran' => fn ($query) => $query->where('status_gateway', 'settlement')->when(Schema::hasTable('alokasi_pembayaran'), fn ($query) => $query->with('alokasiDenda'))->orderBy('tanggal_pembayaran')->orderBy('id_pembayaran'),
-        ], $this->relasiDendaTersedia()))->where('tenor', '>', 0)->orderByDesc('tanggal_pemesanan')->get();
+            'pembayaran' => fn ($query) => $query->whereIn('status_gateway', ['settlement', 'partial_refund'])->when(Schema::hasTable('alokasi_pembayaran'), fn ($query) => $query->with('alokasiDenda'))->orderBy('tanggal_pembayaran')->orderBy('id_pembayaran'),
+        ], $this->relasiDendaTersedia()))->orderByDesc('tanggal_pemesanan')->get();
 
         $jadwal = $orders->flatMap(function (Pemesanan $order) use ($monitoring) {
             return collect($monitoring->hitung($order)['jadwal'])->map(function (array $row) use ($order) {
@@ -110,10 +142,10 @@ class MonitoringKreditController extends Controller
 
     public function denda(MonitoringKreditService $monitoring)
     {
-        $orders = Pemesanan::with(array_merge([
+        $orders = $this->queryKreditAktif()->with(array_merge([
             'pelanggan',
-            'pembayaran' => fn ($query) => $query->where('status_gateway', 'settlement')->when(Schema::hasTable('alokasi_pembayaran'), fn ($query) => $query->with('alokasiDenda'))->orderBy('tanggal_pembayaran')->orderBy('id_pembayaran'),
-        ], $this->relasiDendaTersedia(true)))->where('tenor', '>', 0)->orderByDesc('tanggal_pemesanan')->get();
+            'pembayaran' => fn ($query) => $query->whereIn('status_gateway', ['settlement', 'partial_refund'])->when(Schema::hasTable('alokasi_pembayaran'), fn ($query) => $query->with('alokasiDenda'))->orderBy('tanggal_pembayaran')->orderBy('id_pembayaran'),
+        ], $this->relasiDendaTersedia(true)))->orderByDesc('tanggal_pemesanan')->get();
 
         $dataDenda = $orders->map(fn (Pemesanan $order) => [
             'pemesanan' => $order,
@@ -128,6 +160,7 @@ class MonitoringKreditController extends Controller
     {
         abort_unless(app(\App\Services\DendaKeterlambatanService::class)->tersedia(), 503, 'Migration fitur denda belum diterapkan.');
         abort_unless($request->user()?->peran === 'Pimpinan', 403, 'Hanya Pimpinan yang dapat memutuskan pengurangan denda.');
+        abort_unless($this->dapatDimonitor($pemesanan), 404);
         $validated = $request->validate([
             'nomor_angsuran' => ['required', 'integer', 'min:1', 'max:120'],
             'nominal_pengurangan' => ['required', 'numeric', 'gt:0'],
@@ -136,7 +169,7 @@ class MonitoringKreditController extends Controller
 
         DB::transaction(function () use ($request, $pemesanan, $monitoring, $validated) {
             $order = Pemesanan::whereKey($pemesanan->getKey())->lockForUpdate()->with(array_merge([
-                'pembayaran' => fn ($query) => $query->where('status_gateway', 'settlement')->with('alokasiDenda')->orderBy('tanggal_pembayaran')->orderBy('id_pembayaran'),
+                'pembayaran' => fn ($query) => $query->whereIn('status_gateway', ['settlement', 'partial_refund'])->with('alokasiDenda')->orderBy('tanggal_pembayaran')->orderBy('id_pembayaran'),
             ], $this->relasiDendaTersedia()))->firstOrFail();
             $row = collect($monitoring->hitung($order)['jadwal'])->firstWhere('nomor', (int) $validated['nomor_angsuran']);
             $pengurangan = round((float) $validated['nominal_pengurangan'], 2);
@@ -178,5 +211,20 @@ class MonitoringKreditController extends Controller
         }
         if (Schema::hasTable('denda_angsuran')) $relations[] = 'dendaAngsuran';
         return $relations;
+    }
+
+    private function queryKreditAktif()
+    {
+        return Pemesanan::query()
+            ->where('tenor', '>', 0)
+            ->where(fn ($query) => $query
+                ->whereNull('status_persetujuan')
+                ->orWhere('status_persetujuan', 'Disetujui'));
+    }
+
+    private function dapatDimonitor(Pemesanan $pemesanan): bool
+    {
+        return (int) $pemesanan->tenor > 0
+            && ($pemesanan->status_persetujuan === null || $pemesanan->status_persetujuan === 'Disetujui');
     }
 }

@@ -56,7 +56,7 @@
                     <div class="md:col-span-2">
                         <label for="bukti_pembayaran" class="block text-sm font-semibold text-slate-700">Bukti Pembayaran</label>
                         @if ($pembayaran->bukti_pembayaran)
-                            @php($buktiUrl = asset('storage/' . $pembayaran->bukti_pembayaran))
+                            @php($buktiUrl = route('pembayaran.bukti', $pembayaran))
                             @php($buktiExt = strtolower(pathinfo($pembayaran->bukti_pembayaran, PATHINFO_EXTENSION)))
                             @if (in_array($buktiExt, ['jpg', 'jpeg', 'png', 'webp'], true))
                                 <button type="button" data-photo-preview="{{ $buktiUrl }}" data-photo-alt="Bukti pembayaran saat ini" class="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-blue-800 underline">Lihat bukti saat ini</button>

@@ -26,6 +26,12 @@ class Pemesanan extends Model
         'total_harga',
         'angsuran',
         'status_pemesanan',
+        'status_penyerahan',
+        'diserahkan_oleh',
+        'diserahkan_pada',
+        'dibatalkan_oleh',
+        'dibatalkan_pada',
+        'alasan_pembatalan',
         'status_persetujuan',
         'persetujuan_oleh',
         'persetujuan_pada',
@@ -34,6 +40,8 @@ class Pemesanan extends Model
 
     protected $casts = [
         'persetujuan_pada' => 'datetime',
+        'diserahkan_pada' => 'datetime',
+        'dibatalkan_pada' => 'datetime',
     ];
 
     public function pelanggan()
@@ -49,6 +57,11 @@ class Pemesanan extends Model
     public function pembayaran()
     {
         return $this->hasMany(Pembayaran::class, 'id_pemesanan');
+    }
+
+    public function returPelanggan()
+    {
+        return $this->hasMany(ReturPelanggan::class, 'id_pemesanan', 'id_pemesanan');
     }
 
     public function penyesuaianDenda()
@@ -69,6 +82,16 @@ class Pemesanan extends Model
     public function persetujuanOleh()
     {
         return $this->belongsTo(Pengguna::class, 'persetujuan_oleh', 'id_pengguna');
+    }
+
+    public function diserahkanOleh()
+    {
+        return $this->belongsTo(Pengguna::class, 'diserahkan_oleh', 'id_pengguna');
+    }
+
+    public function dibatalkanOleh()
+    {
+        return $this->belongsTo(Pengguna::class, 'dibatalkan_oleh', 'id_pengguna');
     }
 
     public function riwayatPersetujuan()

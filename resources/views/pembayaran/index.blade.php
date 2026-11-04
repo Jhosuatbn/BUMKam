@@ -21,7 +21,7 @@
                     <p class="mt-1 text-sm text-slate-500">Rincian pembayaran dan saldo setiap transaksi.</p>
                 </div>
                 @if (auth()->user()?->peran !== 'Pimpinan')
-                    <a href="{{ route('pembayaran.create') }}" style="margin-top: 14px !important" class="inline-flex min-h-11 shrink-0 self-start items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"><i class="icon-base bx bx-plus" aria-hidden="true"></i>Tambah Pembayaran</a>
+                    <a href="{{ route('pembayaran.create') }}" style="margin-top: 14px !important" class="bumkam-green-action inline-flex min-h-11 shrink-0 self-start items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition"><i class="icon-base bx bx-plus" aria-hidden="true"></i>Tambah Pembayaran</a>
                 @endif
             </div>
             <div class="overflow-x-auto">
@@ -42,7 +42,7 @@
                     <tbody class="divide-y divide-slate-100 text-slate-700">
                         @forelse ($pembayaran as $item)
                             @php
-                                $riwayatPembayaran = $item->pemesanan?->pembayaran?->where('status_gateway', 'settlement')->sortBy([['tanggal_pembayaran', 'asc'], ['id_pembayaran', 'asc']])->values() ?? collect();
+                                $riwayatPembayaran = $item->pemesanan?->pembayaran?->whereIn('status_gateway', ['settlement', 'partial_refund'])->sortBy([['tanggal_pembayaran', 'asc'], ['id_pembayaran', 'asc']])->values() ?? collect();
                                 $posisiAngsuran = $riwayatPembayaran->search(fn ($pembayaranRiwayat) => $pembayaranRiwayat->id_pembayaran === $item->id_pembayaran);
                                 $nomorAngsuran = $posisiAngsuran === false ? $riwayatPembayaran->count() + 1 : $posisiAngsuran + 1;
                                 $sisaTerkini = (float) ($riwayatPembayaran->last()?->sisa_pembayaran ?? (($item->pemesanan?->total_harga ?? 0) + ($item->pemesanan?->bunga ?? 0) - ($item->pemesanan?->dp ?? 0)));
@@ -63,7 +63,11 @@
                                 <td class="whitespace-nowrap px-4 py-3.5 tabular-nums sm:px-6">Rp {{ number_format($item->total_pembayaran, 0, ',', '.') }}</td>
                                 <td class="whitespace-nowrap px-4 py-3.5 tabular-nums sm:px-6">Rp {{ number_format($sisaTerkini, 0, ',', '.') }}</td>
                                 <td class="px-4 py-3.5 sm:px-6">
-                                    @if ($item->metode_pembayaran === 'online' && $item->status_gateway !== 'settlement')
+                                    @if ($item->status_gateway === 'partial_refund')
+                                        <span class="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-950">Refund sebagian</span>
+                                    @elseif ($item->status_gateway === 'reversed')
+                                        <span class="inline-flex rounded-full bg-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-800">Dibalikkan</span>
+                                    @elseif ($item->metode_pembayaran === 'online' && $item->status_gateway !== 'settlement')
                                         @php($labelGateway = ['pending' => 'Menunggu Pembayaran', 'expire' => 'Kedaluwarsa', 'cancel' => 'Dibatalkan', 'deny' => 'Ditolak', 'failure' => 'Gagal', 'refund' => 'Dikembalikan', 'partial_refund' => 'Rekonsiliasi'][ $item->status_gateway ] ?? 'Perlu Diperiksa')
                                         <span class="inline-flex rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-900">{{ $labelGateway }}</span>
                                     @elseif ($item->status_pembayaran === 'Lunas')
@@ -78,7 +82,7 @@
                                     <span class="mb-1 block text-xs font-semibold text-slate-700">{{ $item->metode_pembayaran === 'online' ? 'Online · Midtrans' : 'Tunai / di tempat' }}</span>
                                     <span class="block text-xs font-semibold text-slate-700">Angsuran {{ $nomorAngsuran }} dari {{ $item->pemesanan?->tenor ?? '-' }}</span>
                                     @if ($item->bukti_pembayaran)
-                                        <a href="{{ asset('storage/' . $item->bukti_pembayaran) }}" target="_blank" rel="noopener" class="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-blue-800 hover:underline">Lihat bukti</a>
+                                        <a href="{{ route('pembayaran.bukti', $item) }}" target="_blank" rel="noopener" class="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-blue-800 hover:underline">Lihat bukti</a>
                                     @else
                                         <span class="mt-1 block text-xs text-slate-400">Belum ada</span>
                                     @endif
@@ -91,12 +95,7 @@
                                         @if ($item->metode_pembayaran === 'online' && $item->status_gateway === 'pending' && $item->snap_token)
                                             <a href="{{ route('pembayaran.online', $item->id_pembayaran) }}" class="font-semibold text-blue-800 underline-offset-4 hover:underline">Lanjut Bayar</a>
                                         @endif
-                                        @if ($item->metode_pembayaran !== 'online')
-                                            <a href="{{ route('pembayaran.edit', $item->id_pembayaran) }}" class="text-amber-600 transition hover:text-amber-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700" title="Edit pembayaran {{ $item->id_pembayaran }}" aria-label="Edit pembayaran {{ $item->id_pembayaran }}">
-                                                <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 0 1 2.828 2.828L11.828 15H9v-2.828z"/></svg>
-                                            </a>
-                                        @endif
-                                        @if ($item->metode_pembayaran !== 'online' || ! in_array($item->status_gateway, ['pending', 'settlement', 'refund', 'partial_refund'], true))
+                                        @if (($item->metode_pembayaran !== 'online' && $item->status_gateway !== 'settlement') || ($item->metode_pembayaran === 'online' && ! in_array($item->status_gateway, ['pending', 'settlement', 'refund', 'partial_refund'], true)))
                                             <form action="{{ route('pembayaran.destroy', $item->id_pembayaran) }}" method="POST" data-confirm-delete="Yakin ingin menghapus catatan pembayaran ini?">
                                                 @csrf
                                                 @method('DELETE')
@@ -114,6 +113,11 @@
                     </tbody>
                 </table>
             </div>
+            @if ($pembayaran->hasPages())
+                <div class="border-t border-slate-200 px-5 py-4 sm:px-6" aria-label="Navigasi halaman pembayaran">
+                    {{ $pembayaran->links() }}
+                </div>
+            @endif
         </section>
     </div>
 @endsection

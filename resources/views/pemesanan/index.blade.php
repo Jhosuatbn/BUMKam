@@ -7,14 +7,29 @@
         @if (session('success'))
             <div role="status" class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900">{{ session('success') }}</div>
         @endif
+        @if ($errors->any())
+            <div role="alert" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900" aria-live="assertive">
+                @foreach ($errors->all() as $error)<div>{{ $error }}</div>@endforeach
+            </div>
+        @endif
 
         <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-labelledby="pemesanan-list-heading">
             @if (($halamanPersetujuan ?? false) && auth()->user()?->peran === 'Pimpinan')
-                <nav aria-label="Filter status persetujuan" class="flex flex-wrap gap-2 border-b border-slate-200 px-5 py-3 sm:px-6">
+                <nav aria-label="Filter status persetujuan" class="hidden border-b border-slate-200 px-5 py-3 sm:block sm:px-6">
+                    <div class="inline-flex flex-wrap gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1">
                     @foreach (['Menunggu Persetujuan', 'Disetujui', 'Ditolak'] as $statusTab)
-                        <a href="{{ route('pemesanan.persetujuan', ['status' => $statusTab]) }}" @class(['inline-flex min-h-10 items-center rounded-xl border px-4 py-2 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700', 'border-blue-700 bg-blue-700 text-white shadow-sm hover:bg-blue-800' => $status === $statusTab, 'border-slate-300 bg-white text-slate-700 hover:bg-slate-100' => $status !== $statusTab])>{{ $statusTab }}</a>
+                        <a href="{{ route('pemesanan.persetujuan', ['status' => $statusTab]) }}" @class(['inline-flex min-h-9 items-center rounded-lg px-3 py-1.5 text-sm font-semibold transition', 'bg-emerald-700 text-white shadow-sm hover:bg-emerald-800' => $status === $statusTab, 'text-slate-600 hover:bg-white hover:text-slate-900' => $status !== $statusTab]) @if($status === $statusTab) aria-current="page" @endif>{{ $statusTab }}</a>
                     @endforeach
+                    </div>
                 </nav>
+                <form action="{{ route('pemesanan.persetujuan') }}" method="GET" class="flex items-center gap-2 border-b border-slate-200 px-5 py-3 sm:hidden">
+                    <label for="status-persetujuan-mobile" class="sr-only">Pilih status persetujuan</label>
+                    <select id="status-persetujuan-mobile" name="status" class="form-select" onchange="this.form.requestSubmit()">
+                        @foreach (['Menunggu Persetujuan', 'Disetujui', 'Ditolak'] as $statusTab)
+                            <option value="{{ $statusTab }}" @selected($status === $statusTab)>{{ $statusTab }}</option>
+                        @endforeach
+                    </select>
+                </form>
             @endif
             <div class="flex flex-col gap-3 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
                 <div>
@@ -22,7 +37,7 @@
                     <p class="mt-1 text-sm text-slate-500">{{ ($halamanPersetujuan ?? false) ? 'Periksa pelanggan, barang, tenor, DP, simulasi angsuran, dan informasi jaminan.' : 'Rincian nilai, skema, dan status setiap pemesanan.' }}</p>
                 </div>
                 @if (auth()->user()?->peran !== 'Pimpinan' && !($halamanPersetujuan ?? false))
-                    <a href="{{ route('pemesanan.create') }}" style="margin-top: 20px !important" class="inline-flex min-h-11 shrink-0 self-start items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"><i class="icon-base bx bx-plus" aria-hidden="true"></i>Tambah Pemesanan</a>
+                    <a href="{{ route('pemesanan.create') }}" style="margin-top: 20px !important" class="bumkam-green-action inline-flex min-h-11 shrink-0 self-start items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition"><i class="icon-base bx bx-plus" aria-hidden="true"></i>Tambah Pemesanan</a>
                 @endif
             </div>
             <div class="overflow-x-auto">
@@ -45,6 +60,7 @@
                                 $statusTampilan = match ($item->status_persetujuan) {
                                     'Menunggu Persetujuan' => 'Menunggu Persetujuan',
                                     'Ditolak' => 'Ditolak',
+                                    'Dibatalkan' => 'Dibatalkan',
                                     default => $item->status_pemesanan === 'Lunas' ? 'Selesai' : 'Sedang Berjalan',
                                 };
                             @endphp
@@ -62,8 +78,10 @@
                                         <span class="inline-flex rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-900">{{ $statusTampilan }}</span>
                                     @elseif ($statusTampilan === 'Ditolak')
                                         <span class="inline-flex rounded-full bg-rose-100 px-2.5 py-1 text-xs font-semibold text-rose-900">{{ $statusTampilan }}</span>
+                                    @elseif ($statusTampilan === 'Dibatalkan')
+                                        <span class="inline-flex rounded-full bg-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-800">{{ $statusTampilan }}</span>
                                     @else
-                                        <span class="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-950">{{ $statusTampilan }}</span>
+                                        <span class="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-950">{{ $statusTampilan }} · {{ $item->status_penyerahan === 'Diserahkan' ? 'Barang diserahkan' : ($item->status_penyerahan === 'Riwayat Lama' ? 'Data stok lama' : 'Belum diserahkan') }}</span>
                                     @endif
                                 </td>
                                 <td class="px-4 py-3.5 text-center sm:px-6">
@@ -92,6 +110,11 @@
                     </tbody>
                 </table>
             </div>
+            @if ($pemesanan->hasPages())
+                <div class="border-t border-slate-200 px-5 py-4 sm:px-6" aria-label="Navigasi halaman pemesanan">
+                    {{ $pemesanan->links() }}
+                </div>
+            @endif
         </section>
     </div>
 @endsection

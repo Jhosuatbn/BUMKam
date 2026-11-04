@@ -7,6 +7,8 @@ use App\Models\Pembayaran;
 use App\Models\Pemesanan;
 use App\Models\Pengguna;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class PembayaranTest extends TestCase
@@ -103,5 +105,36 @@ class PembayaranTest extends TestCase
             ->assertSee('Cari ID pemesanan atau nama pelanggan...')
             ->assertSee('Pelanggan Uji')
             ->assertSee('data-installment-select', false);
+    }
+
+    public function test_uploaded_proof_is_removed_when_payment_transaction_fails(): void
+    {
+        Storage::fake('local');
+        $user = Pengguna::create([
+            'id_pengguna' => 'PGN-PAY-FAIL', 'username' => 'staff_payment_fail', 'password' => bcrypt('secret'),
+            'nama_lengkap' => 'Staff Pembayaran', 'peran' => 'Staff',
+        ]);
+        $customer = Pelanggan::create([
+            'id_pelanggan' => 'PLG-PAY-FAIL', 'nama_pelanggan' => 'Pelanggan Uji', 'nik' => '9876543210987654',
+            'no_telepon' => '081234567890', 'alamat' => 'Alamat Uji',
+        ]);
+        $order = Pemesanan::create([
+            'id_pemesanan' => 'PSN-PAY-FAIL', 'id_pelanggan' => $customer->id_pelanggan,
+            'tanggal_pemesanan' => now()->toDateString(), 'skema_pembayaran' => 'Angsuran', 'dp' => 0,
+            'tenor' => 3, 'bunga' => 0, 'total_harga' => 900000, 'angsuran' => 300000,
+            'status_pemesanan' => 'Belum Lunas',
+        ]);
+
+        $this->actingAs($user)->from(route('pembayaran.create'))->post(route('pembayaran.store'), [
+            'id_pemesanan' => $order->id_pemesanan,
+            'tanggal_pembayaran' => now()->toDateString(),
+            'metode_pembayaran' => 'tunai',
+            'nominal' => 999999999,
+            'bukti_pembayaran' => UploadedFile::fake()->create('bukti.pdf', 10, 'application/pdf'),
+        ])->assertRedirect(route('pembayaran.create'))
+            ->assertSessionHasErrors('nominal');
+
+        $this->assertDatabaseCount('pembayaran', 0);
+        $this->assertSame([], Storage::disk('local')->allFiles('bukti-pembayaran'));
     }
 }

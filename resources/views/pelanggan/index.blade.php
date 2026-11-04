@@ -11,6 +11,11 @@
         @if (session('error'))
             <div role="alert" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-900">{{ session('error') }}</div>
         @endif
+        @if ($errors->any())
+            <div role="alert" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-900" aria-live="assertive">
+                @foreach ($errors->all() as $error)<div>{{ $error }}</div>@endforeach
+            </div>
+        @endif
 
         <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-labelledby="pelanggan-list-heading">
             <div class="flex flex-col gap-4 border-b border-slate-200 px-5 py-4 sm:px-6 lg:flex-row lg:items-end lg:justify-between">
@@ -23,16 +28,16 @@
 
                 <div class="flex w-full flex-col gap-2 lg:w-[24rem]">
                     @if (auth()->user()?->peran !== 'Pimpinan')
-                        <a href="{{ route('pelanggan.create') }}" class="inline-flex min-h-11 shrink-0 self-end items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">
+                        <a href="{{ route('pelanggan.create') }}" class="bumkam-green-action inline-flex min-h-11 shrink-0 self-end items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition">
                             <i class="icon-base bx bx-plus" aria-hidden="true"></i>Tambah Pelanggan
                         </a>
                     @endif
                     {{-- Pencarian pelanggan --}}
                     <form action="{{ route('pelanggan.index') }}" method="GET" role="search" class="flex w-full min-w-0 flex-col gap-2 sm:flex-row">
                     <label for="q" class="sr-only">Cari pelanggan</label>
-                    <input id="q" type="search" name="q" value="{{ request('q') }}" placeholder="Cari nama, NIK, atau no. telepon..." class="block min-h-11 w-full min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                    <input id="q" type="search" name="q" maxlength="100" value="{{ request('q') }}" placeholder="Cari nama, NIK, atau no. telepon..." class="block min-h-11 w-full min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                     <div class="flex gap-2">
-<button type="submit" style="border-radius: 12px !important;" class="inline-flex min-h-11 items-center justify-center rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Cari</button>                        @if (request()->filled('q'))
+<button type="submit" style="border-radius: 12px !important;" class="bumkam-green-action inline-flex min-h-11 items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition">Cari</button>                        @if (request()->filled('q'))
                             <a href="{{ route('pelanggan.index') }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Reset</a>
                         @endif
                     </div>

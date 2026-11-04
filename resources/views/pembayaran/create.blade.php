@@ -33,7 +33,7 @@
                     </div>
                     <div>
                         <label for="tanggal_pembayaran" class="block text-sm font-semibold text-slate-700">Tanggal Pembayaran</label>
-                        <input id="tanggal_pembayaran" type="date" name="tanggal_pembayaran" value="{{ old('tanggal_pembayaran', date('Y-m-d')) }}" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                        <input id="tanggal_pembayaran" type="date" name="tanggal_pembayaran" value="{{ old('tanggal_pembayaran', now(config('kredit.zona_waktu', 'Asia/Jakarta'))->toDateString()) }}" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                     </div>
                     <div>
                         <label for="metode_pembayaran" class="block text-sm font-semibold text-slate-700">Metode Pembayaran</label>

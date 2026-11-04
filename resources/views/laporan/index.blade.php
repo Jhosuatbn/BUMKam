@@ -5,6 +5,16 @@
 @section('content')
     @php
         $tabAktif = request('tab', 'pemesanan');
+        $jenisLaporan = [
+            'pemesanan' => 'Laporan Pemesanan',
+            'kredit' => 'Laporan Kredit',
+            'penerimaan' => 'Penerimaan Pembayaran',
+            'pembelian' => 'Penerimaan Barang',
+            'piutang' => 'Piutang Kredit',
+            'denda' => 'Pendapatan Denda',
+            'persediaan' => 'Persediaan',
+            'pengeluaran' => 'Pengeluaran',
+        ];
     @endphp
 
     <div class="laporan-page">
@@ -15,25 +25,6 @@
             </div>
         @endif
 
-        <section class="card mb-4 laporan-tabs-card" aria-label="Jenis laporan">
-            <div class="card-body p-2">
-                <ul class="nav nav-pills gap-2">
-                    <li class="nav-item">
-                        <a href="{{ route('laporan.index', array_merge(request()->except('tab', 'pelanggan'), ['tab' => 'pemesanan'])) }}"
-                           class="nav-link {{ $tabAktif === 'pemesanan' ? 'active bumkam-laporan-tab-active' : '' }}">
-                            <i class="icon-base bx bx-receipt me-1" aria-hidden="true"></i>Laporan Pemesanan
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ route('laporan.index', array_merge(request()->except('tab'), ['tab' => 'kredit'])) }}"
-                           class="nav-link {{ $tabAktif === 'kredit' ? 'active bumkam-laporan-tab-active' : '' }}">
-                            <i class="icon-base bx bx-wallet me-1" aria-hidden="true"></i>Laporan Kredit
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </section>
-
         <section class="card mb-4 laporan-filter-card" aria-labelledby="filter-laporan-heading">
             <div class="card-header border-bottom">
                 <h2 id="filter-laporan-heading" class="card-title mb-1">Filter Laporan</h2>
@@ -41,12 +32,19 @@
             </div>
             <div class="card-body">
                 <form action="{{ route('laporan.index') }}" method="GET" class="row g-3 align-items-end">
-                    <input type="hidden" name="tab" value="{{ $tabAktif }}">
-                    <div class="col-12 col-md-6 {{ $tabAktif === 'kredit' ? 'col-xl-3' : 'col-xl-4' }}">
+                    <div class="col-12 col-md-6 {{ $tabAktif === 'kredit' ? 'col-xl-2' : 'col-xl-3' }}">
+                        <label for="tab" class="form-label">Jenis Laporan</label>
+                        <select id="tab" name="tab" class="form-select">
+                            @foreach ($jenisLaporan as $nilaiTab => $labelLaporan)
+                                <option value="{{ $nilaiTab }}" @selected($tabAktif === $nilaiTab)>{{ $labelLaporan }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-6 {{ $tabAktif === 'kredit' ? 'col-xl-2' : 'col-xl-3' }}">
                         <label for="start_date" class="form-label">Dari tanggal</label>
                         <input type="date" id="start_date" name="start_date" value="{{ request('start_date') }}" class="form-control">
                     </div>
-                    <div class="col-12 col-md-6 {{ $tabAktif === 'kredit' ? 'col-xl-3' : 'col-xl-4' }}">
+                    <div class="col-12 col-md-6 {{ $tabAktif === 'kredit' ? 'col-xl-2' : 'col-xl-3' }}">
                         <label for="end_date" class="form-label">Sampai tanggal</label>
                         <input type="date" id="end_date" name="end_date" value="{{ request('end_date') }}" class="form-control">
                     </div>
@@ -56,8 +54,8 @@
                             <input type="text" id="pelanggan" name="pelanggan" value="{{ request('pelanggan') }}" class="form-control" placeholder="Nama atau ID pelanggan">
                         </div>
                     @endif
-                    <div class="col-12 {{ $tabAktif === 'kredit' ? 'col-md-6 col-xl-3' : 'col-xl-4' }} d-flex flex-wrap gap-2">
-                        <button type="submit" class="btn btn-primary">
+                    <div class="col-12 {{ $tabAktif === 'kredit' ? 'col-md-6 col-xl-3' : 'col-xl-3' }} d-flex flex-wrap gap-2">
+                        <button type="submit" class="btn bumkam-green-action">
                             <i class="icon-base bx bx-filter-alt me-1" aria-hidden="true"></i>Tampilkan
                         </button>
                         @if (request('start_date') || request('end_date') || request('pelanggan'))
@@ -255,7 +253,18 @@
             .laporan-print-action { display: none !important; }
             .table-responsive { overflow: visible !important; }
             .laporan-table { min-width: 0; width: 100%; font-size: 8px; }
-            .laporan-page .laporan-credit-table { min-width: 0; table-layout: auto; }
+            .laporan-page .laporan-credit-table { min-width: 0; width: 100%; table-layout: fixed; }
+            .laporan-page .laporan-credit-table th:nth-child(1), .laporan-page .laporan-credit-table td:nth-child(1) { width: 4%; }
+            .laporan-page .laporan-credit-table th:nth-child(2), .laporan-page .laporan-credit-table td:nth-child(2) { width: 9%; }
+            .laporan-page .laporan-credit-table th:nth-child(3), .laporan-page .laporan-credit-table td:nth-child(3) { width: 17%; }
+            .laporan-page .laporan-credit-table th:nth-child(4), .laporan-page .laporan-credit-table td:nth-child(4) { width: 18%; }
+            .laporan-page .laporan-credit-table th:nth-child(5), .laporan-page .laporan-credit-table td:nth-child(5) { width: 13%; }
+            .laporan-page .laporan-credit-table th:nth-child(6), .laporan-page .laporan-credit-table td:nth-child(6) { width: 13%; }
+            .laporan-page .laporan-credit-table th:nth-child(7), .laporan-page .laporan-credit-table td:nth-child(7) { width: 13%; }
+            .laporan-page .laporan-credit-table th:nth-child(8), .laporan-page .laporan-credit-table td:nth-child(8) { width: 13%; }
+            .laporan-page .laporan-credit-table th, .laporan-page .laporan-credit-table td { white-space: normal !important; overflow-wrap: anywhere; word-break: normal; }
+            .laporan-page .laporan-credit-table thead { display: table-header-group; }
+            .laporan-page .laporan-credit-table tbody > tr { break-inside: avoid; page-break-inside: avoid; }
             .credit-details-toggle { display: none !important; }
             .laporan-page .laporan-credit-table .credit-details-row { display: table-row !important; }
             .laporan-page .laporan-credit-table .credit-details-row > td { padding: 6px !important; }

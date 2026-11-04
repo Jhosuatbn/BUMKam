@@ -9,6 +9,22 @@ use Symfony\Component\HttpFoundation\Response;
 
 class RecordAuditTrail
 {
+    /** Routes whose controllers already write a descriptive audit event. */
+    private const EXPLICITLY_AUDITED_ROUTES = [
+        'barang.store',
+        'barang.update',
+        'barang-masuk.store',
+        'supplier.store',
+        'supplier.update',
+        'supplier.destroy',
+        'pemesanan.approve',
+        'pemesanan.handover',
+        'pemesanan.cancel',
+        'pembayaran.reverse',
+        'jaminan.update',
+        'monitoring-kredit.denda.reduce',
+    ];
+
     public function __construct(private readonly AuditTrailWriter $writer)
     {
     }
@@ -52,9 +68,18 @@ class RecordAuditTrail
             return $response;
         }
 
+        if (in_array($routeName, self::EXPLICITLY_AUDITED_ROUTES, true)) {
+            return $response;
+        }
+
         $module = match (true) {
             str_starts_with($routeName, 'pelanggan.') => 'Pelanggan',
             str_starts_with($routeName, 'barang.') => 'Barang',
+            str_starts_with($routeName, 'barang-masuk.') => 'Barang Masuk',
+            str_starts_with($routeName, 'supplier.') => 'Supplier',
+            str_starts_with($routeName, 'retur.') => 'Retur Pelanggan',
+            str_starts_with($routeName, 'stok-opname.') => 'Stok Opname',
+            str_starts_with($routeName, 'pengeluaran.') => 'Pengeluaran Operasional',
             str_starts_with($routeName, 'pemesanan.') => 'Pemesanan',
             str_starts_with($routeName, 'pembayaran.') => 'Pembayaran',
             str_starts_with($routeName, 'pengguna.') => 'Pengguna',
@@ -68,6 +93,7 @@ class RecordAuditTrail
             'DELETE' => 'delete',
         };
         if (str_contains($routeName, 'verifikasi') || str_contains($routeName, '.verify')) $activity = 'verify';
+        if (str_contains($routeName, '.decide')) $activity = 'verify';
         if ($routeName === 'pengguna.update' && $request->filled('is_active')) $activity = 'account_status';
         if ($routeName === 'pengguna.update' && $request->filled('password')) $activity = 'password_reset';
 

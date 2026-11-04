@@ -9,9 +9,9 @@ use App\Models\Pemesanan;
 use App\Models\Jaminan;
 use App\Services\AuditTrailWriter;
 use App\Services\StockMovementService;
+use App\Services\InventoryAvailabilityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -22,7 +22,10 @@ class PemesananController extends Controller
 
     public function index()
     {
-        $pemesanan = Pemesanan::with('pelanggan')->latest('created_at')->get();
+        $pemesanan = Pemesanan::with('pelanggan')
+            ->latest('created_at')
+            ->paginate(15)
+            ->withQueryString();
 
         return view('pemesanan.index', compact('pemesanan'));
     }
@@ -32,7 +35,11 @@ class PemesananController extends Controller
         abort_unless(auth()->user()?->peran === 'Pimpinan', 403);
         $status = $request->query('status', 'Menunggu Persetujuan');
         abort_unless(in_array($status, ['Menunggu Persetujuan', 'Disetujui', 'Ditolak'], true), 404);
-        $pemesanan = Pemesanan::with('pelanggan')->where('status_persetujuan', $status)->latest('created_at')->get();
+        $pemesanan = Pemesanan::with('pelanggan')
+            ->where('status_persetujuan', $status)
+            ->latest('created_at')
+            ->paginate(15)
+            ->withQueryString();
         return view('pemesanan.index', compact('pemesanan', 'status'))->with('halamanPersetujuan', true);
     }
 
@@ -44,11 +51,11 @@ class PemesananController extends Controller
         return response()->json(['data' => $data]);
     }
 
-    public function cariBarang(Request $request)
+    public function cariBarang(Request $request, InventoryAvailabilityService $availability)
     {
         $term = trim((string) $request->query('q', ''));
         if (mb_strlen($term) < 3) return response()->json(['data' => [], 'message' => 'Ketik minimal 3 karakter untuk mencari.']);
-        $data = Barang::query()->where('nama_barang', 'like', '%' . $term . '%')->orderBy('nama_barang')->limit(12)->get(['id_barang', 'nama_barang', 'harga', 'stok']);
+        $data = $availability->withAvailability(Barang::query()->where('nama_barang', 'like', '%' . $term . '%')->orderBy('nama_barang')->limit(12)->get(['id_barang', 'nama_barang', 'harga', 'stok']));
         return response()->json(['data' => $data]);
     }
 
@@ -81,10 +88,10 @@ class PemesananController extends Controller
         );
     }
 
-    public function create()
+    public function create(InventoryAvailabilityService $availability)
     {
         $pelanggan = Pelanggan::whereKey(old('id_pelanggan'))->get();
-        $barang = Barang::whereKey(old('id_barang'))->get();
+        $barang = $availability->withAvailability(Barang::whereKey(old('id_barang'))->get());
         $idPemesananPreview = $this->idPemesananBerikutnya();
 
         return view('pemesanan.create', compact(
@@ -94,7 +101,7 @@ class PemesananController extends Controller
         ));
     }
 
-    public function store(Request $request, AuditTrailWriter $auditTrail, StockMovementService $movements)
+    public function store(Request $request, AuditTrailWriter $auditTrail, InventoryAvailabilityService $availability)
     {
         $validated = $request->validate([
             'id_pemesanan' => 'required|string|max:20|unique:pemesanan,id_pemesanan',
@@ -111,7 +118,7 @@ class PemesananController extends Controller
             'tanggal_penyerahan' => 'required|date',
         ]);
 
-        DB::transaction(function () use ($validated, $request, $movements) {
+        DB::transaction(function () use ($validated, $request, $availability) {
             $barang = Barang::whereKey($validated['id_barang'])->lockForUpdate()->firstOrFail();
             $jumlah = (int) $validated['jumlah'];
 
@@ -121,9 +128,10 @@ class PemesananController extends Controller
                 ]);
             }
 
-            if ($barang->stok < $jumlah) {
+            $stokTersedia = $availability->availableQuantity($barang);
+            if ($stokTersedia < $jumlah) {
                 throw ValidationException::withMessages([
-                    'jumlah' => 'Stok tidak mencukupi. Stok tersedia: ' . $barang->stok . ' unit.',
+                    'jumlah' => 'Stok tersedia tidak mencukupi. Sisa setelah reservasi: ' . $stokTersedia . ' unit.',
                 ]);
             }
 
@@ -188,10 +196,8 @@ class PemesananController extends Controller
                 'jumlah' => $jumlah,
                 'harga' => $barang->harga,
                 'subtotal' => $totalHarga,
-                'stok_dikurangi' => true,
+                'stok_dikurangi' => false,
             ]);
-
-            $movements->apply($barang, -$jumlah, $request->user()->id_pengguna, 'Barang Keluar', 'Pemesanan', $pemesanan->id_pemesanan, 'Stok dialokasikan untuk pesanan; akan dipulihkan bila pengajuan ditolak.');
         });
         $auditTrail->record($request->user(), $request, 'create', 'Jaminan', 'Informasi jaminan dicatat tanpa mengunggah salinan dokumen.');
         $auditTrail->record($request->user(), $request, 'create', 'Persetujuan Pemesanan', 'Pengajuan pemesanan ' . $validated['id_pemesanan'] . ' menunggu pemeriksaan Pimpinan.');
@@ -209,6 +215,7 @@ class PemesananController extends Controller
             'pembayaran',
             'jaminanDokumen',
             'persetujuanOleh',
+            'diserahkanOleh',
             'riwayatPersetujuan.pengguna',
         ]);
 
@@ -217,6 +224,7 @@ class PemesananController extends Controller
 
     public function edit(Pemesanan $pemesanan)
     {
+        abort_if($pemesanan->status_penyerahan === 'Riwayat Lama', 403, 'Pemesanan lama dengan pencatatan stok terdahulu tidak dapat diubah.');
         abort_if(
             $pemesanan->status_persetujuan !== null
                 && $pemesanan->status_persetujuan !== 'Menunggu Persetujuan',
@@ -237,8 +245,9 @@ class PemesananController extends Controller
         ));
     }
 
-    public function update(Request $request, Pemesanan $pemesanan, StockMovementService $movements)
+    public function update(Request $request, Pemesanan $pemesanan, InventoryAvailabilityService $availability)
     {
+        abort_if($pemesanan->status_penyerahan === 'Riwayat Lama', 403, 'Pemesanan lama dengan pencatatan stok terdahulu tidak dapat diubah.');
         abort_if(
             $pemesanan->status_persetujuan !== null
                 && $pemesanan->status_persetujuan !== 'Menunggu Persetujuan',
@@ -255,17 +264,12 @@ class PemesananController extends Controller
             'dp' => 'required_if:skema_pembayaran,DP,Sebagian|nullable|numeric|min:0',
             'tenor' => 'required|integer|in:12,24,36',
         ]);
-
-        DB::transaction(function () use ($validated, $pemesanan, $request, $movements) {
+        DB::transaction(function () use ($validated, $pemesanan, $availability) {
             $detail = DetailPemesanan::where('id_pemesanan', $pemesanan->id_pemesanan)
                 ->lockForUpdate()
                 ->first();
-            $barangLama = $detail
-                ? Barang::whereKey($detail->id_barang)->lockForUpdate()->first()
-                : null;
             $barang = Barang::whereKey($validated['id_barang'])->lockForUpdate()->firstOrFail();
             $jumlahBaru = (int) $validated['jumlah'];
-            $jumlahLama = (int) ($detail?->jumlah ?? 0);
 
             if ($barang->stok === null) {
                 throw ValidationException::withMessages([
@@ -273,11 +277,7 @@ class PemesananController extends Controller
                 ]);
             }
 
-            $stokBisaDipakai = (int) $barang->stok;
-            $stokLamaSudahDikurangi = (bool) ($detail?->stok_dikurangi ?? false);
-            if ($stokLamaSudahDikurangi && $barangLama?->id_barang === $barang->id_barang && $barangLama->stok !== null) {
-                $stokBisaDipakai += $jumlahLama;
-            }
+            $stokBisaDipakai = $availability->availableQuantity($barang);
 
             if ($stokBisaDipakai < $jumlahBaru) {
                 throw ValidationException::withMessages([
@@ -318,7 +318,7 @@ class PemesananController extends Controller
                 'jumlah' => $jumlahBaru,
                 'harga' => $barang->harga,
                 'subtotal' => $totalHarga,
-                'stok_dikurangi' => true,
+                'stok_dikurangi' => false,
             ];
 
             if ($detail) {
@@ -330,13 +330,6 @@ class PemesananController extends Controller
                 ]));
             }
 
-            if ($stokLamaSudahDikurangi && $barangLama && $barangLama->stok !== null) {
-                $movements->apply($barangLama, $jumlahLama, $request->user()->id_pengguna, 'Penyesuaian Pesanan', 'Pemesanan', $pemesanan->id_pemesanan, 'Pengembalian alokasi stok sebelum perubahan pesanan.');
-                if ($barangLama->id_barang === $barang->id_barang) {
-                    $barang->refresh();
-                }
-            }
-            $movements->apply($barang, -$jumlahBaru, $request->user()->id_pengguna, 'Barang Keluar', 'Pemesanan', $pemesanan->id_pemesanan, 'Stok dialokasikan untuk pesanan yang diperbarui.');
         });
 
         return redirect()
@@ -344,7 +337,7 @@ class PemesananController extends Controller
             ->with('success', 'Pemesanan berhasil diperbarui.');
     }
 
-    public function approve(Request $request, Pemesanan $pemesanan, AuditTrailWriter $auditTrail, StockMovementService $movements)
+    public function approve(Request $request, Pemesanan $pemesanan, AuditTrailWriter $auditTrail, StockMovementService $movements, InventoryAvailabilityService $availability)
     {
         abort_unless($request->user()?->peran === 'Pimpinan', 403);
 
@@ -353,7 +346,7 @@ class PemesananController extends Controller
             'catatan_persetujuan' => ['required_if:status_persetujuan,Ditolak', 'nullable', 'string', 'max:2000'],
         ]);
 
-        DB::transaction(function () use ($request, $pemesanan, $validated, $movements) {
+        DB::transaction(function () use ($request, $pemesanan, $validated, $movements, $availability) {
             $terkunci = Pemesanan::whereKey($pemesanan->id_pemesanan)
                 ->lockForUpdate()
                 ->firstOrFail();
@@ -362,6 +355,22 @@ class PemesananController extends Controller
                 throw ValidationException::withMessages([
                     'status_persetujuan' => 'Pengajuan ini sudah diputuskan atau bukan pengajuan yang menunggu persetujuan.',
                 ]);
+            }
+
+            $details = DetailPemesanan::where('id_pemesanan', $terkunci->id_pemesanan)->lockForUpdate()->get();
+            if ($validated['status_persetujuan'] === 'Disetujui') {
+                foreach ($details as $detail) {
+                    if ($detail->stok_dikurangi) {
+                        continue; // legacy row already deducted physical stock
+                    }
+                    $barang = Barang::whereKey($detail->id_barang)->lockForUpdate()->firstOrFail();
+                    $tersedia = $availability->availableQuantity($barang);
+                    if ($tersedia < (int) $detail->jumlah) {
+                        throw ValidationException::withMessages([
+                            'status_persetujuan' => "Stok tersedia untuk {$barang->nama_barang} tinggal {$tersedia} unit; pengajuan tidak dapat disetujui.",
+                        ]);
+                    }
+                }
             }
 
             $catatan = $validated['catatan_persetujuan'] ?? null;
@@ -380,10 +389,6 @@ class PemesananController extends Controller
             ]);
 
             if ($validated['status_persetujuan'] === 'Ditolak') {
-                $details = DetailPemesanan::where('id_pemesanan', $terkunci->id_pemesanan)
-                    ->lockForUpdate()
-                    ->get();
-
                 foreach ($details as $detail) {
                     if (! $detail->stok_dikurangi) {
                         continue;
@@ -412,8 +417,50 @@ class PemesananController extends Controller
             ->with('success', 'Status pemesanan berhasil diperbarui menjadi ' . $status . '.');
     }
 
+    public function handover(Request $request, Pemesanan $pemesanan, StockMovementService $movements, AuditTrailWriter $auditTrail)
+    {
+        abort_unless($request->user()?->peran === 'Staff', 403);
+        DB::transaction(function () use ($request, $pemesanan, $movements) {
+            $order = Pemesanan::whereKey($pemesanan->id_pemesanan)->lockForUpdate()->firstOrFail();
+            if ($order->status_persetujuan !== 'Disetujui' || $order->status_penyerahan !== 'Belum Diserahkan') {
+                throw ValidationException::withMessages(['status_penyerahan' => 'Hanya pesanan disetujui yang belum diserahkan dapat diproses.']);
+            }
+            $details = DetailPemesanan::where('id_pemesanan', $order->id_pemesanan)->lockForUpdate()->get();
+            foreach ($details as $detail) {
+                $barang = Barang::whereKey($detail->id_barang)->lockForUpdate()->firstOrFail();
+                if (! $detail->stok_dikurangi) {
+                    $movements->apply($barang, -(int) $detail->jumlah, $request->user()->id_pengguna, 'Barang Keluar', 'Pemesanan', $order->id_pemesanan, 'Barang diserahkan kepada pelanggan.');
+                    $detail->update(['stok_dikurangi' => true]);
+                }
+            }
+            $order->update(['status_penyerahan' => 'Diserahkan', 'diserahkan_oleh' => $request->user()->id_pengguna, 'diserahkan_pada' => now()]);
+            $order->riwayatPersetujuan()->create(['id_pengguna' => $request->user()->id_pengguna, 'status_persetujuan' => 'Diserahkan', 'catatan' => 'Barang diserahkan dan stok fisik diperbarui.', 'created_at' => now()]);
+        });
+        $auditTrail->record($request->user(), $request, 'handover', 'Pemesanan', 'Barang pemesanan ' . $pemesanan->id_pemesanan . ' diserahkan.');
+        return redirect()->route('pemesanan.show', $pemesanan)->with('success', 'Penyerahan barang berhasil dicatat.');
+    }
+
+    public function cancel(Request $request, Pemesanan $pemesanan, AuditTrailWriter $auditTrail)
+    {
+        abort_unless($request->user()?->peran === 'Staff', 403);
+        $validated = $request->validate(['alasan_pembatalan' => ['required', 'string', 'max:2000']]);
+        DB::transaction(function () use ($request, $pemesanan, $validated) {
+            $order = Pemesanan::whereKey($pemesanan->id_pemesanan)->lockForUpdate()->firstOrFail();
+            if (! in_array($order->status_persetujuan, ['Menunggu Persetujuan', 'Disetujui'], true)
+                || $order->status_penyerahan !== 'Belum Diserahkan'
+                || $order->pembayaran()->exists()) {
+                throw ValidationException::withMessages(['status_persetujuan' => 'Pemesanan tidak dapat dibatalkan setelah diserahkan, memiliki pembayaran, atau sudah diputuskan.']);
+            }
+            $order->update(['status_persetujuan' => 'Dibatalkan', 'dibatalkan_oleh' => $request->user()->id_pengguna, 'dibatalkan_pada' => now(), 'alasan_pembatalan' => $validated['alasan_pembatalan']]);
+            $order->riwayatPersetujuan()->create(['id_pengguna' => $request->user()->id_pengguna, 'status_persetujuan' => 'Dibatalkan', 'catatan' => $validated['alasan_pembatalan'], 'created_at' => now()]);
+        });
+        $auditTrail->record($request->user(), $request, 'cancel', 'Pemesanan', 'Pemesanan ' . $pemesanan->id_pemesanan . ' dibatalkan sebelum penyerahan. Alasan: ' . $validated['alasan_pembatalan']);
+        return redirect()->route('pemesanan.show', $pemesanan)->with('success', 'Pemesanan berhasil dibatalkan.');
+    }
+
     public function destroy(Request $request, Pemesanan $pemesanan, StockMovementService $movements)
     {
+        abort_if($pemesanan->status_penyerahan === 'Riwayat Lama', 403, 'Pemesanan lama dengan riwayat stok terdahulu tidak dapat dihapus.');
         abort_if(
             $pemesanan->status_persetujuan !== null
                 && $pemesanan->status_persetujuan !== 'Menunggu Persetujuan',
