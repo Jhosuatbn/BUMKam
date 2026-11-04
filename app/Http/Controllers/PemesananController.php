@@ -237,7 +237,7 @@ class PemesananController extends Controller
         ));
     }
 
-    public function update(Request $request, Pemesanan $pemesanan)
+    public function update(Request $request, Pemesanan $pemesanan, StockMovementService $movements)
     {
         abort_if(
             $pemesanan->status_persetujuan !== null
@@ -255,6 +255,7 @@ class PemesananController extends Controller
             'dp' => 'required_if:skema_pembayaran,DP,Sebagian|nullable|numeric|min:0',
             'tenor' => 'required|integer|in:12,24,36',
         ]);
+
         DB::transaction(function () use ($validated, $pemesanan, $request, $movements) {
             $detail = DetailPemesanan::where('id_pemesanan', $pemesanan->id_pemesanan)
                 ->lockForUpdate()
