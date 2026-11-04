@@ -27,6 +27,9 @@
             $navigationItems[] = ['label' => 'Barang Masuk', 'route' => 'barang-masuk.index', 'active' => 'barang-masuk.*', 'icon' => 'bx-log-in-circle'];
         }
         $navigationItems[] = ['label' => 'Monitoring Stok', 'route' => 'monitoring-stok.index', 'active' => 'monitoring-stok.*', 'icon' => 'bx-bar-chart-alt-2'];
+        $navigationItems[] = ['label' => 'Retur Pelanggan', 'route' => 'retur.index', 'active' => 'retur.*', 'icon' => 'bx-undo'];
+        $navigationItems[] = ['label' => 'Stok Opname', 'route' => 'stok-opname.index', 'active' => 'stok-opname.*', 'icon' => 'bx-clipboard'];
+        $navigationItems[] = ['label' => 'Pengeluaran', 'route' => 'pengeluaran.index', 'active' => 'pengeluaran.*', 'icon' => 'bx-money-withdraw'];
         $jumlahPersetujuanMenunggu = $authenticatedUser?->peran === 'Pimpinan'
             ? \App\Models\Pemesanan::where('status_persetujuan', 'Menunggu Persetujuan')->count()
             : 0;
@@ -53,6 +56,9 @@
             request()->routeIs('supplier.*') => 'Data Supplier',
             request()->routeIs('barang-masuk.*') => 'Barang Masuk',
             request()->routeIs('monitoring-stok.*') => 'Monitoring Stok',
+            request()->routeIs('retur.*') => 'Retur Pelanggan',
+            request()->routeIs('stok-opname.*') => 'Stok Opname',
+            request()->routeIs('pengeluaran.*') => 'Pengeluaran Operasional',
             request()->routeIs('pemesanan.persetujuan') => 'Persetujuan Pemesanan',
             request()->routeIs('pemesanan.index') => 'Data Pemesanan',
             request()->routeIs('pembayaran.index') => 'Data Pembayaran',
@@ -70,6 +76,9 @@
             request()->routeIs('supplier.*') => 'bx-store',
             request()->routeIs('barang-masuk.*') => 'bx-log-in-circle',
             request()->routeIs('monitoring-stok.*') => 'bx-bar-chart-alt-2',
+            request()->routeIs('retur.*') => 'bx-undo',
+            request()->routeIs('stok-opname.*') => 'bx-clipboard',
+            request()->routeIs('pengeluaran.*') => 'bx-money-withdraw',
             request()->routeIs('pemesanan.*') => 'bx-cart-alt',
             request()->routeIs('pembayaran.*') => 'bx-wallet',
             request()->routeIs('monitoring-kredit.*') => 'bx-line-chart',
@@ -99,6 +108,7 @@
                         @php($active = request()->routeIs($navigationItem['active']))
                         @if ($navigationItem['label'] === 'Pelanggan')<li class="menu-header small text-uppercase"><span class="menu-header-text">Data Usaha</span></li>@endif
                         @if ($navigationItem['label'] === 'Supplier')<li class="menu-header small text-uppercase"><span class="menu-header-text">Persediaan</span></li>@endif
+                        @if ($navigationItem['label'] === 'Pengeluaran')<li class="menu-header small text-uppercase"><span class="menu-header-text">Keuangan</span></li>@endif
                         @if ($navigationItem['label'] === 'Monitoring Kredit')<li class="menu-header small text-uppercase"><span class="menu-header-text">Pengawasan</span></li>@endif
                         @if ($navigationItem['label'] === 'Laporan')<li class="menu-header small text-uppercase"><span class="menu-header-text">Laporan</span></li>@endif
                         @if ($navigationItem['label'] === 'Pengguna')<li class="menu-header small text-uppercase"><span class="menu-header-text">Pengelolaan</span></li>@endif

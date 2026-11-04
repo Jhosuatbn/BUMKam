@@ -61,7 +61,21 @@ class KirimaReminderService
             $rows = $this->monitoring->hitung($order)['jadwal'];
             foreach ($rows as $row) {
                 $dueDate = CarbonImmutable::parse($row['tanggal_jatuh_tempo'], $timezone);
-                if ($dueDate->toDateString() !== $targetDate || $row['status'] === 'Lunas') {
+                $reminderKey = [
+                    'id_pemesanan' => $order->id_pemesanan,
+                    'nomor_angsuran' => $row['nomor'],
+                    'tanggal_jatuh_tempo' => $dueDate->toDateString(),
+                    'jenis' => 'h-'.$daysBefore,
+                ];
+                $isTargetDay = $dueDate->toDateString() === $targetDate;
+                $isRetryWindow = $dueDate->greaterThanOrEqualTo($today)
+                    && $dueDate->lessThan($today->addDays($daysBefore));
+                $hasFailedReminder = $isRetryWindow && PengingatTagihan::query()
+                    ->where($reminderKey)
+                    ->where('status', 'gagal')
+                    ->exists();
+
+                if ((! $isTargetDay && ! $hasFailedReminder) || $row['status'] === 'Lunas') {
                     continue;
                 }
 
@@ -78,18 +92,28 @@ class KirimaReminderService
                 }
 
                 $log = PengingatTagihan::firstOrCreate(
-                    [
-                        'id_pemesanan' => $order->id_pemesanan,
-                        'nomor_angsuran' => $row['nomor'],
-                        'tanggal_jatuh_tempo' => $dueDate->toDateString(),
-                        'jenis' => 'h-'.$daysBefore,
-                    ],
+                    $reminderKey,
                     ['status' => 'pending', 'pesan' => $message]
                 );
 
                 if (! $log->wasRecentlyCreated) {
-                    $skipped++;
-                    continue;
+                    // Atomically claim failed reminders so overlapping/manual runs
+                    // cannot send the same retry twice.
+                    $claimed = PengingatTagihan::query()
+                        ->whereKey($log->getKey())
+                        ->where('status', 'gagal')
+                        ->update([
+                            'status' => 'pending',
+                            'pesan' => $message,
+                            'updated_at' => now($timezone),
+                        ]);
+
+                    if ($claimed === 0) {
+                        $skipped++;
+                        continue;
+                    }
+
+                    $log->refresh();
                 }
 
                 try {

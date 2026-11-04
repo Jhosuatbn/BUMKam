@@ -14,6 +14,9 @@ use App\Http\Controllers\AuditTrailController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\BarangMasukController;
 use App\Http\Controllers\MonitoringStokController;
+use App\Http\Controllers\ReturPelangganController;
+use App\Http\Controllers\StokOpnameController;
+use App\Http\Controllers\PengeluaranOperasionalController;
 
 Route::get('/', function () {
     return view('public.home');
@@ -28,7 +31,7 @@ Route::get('/login', [LoginController::class, 'showLogin'])
     ->name('login');
 
 Route::post('/login', [LoginController::class, 'login'])
-    ->name('login.process')->middleware('audit.trail');
+    ->name('login.process')->middleware(['throttle:5,1', 'audit.trail']);
 
 // Callback resmi gateway; validasi autentikasinya menggunakan signature Midtrans.
 Route::post('/pembayaran/midtrans/notification', [PembayaranController::class, 'notifikasiMidtrans'])
@@ -44,6 +47,7 @@ Route::middleware(['auth', 'pimpinan.access', 'audit.trail'])->group(function ()
         ->name('pelanggan.cari');
 
     Route::resource('pelanggan', PelangganController::class);
+    Route::get('/pelanggan/{pelanggan}/foto-ktp', [PelangganController::class, 'fotoKtp'])->name('pelanggan.foto-ktp');
 
     Route::resource('barang', BarangController::class);
 
@@ -61,6 +65,19 @@ Route::middleware(['auth', 'pimpinan.access', 'audit.trail'])->group(function ()
     Route::get('/barang-masuk/cari-barang', [BarangMasukController::class, 'cariBarang'])->name('barang-masuk.cari-barang');
     Route::get('/barang-masuk/{barangMasuk}', [BarangMasukController::class, 'show'])->name('barang-masuk.show');
     Route::get('/monitoring-stok', [MonitoringStokController::class, 'index'])->name('monitoring-stok.index');
+    Route::get('/retur', [ReturPelangganController::class, 'index'])->name('retur.index');
+    Route::get('/retur/create', [ReturPelangganController::class, 'create'])->name('retur.create');
+    Route::post('/retur', [ReturPelangganController::class, 'store'])->name('retur.store');
+    Route::get('/retur/{retur}', [ReturPelangganController::class, 'show'])->name('retur.show');
+    Route::post('/retur/{retur}/keputusan', [ReturPelangganController::class, 'decide'])->name('retur.decide');
+    Route::get('/stok-opname', [StokOpnameController::class, 'index'])->name('stok-opname.index');
+    Route::get('/stok-opname/create', [StokOpnameController::class, 'create'])->name('stok-opname.create');
+    Route::post('/stok-opname', [StokOpnameController::class, 'store'])->name('stok-opname.store');
+    Route::get('/stok-opname/{stokOpname}', [StokOpnameController::class, 'show'])->name('stok-opname.show');
+    Route::post('/stok-opname/{stokOpname}/keputusan', [StokOpnameController::class, 'decide'])->name('stok-opname.decide');
+    Route::get('/pengeluaran', [PengeluaranOperasionalController::class, 'index'])->name('pengeluaran.index');
+    Route::get('/pengeluaran/create', [PengeluaranOperasionalController::class, 'create'])->name('pengeluaran.create');
+    Route::post('/pengeluaran', [PengeluaranOperasionalController::class, 'store'])->name('pengeluaran.store');
 
     Route::resource('pemesanan', PemesananController::class);
     Route::get('/persetujuan-pemesanan', [PemesananController::class, 'persetujuan'])->name('pemesanan.persetujuan');
@@ -68,8 +85,16 @@ Route::middleware(['auth', 'pimpinan.access', 'audit.trail'])->group(function ()
     Route::get('/pemesanan/cari/barang', [PemesananController::class, 'cariBarang'])->name('pemesanan.cari-barang');
     Route::put('/pemesanan/{pemesanan}/approval', [PemesananController::class, 'approve'])
         ->name('pemesanan.approve');
+    Route::post('/pemesanan/{pemesanan}/penyerahan', [PemesananController::class, 'handover'])
+        ->name('pemesanan.handover');
+    Route::post('/pemesanan/{pemesanan}/pembatalan', [PemesananController::class, 'cancel'])
+        ->name('pemesanan.cancel');
 
     Route::resource('pembayaran', PembayaranController::class);
+    Route::get('/pembayaran/{pembayaran}/bukti', [PembayaranController::class, 'bukti'])->name('pembayaran.bukti');
+    Route::get('/pembayaran/{pembayaran}/struk', [PembayaranController::class, 'receipt'])->name('pembayaran.receipt');
+    Route::post('/pembayaran/{pembayaran}/reversal', [PembayaranController::class, 'reverse'])->name('pembayaran.reverse');
+    Route::post('/pembayaran/{pembayaran}/sinkronkan-midtrans', [PembayaranController::class, 'sinkronkanMidtrans'])->name('pembayaran.sync-midtrans');
 
     Route::get('/pembayaran/{pembayaran}/online', [PembayaranController::class, 'lanjutOnline'])
         ->name('pembayaran.online');

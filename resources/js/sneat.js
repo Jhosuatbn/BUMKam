@@ -69,7 +69,7 @@ function mountDashboardCharts() {
     };
 
     mountSparkline('#bumkam-order-sparkline', data.monthlyOrders, '#71dd37', value => `${formatNumber.format(value)} pemesanan`);
-    mountSparkline('#bumkam-sales-sparkline', data.monthlyRevenue, '#03c3ec', value => `Rp ${formatNumber.format(value)}`);
+    mountSparkline('#bumkam-sales-sparkline', data.monthlyOrderValues, '#03c3ec', value => `Rp ${formatNumber.format(value)}`);
 
     mount('#bumkam-payment-ratio-chart', {
         chart: { type: 'radialBar', height: 190, sparkline: { enabled: true } },
@@ -94,7 +94,7 @@ function mountDashboardCharts() {
     mount('#bumkam-revenue-trend-chart', {
         ...base,
         chart: { ...base.chart, type: 'area', height: 240 },
-        series: [{ name: 'Nilai pemesanan', data: data.monthlyRevenue ?? [] }],
+        series: [{ name: 'Pembayaran diterima', data: data.monthlyRevenue ?? [] }],
         colors: ['#03c3ec'],
         stroke: { curve: 'smooth', width: 3 },
         fill: { type: 'gradient', gradient: { opacityFrom: 0.35, opacityTo: 0.02 } },

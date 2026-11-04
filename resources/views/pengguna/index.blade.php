@@ -15,7 +15,7 @@
                     <p class="mt-1 text-sm text-slate-500">Akun yang dapat mengakses sistem.</p>
                 </div>
                 @if (auth()->user()?->peran === 'Pimpinan')
-                    <a href="{{ route('pengguna.create') }}" class="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"><i class="icon-base bx bx-plus" aria-hidden="true"></i>Tambah Pengguna</a>
+                    <a href="{{ route('pengguna.create') }}" class="bumkam-green-action inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition"><i class="icon-base bx bx-plus" aria-hidden="true"></i>Tambah Pengguna</a>
                 @endif
             </div>
             <div class="overflow-x-auto">
@@ -51,6 +51,11 @@
                     </tbody>
                 </table>
             </div>
+            @if ($pengguna->hasPages())
+                <div class="border-t border-slate-200 px-5 py-4 sm:px-6" aria-label="Navigasi halaman pengguna">
+                    {{ $pengguna->links() }}
+                </div>
+            @endif
         </section>
     </div>
 @endsection

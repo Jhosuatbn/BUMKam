@@ -20,13 +20,13 @@
                 
                 <div class="flex w-full flex-col gap-2 sm:w-auto lg:w-[24rem]">
                     @if(auth()->user()?->peran !== 'Pimpinan')
-                    <button onclick="openModal()" type="button" style="border-radius: 12px !important;" class="inline-flex min-h-11 shrink-0 self-end items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">                            <i class="icon-base bx bx-plus" aria-hidden="true"></i>Tambah Barang
+                    <button onclick="openModal()" type="button" style="border-radius: 12px !important;" class="bumkam-green-action inline-flex min-h-11 shrink-0 self-end items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition">                            <i class="icon-base bx bx-plus" aria-hidden="true"></i>Tambah Barang
                         </button>
                     @endif
                     {{-- Form Pencarian Barang --}}
                     <form action="{{ route('barang.index') }}" method="GET" class="flex w-full min-w-0 flex-col gap-2 sm:flex-row">
-                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari ID, nama, atau kategori..." class="block min-h-11 w-full min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
-                        <button type="submit" style="border-radius: 12px !important;" class="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border-0 bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">
+                        <input type="text" name="search" value="{{ request('search') }}" maxlength="100" placeholder="Cari ID, nama, atau kategori..." class="block min-h-11 w-full min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                        <button type="submit" style="border-radius: 12px !important;" class="bumkam-green-action inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border-0 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition">
     <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
         <circle cx="11" cy="11" r="7"/>
         <path d="m20 20-4-4"/>
@@ -39,6 +39,12 @@
                     </form>
                 </div>
             </div>
+
+            @if ($errors->any() && old('nama_barang') === null && old('kategori') === null && old('harga') === null)
+                <div role="alert" class="mx-5 mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-900 sm:mx-6" aria-live="assertive">
+                    @foreach ($errors->all() as $error)<div>{{ $error }}</div>@endforeach
+                </div>
+            @endif
 
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
@@ -66,10 +72,12 @@
                                 <td class="whitespace-nowrap px-4 py-3.5 sm:px-6">
                                     @if (is_null($item->stok))
                                         <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">Belum diatur</span>
-                                    @elseif ($item->stok === 0)
-                                        <span class="rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700">Habis</span>
+                                    @elseif ($item->stok_tersedia === 0)
+                                        <span class="rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700">0 tersedia</span>
+                                        <span class="mt-1 block text-xs text-slate-500">Fisik {{ number_format($item->stok, 0, ',', '.') }} · dipesan {{ number_format($item->stok_dipesan, 0, ',', '.') }}</span>
                                     @else
-                                        <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">{{ number_format($item->stok, 0, ',', '.') }} unit</span>
+                                        <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">{{ number_format($item->stok_tersedia, 0, ',', '.') }} tersedia</span>
+                                        <span class="mt-1 block text-xs text-slate-500">Fisik {{ number_format($item->stok, 0, ',', '.') }} · dipesan {{ number_format($item->stok_dipesan, 0, ',', '.') }}</span>
                                     @endif
                                 </td>
                                 <td class="px-4 py-3.5 sm:px-6 text-center">
@@ -106,6 +114,7 @@
                     </tbody>
                 </table>
             </div>
+            <div class="border-t border-slate-200 px-5 py-4 sm:px-6">{{ $barang->links() }}</div>
         </section>
     </div>
 
@@ -154,8 +163,7 @@
                     </div>
 
                     <div>
-                        <label for="stok" class="mb-1 block text-sm font-medium text-slate-700">Stok awal (opsional)</label>
-                        <input id="stok" type="number" name="stok" value="{{ old('stok') }}" min="0" step="1" placeholder="Kosongkan jika belum diketahui" class="block w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                        <p class="text-sm text-slate-600">Stok awal barang adalah 0. Tambahkan persediaan melalui menu Barang Masuk.</p>
                     </div>
 
                     <p class="text-xs italic text-slate-500">*ID Barang akan dibuat otomatis berdasarkan kategori pilihan.</p>
@@ -179,7 +187,7 @@
             document.getElementById('tambahBarangModal').classList.add('hidden');
         }
 
-        @if(session('open_create_modal'))
+        @if(session('open_create_modal') || ($errors->any() && (old('nama_barang') !== null || old('kategori') !== null || old('harga') !== null)))
             openModal();
         @endif
     </script>

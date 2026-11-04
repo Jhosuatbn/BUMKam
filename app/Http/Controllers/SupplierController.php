@@ -13,7 +13,20 @@ class SupplierController extends Controller
 
     public function index(Request $request)
     {
-        $suppliers = Supplier::query()->withCount('barangMasuk')->when($request->filled('q'), fn ($q) => $q->where('nama_supplier', 'like', '%' . $request->q . '%')->orWhere('no_telepon', 'like', '%' . $request->q . '%'))->orderBy('nama_supplier')->paginate(15)->withQueryString();
+        $filters = $request->validate([
+            'q' => ['nullable', 'string', 'max:100'],
+        ]);
+        $search = trim($filters['q'] ?? '');
+
+        $suppliers = Supplier::query()
+            ->withCount('barangMasuk')
+            ->when($search !== '', fn ($query) => $query->where(function ($matches) use ($search) {
+                $matches->where('nama_supplier', 'like', '%' . $search . '%')
+                    ->orWhere('no_telepon', 'like', '%' . $search . '%');
+            }))
+            ->orderBy('nama_supplier')
+            ->paginate(15)
+            ->withQueryString();
         return view('supplier.index', compact('suppliers'));
     }
 

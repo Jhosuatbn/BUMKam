@@ -39,13 +39,10 @@ class Pelanggan extends Model
         return $this->hasMany(Pemesanan::class, 'id_pelanggan');
     }
 
-    /**
-     * URL foto KTP untuk ditampilkan di view: {{ $pelanggan->foto_ktp_url }}
-     * Bernilai null jika pelanggan belum punya foto.
-     */
+    /** Authenticated endpoint for viewing the customer's KTP image. */
     public function getFotoKtpUrlAttribute(): ?string
     {
-        return $this->foto_ktp ? asset('storage/' . $this->foto_ktp) : null;
+        return $this->foto_ktp ? route('pelanggan.foto-ktp', $this) : null;
     }
 
     /**

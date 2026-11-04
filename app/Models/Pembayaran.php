@@ -19,6 +19,7 @@ class Pembayaran extends Model
         'id_pemesanan',
         'tanggal_pembayaran',
         'nominal',
+        'nominal_dikembalikan',
         'total_pembayaran',
         'sisa_pembayaran',
         'status_pembayaran',
@@ -41,5 +42,20 @@ class Pembayaran extends Model
     public function alokasiDenda()
     {
         return $this->hasMany(AlokasiPembayaran::class, 'id_pembayaran', 'id_pembayaran');
+    }
+
+    public function reversal()
+    {
+        return $this->hasOne(PembayaranReversal::class, 'id_pembayaran', 'id_pembayaran');
+    }
+
+    public function refundEvents()
+    {
+        return $this->hasMany(MidtransRefundEvent::class, 'id_pembayaran', 'id_pembayaran')->orderBy('diterima_pada');
+    }
+
+    public function pengembalianAlokasi()
+    {
+        return $this->hasMany(AlokasiPembayaranPengembalian::class, 'id_pembayaran', 'id_pembayaran');
     }
 }

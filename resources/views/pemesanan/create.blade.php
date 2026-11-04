@@ -34,7 +34,7 @@
                     <div>
                         <label for="tanggal_pemesanan" class="block text-sm font-semibold text-slate-700">Tanggal Pemesanan</label>
                         <input id="tanggal_pemesanan" type="date" name="tanggal_pemesanan"
-                               value="{{ old('tanggal_pemesanan', date('Y-m-d')) }}" required
+                               value="{{ old('tanggal_pemesanan', now(config('kredit.zona_waktu', 'Asia/Jakarta'))->toDateString()) }}" required
                                class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                     </div>
 
@@ -70,7 +70,7 @@
                                         data-harga="{{ $item->harga }}"
                                         data-search="{{ strtolower($item->id_barang . ' ' . $item->nama_barang) }}"
                                         {{ old('id_barang') == $item->id_barang ? 'selected' : '' }}>
-                                    {{ $item->nama_barang }} - Rp {{ number_format($item->harga, 0, ',', '.') }} — @if (is_null($item->stok)) stok belum diatur @else stok {{ number_format($item->stok, 0, ',', '.') }} @endif
+                                    {{ $item->nama_barang }} - Rp {{ number_format($item->harga, 0, ',', '.') }} — @if (is_null($item->stok)) stok belum diatur @else tersedia {{ number_format($item->stok_tersedia, 0, ',', '.') }} @endif
                                 </option>
                             @endforeach
                         </select>
@@ -150,7 +150,7 @@
                     </div>
                     <div>
                         <label for="tanggal_penyerahan" class="block text-sm font-semibold text-slate-700">Tanggal Penyerahan</label>
-                        <input id="tanggal_penyerahan" name="tanggal_penyerahan" type="date" required value="{{ old('tanggal_penyerahan', date('Y-m-d')) }}" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                        <input id="tanggal_penyerahan" name="tanggal_penyerahan" type="date" required value="{{ old('tanggal_penyerahan', now(config('kredit.zona_waktu', 'Asia/Jakarta'))->toDateString()) }}" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                     </div>
                     <div>
                         <label for="petugas_jaminan" class="block text-sm font-semibold text-slate-700">Petugas Penerima</label>
@@ -278,7 +278,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     option.value = record.id_barang || record.id_pelanggan;
                     if (record.id_barang) {
                         option.dataset.harga = record.harga;
-                        const stok = record.stok === null ? 'stok belum diatur' : `stok ${Number(record.stok).toLocaleString('id-ID')}`;
+                        const stok = record.stok === null ? 'stok belum diatur' : `tersedia ${Number(record.stok_tersedia).toLocaleString('id-ID')}`;
                         option.textContent = `${record.nama_barang} - Rp ${Number(record.harga).toLocaleString('id-ID')} — ${stok}`;
                     } else {
                         option.textContent = record.nama_pelanggan;

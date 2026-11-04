@@ -7,6 +7,9 @@ use App\Models\DetailPemesanan;
 use App\Models\Pemesanan;
 use App\Models\Pembayaran;
 use Carbon\CarbonImmutable;
+use App\Services\MonitoringKreditService;
+use App\Services\InventoryAvailabilityService;
+use Illuminate\Support\Facades\Schema;
 
 class DashboardController extends Controller
 {
@@ -16,12 +19,16 @@ class DashboardController extends Controller
         $totalPelanggan = Pelanggan::count();
         $totalBarang = Barang::count();
         $totalPemesanan = Pemesanan::count();
-        $totalPembayaran = Pembayaran::where('status_gateway', 'settlement')->count();
+        $statusPembayaranDiterima = ['settlement', 'partial_refund'];
+        $totalPembayaran = Pembayaran::whereIn('status_gateway', $statusPembayaranDiterima)->count();
 
-        $totalKredit = Pemesanan::where(
-            'skema_pembayaran',
-            'Kredit'
-        )->distinct('id_pelanggan')
+        // Legacy orders with a null approval status remain included; new pending,
+        // rejected, and cancelled applications are not active credit customers.
+        $kreditAktifQuery = fn () => Pemesanan::where('tenor', '>', 0)
+            ->where(fn ($query) => $query
+                ->whereNull('status_persetujuan')
+                ->orWhere('status_persetujuan', 'Disetujui'));
+        $totalKredit = $kreditAktifQuery()->distinct('id_pelanggan')
             ->count('id_pelanggan');
 
         // Status pemesanan
@@ -36,7 +43,8 @@ class DashboardController extends Controller
         )->count();
 
         // Perbandingan transaksi bulan ini dan bulan sebelumnya
-        $awalBulanIni = CarbonImmutable::now()->startOfMonth();
+        $zonaWaktu = config('kredit.zona_waktu', 'Asia/Jakarta');
+        $awalBulanIni = CarbonImmutable::now($zonaWaktu)->startOfMonth();
         $awalBulanDepan = $awalBulanIni->addMonth();
         $awalBulanLalu = $awalBulanIni->subMonth();
 
@@ -95,7 +103,7 @@ class DashboardController extends Controller
         $persentasePerubahan = round($persentasePerubahan, 1);
 
         // Grafik transaksi enam bulan terakhir
-        $today = CarbonImmutable::today();
+        $today = CarbonImmutable::today($zonaWaktu);
         $firstTrendMonth = $today->startOfMonth()->subMonths(5);
 
         $ordersByMonth = Pemesanan::query()
@@ -153,19 +161,34 @@ class DashboardController extends Controller
 
         $monthlyOrderValues = Pemesanan::query()
             ->selectRaw("DATE_FORMAT(tanggal_pemesanan, '%Y-%m') as bulan, SUM(total_harga) as total")
-            ->whereBetween('tanggal_pemesanan', [
-                $firstTrendMonth->toDateString(),
-                $today->toDateString(),
-            ])
+            ->whereBetween('tanggal_pemesanan', [$firstTrendMonth->toDateString(), $today->toDateString()])
+            ->groupBy('bulan')
+            ->pluck('total', 'bulan');
+        $monthlyOrderValueTrend = collect(range(0, 5))
+            ->map(fn ($offset) => (float) $monthlyOrderValues->get($firstTrendMonth->addMonths($offset)->format('Y-m'), 0));
+
+        $paymentAmountExpression = Schema::hasColumn('pembayaran', 'nominal_dikembalikan')
+            ? 'SUM(nominal - COALESCE(nominal_dikembalikan, 0))'
+            : 'SUM(nominal)';
+        $monthlyPaymentValues = Pembayaran::query()
+            ->whereIn('status_gateway', $statusPembayaranDiterima)
+            ->selectRaw("DATE_FORMAT(tanggal_pembayaran, '%Y-%m') as bulan, {$paymentAmountExpression} as total")
+            ->whereBetween('tanggal_pembayaran', [$firstTrendMonth->toDateString(), $today->toDateString()])
             ->groupBy('bulan')
             ->pluck('total', 'bulan');
 
         $monthlyRevenueTrend = collect(range(0, 5))
-            ->map(function ($offset) use ($firstTrendMonth, $monthlyOrderValues) {
+            ->map(function ($offset) use ($firstTrendMonth, $monthlyPaymentValues) {
                 $month = $firstTrendMonth->addMonths($offset);
 
-                return (float) $monthlyOrderValues->get($month->format('Y-m'), 0);
+                return (float) $monthlyPaymentValues->get($month->format('Y-m'), 0);
             });
+
+        $jumlahBarangStokKritis = 0;
+        $piutangBerjalan = 0.0;
+        $jumlahAngsuranTerlambat = 0;
+        $dendaDikenakan = 0.0;
+        $dendaDiterima = 0.0;
 
         $maxMonthlyOrders = max(
             1,
@@ -193,13 +216,13 @@ class DashboardController extends Controller
         $pembayaranLunas = Pembayaran::where(
             'status_pembayaran',
             'Lunas'
-        )->where('status_gateway', 'settlement')->count();
+        )->whereIn('status_gateway', $statusPembayaranDiterima)->count();
 
         $pembayaranBelumLunas = Pembayaran::where(
             'status_pembayaran',
             '!=',
             'Lunas'
-        )->where('status_gateway', 'settlement')->count();
+        )->whereIn('status_gateway', $statusPembayaranDiterima)->count();
 
         $totalStatusPembayaran = $pembayaranLunas
             + $pembayaranBelumLunas;
@@ -234,20 +257,25 @@ class DashboardController extends Controller
         // Data tambahan hanya dimuat untuk ringkasan Dashboard Pimpinan.
         $barangBelumTerjual = collect();
         $barangStokHabis = collect();
+        $jumlahBarangStokHabis = 0;
         $pengajuanMenungguPersetujuan = collect();
         $jumlahPersetujuanMenunggu = 0;
         if (auth()->user()?->peran === 'Pimpinan') {
             $ringkasanBarang = Barang::query()
                 ->withSum('detailPemesanan as jumlah_dipesan', 'jumlah')
                 ->get();
+            $criticalStock = (int) config('inventory.critical_stock', 5);
+            $barangTersedia = app(InventoryAvailabilityService::class)->withAvailability($ringkasanBarang->filter(fn ($barang) => $barang->stok !== null)->values());
             $barangBelumTerjual = $ringkasanBarang
                 ->filter(fn ($barang) => (int) $barang->jumlah_dipesan === 0)
                 ->take(4)
                 ->values();
-            $barangStokHabis = $ringkasanBarang
+            $jumlahBarangStokKritis = $barangTersedia->filter(fn ($barang) => $barang->stok_tersedia <= $criticalStock)->count();
+            $barangStokHabisPenuh = $ringkasanBarang
                 ->filter(fn ($barang) => $barang->stok !== null && (int) $barang->stok === 0)
-                ->take(4)
                 ->values();
+            $jumlahBarangStokHabis = $barangStokHabisPenuh->count();
+            $barangStokHabis = $barangStokHabisPenuh->take(4)->values();
 
             $pengajuanMenungguPersetujuan = Pemesanan::with('pelanggan')
                 ->where('status_persetujuan', 'Menunggu Persetujuan')
@@ -255,7 +283,23 @@ class DashboardController extends Controller
                 ->limit(5)
                 ->get();
             $jumlahPersetujuanMenunggu = Pemesanan::where('status_persetujuan', 'Menunggu Persetujuan')->count();
+
+            $relasiMonitoring = [
+                'pembayaran' => fn ($query) => $query->whereIn('status_gateway', $statusPembayaranDiterima)
+                    ->when(Schema::hasTable('alokasi_pembayaran'), fn ($query) => $query->with('alokasiDenda')),
+            ];
+            if (Schema::hasTable('penyesuaian_denda')) $relasiMonitoring[] = 'penyesuaianDenda';
+            if (Schema::hasTable('denda_angsuran')) $relasiMonitoring[] = 'dendaAngsuran';
+            $kreditAktif = $kreditAktifQuery()->with($relasiMonitoring)->get();
+            $ringkasanKreditDashboard = $kreditAktif->map(fn (Pemesanan $order) => app(MonitoringKreditService::class)->hitung($order));
+            $piutangBerjalan = (float) $ringkasanKreditDashboard->sum('sisa_kewajiban');
+            $jumlahAngsuranTerlambat = (int) $ringkasanKreditDashboard->sum('angsuran_terlambat');
+            $dendaDikenakan = (float) $ringkasanKreditDashboard->sum('total_denda_dikenakan');
+            $dendaDiterima = (float) $ringkasanKreditDashboard->sum('total_denda_dibayar');
         }
+
+        $nilaiPembayaranBulanIni = $this->totalPembayaranDiterima($awalBulanIni, $awalBulanDepan, $statusPembayaranDiterima);
+        $nilaiPembayaranBulanLalu = $this->totalPembayaranDiterima($awalBulanLalu, $awalBulanIni, $statusPembayaranDiterima);
 
         // Lima transaksi terbaru
         $transaksiTerbaru = Pemesanan::with('pelanggan')
@@ -281,6 +325,9 @@ class DashboardController extends Controller
             'pemesananTrend',
             'monthlyOrderComparison',
             'monthlyRevenueTrend',
+            'monthlyOrderValueTrend',
+            'nilaiPembayaranBulanIni',
+            'nilaiPembayaranBulanLalu',
             'pemesananTrendCoordinates',
             'pembayaranLunas',
             'pembayaranBelumLunas',
@@ -293,7 +340,24 @@ class DashboardController extends Controller
             'pengajuanMenungguPersetujuan',
             'jumlahPersetujuanMenunggu',
             'transaksiTerbaru',
-            'maxBarangDipesan'
+            'maxBarangDipesan',
+            'piutangBerjalan',
+            'jumlahAngsuranTerlambat',
+            'dendaDikenakan',
+            'dendaDiterima',
+            'jumlahBarangStokKritis',
+            'jumlahBarangStokHabis'
         ));
+    }
+
+    private function totalPembayaranDiterima(CarbonImmutable $mulai, CarbonImmutable $akhir, array $status): float
+    {
+        $query = Pembayaran::query()->whereIn('status_gateway', $status)
+            ->where('tanggal_pembayaran', '>=', $mulai->toDateString())
+            ->where('tanggal_pembayaran', '<', $akhir->toDateString());
+
+        return (float) (Schema::hasColumn('pembayaran', 'nominal_dikembalikan')
+            ? $query->selectRaw('COALESCE(SUM(nominal - COALESCE(nominal_dikembalikan, 0)), 0) as total')->value('total')
+            : $query->sum('nominal'));
     }
 }

@@ -22,7 +22,7 @@ class PenggunaController extends Controller
     public function index()
     {
         $this->pastikanPimpinan();
-        $pengguna = Pengguna::orderBy('created_at')->get();
+        $pengguna = Pengguna::orderBy('created_at')->paginate(15)->withQueryString();
 
         return view('pengguna.index', compact('pengguna'));
     }

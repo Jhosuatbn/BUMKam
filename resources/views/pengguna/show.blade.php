@@ -24,7 +24,7 @@
                 <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Password</dt><dd class="mt-1 text-sm font-semibold text-slate-900">Tidak ditampilkan. Gunakan reset password bila diperlukan.</dd></div>
             </dl>
             <div class="flex flex-wrap gap-3 border-t border-slate-200 px-5 py-4 sm:px-6">
-                @if ($pengguna->peran === 'Staff')<a href="{{ route('pengguna.edit', $pengguna->id_pengguna) }}" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Kelola Akun Staff</a>@endif
+                @if ($pengguna->peran === 'Staff')<a href="{{ route('pengguna.edit', $pengguna->id_pengguna) }}" class="bumkam-green-action inline-flex min-h-10 items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition">Kelola Akun Staff</a>@endif
                 <a href="{{ route('pengguna.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Daftar Pengguna</a>
             </div>
         </section>

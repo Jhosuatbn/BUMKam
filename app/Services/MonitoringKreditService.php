@@ -7,12 +7,12 @@ use Carbon\CarbonImmutable;
 
 class MonitoringKreditService
 {
-    public function __construct(private readonly DendaKeterlambatanService $denda)
+    public function __construct(private readonly DendaKeterlambatanService $denda, private readonly PengembalianAlokasiPembayaranService $pengembalian)
     {
     }
     /**
      * Susun jadwal angsuran dari tanggal pemesanan dan alokasikan hanya
-     * pembayaran yang sudah terverifikasi (status_gateway = settlement).
+     * pembayaran terverifikasi yang belum dikembalikan sepenuhnya.
      */
     public function hitung(Pemesanan $pemesanan): array
     {
@@ -24,13 +24,11 @@ class MonitoringKreditService
         ) * 100));
         $angsuranSen = max(0, (int) round((float) $pemesanan->angsuran * 100));
         $pembayaranTerverifikasi = $pemesanan->pembayaran
-            ->where('status_gateway', 'settlement')
+            ->whereIn('status_gateway', ['settlement', 'partial_refund'])
             ->values();
         foreach ($pembayaranTerverifikasi as $pembayaran) {
             $alokasi = $pembayaran->relationLoaded('alokasiDenda') ? $pembayaran->alokasiDenda : collect();
-            $pembayaran->setAttribute('_pokok_monitoring', $alokasi->isNotEmpty()
-                ? (float) $alokasi->sum('alokasi_angsuran')
-                : (float) $pembayaran->nominal);
+            $pembayaran->setAttribute('_pokok_monitoring', $this->pengembalian->pokokEfektif($pembayaran));
         }
         $totalTerbayarSen = (int) round((float) $pembayaranTerverifikasi->sum('_pokok_monitoring') * 100);
         $indeksPembayaran = 0;

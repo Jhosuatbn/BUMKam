@@ -6,11 +6,15 @@
         ? (($nilaiPesananBulanIni - $nilaiPesananBulanLalu) / $nilaiPesananBulanLalu) * 100
         : ($nilaiPesananBulanIni > 0 ? 100 : 0);
     $lebarProdukMaks = max(1, (int) $maxBarangDipesan);
+    $persentasePembayaranBerubah = $nilaiPembayaranBulanLalu > 0
+        ? (($nilaiPembayaranBulanIni - $nilaiPembayaranBulanLalu) / $nilaiPembayaranBulanLalu) * 100
+        : ($nilaiPembayaranBulanIni > 0 ? 100 : 0);
     $dashboardChartData = [
         'monthLabels' => $pemesananTrend->pluck('label')->values(),
         'monthlyOrders' => $pemesananTrend->pluck('jumlah')->values(),
         'previousYearOrders' => $monthlyOrderComparison->values(),
         'monthlyRevenue' => $monthlyRevenueTrend->values(),
+        'monthlyOrderValues' => $monthlyOrderValueTrend->values(),
         'paymentPaidPercent' => $persentasePembayaranLunas,
         'orderStatus' => [(int) $pemesananLunas, (int) $pemesananBelumLunas],
         'orderValues' => [(float) $nilaiPesananBulanLalu, (float) $nilaiPesananBulanIni],
@@ -42,9 +46,17 @@
     </div></div></div>
 
     <div class="col-12 col-md-6 col-xxl-2 mb-6"><div class="card h-100"><div class="card-body d-flex flex-column justify-content-between">
-        <div><div class="avatar mb-3"><span class="avatar-initial rounded bg-label-info"><i class="icon-base bx bx-wallet icon-lg"></i></span></div><p class="mb-1">Nilai Bulan Ini</p><h5 class="card-title mb-1">Rp {{ number_format($nilaiPesananBulanIni, 0, ',', '.') }}</h5><small class="{{ $persentasePerubahan >= 0 ? 'text-success' : 'text-danger' }}">{{ $persentasePerubahan > 0 ? '+' : '' }}{{ number_format($persentasePerubahan, 1, ',', '.') }}% transaksi</small></div>
+        <div><div class="avatar mb-3"><span class="avatar-initial rounded bg-label-info"><i class="icon-base bx bx-wallet icon-lg"></i></span></div><p class="mb-1">Nilai Pemesanan Bulan Ini</p><h5 class="card-title mb-1">Rp {{ number_format($nilaiPesananBulanIni, 0, ',', '.') }}</h5><small class="{{ $persentasePerubahan >= 0 ? 'text-success' : 'text-danger' }}">{{ $persentasePerubahan > 0 ? '+' : '' }}{{ number_format($persentasePerubahan, 1, ',', '.') }}% dari bulan lalu</small></div>
         <div id="bumkam-sales-sparkline" class="mt-3" role="img" aria-label="Tren nilai pemesanan enam bulan terakhir"></div>
     </div></div></div>
+
+    @if ($isPimpinan)
+        <div class="col-12 mb-6"><div class="row g-3">
+            @foreach ([['Piutang Berjalan', 'Rp '.number_format($piutangBerjalan, 0, ',', '.'), 'bx-wallet', 'primary'], ['Angsuran Terlambat', number_format($jumlahAngsuranTerlambat, 0, ',', '.'), 'bx-time-five', 'danger'], ['Denda Dikenakan', 'Rp '.number_format($dendaDikenakan, 0, ',', '.'), 'bx-error-circle', 'warning'], ['Denda Diterima', 'Rp '.number_format($dendaDiterima, 0, ',', '.'), 'bx-check-circle', 'success'], ['Stok Kritis', number_format($jumlahBarangStokKritis, 0, ',', '.'), 'bx-package', 'warning'] ] as [$label, $value, $icon, $color])
+                <div class="col-12 col-sm-6 col-xl"><div class="card h-100"><div class="card-body"><div class="avatar mb-3"><span class="avatar-initial rounded bg-label-{{ $color }}"><i class="icon-base bx {{ $icon }} icon-lg"></i></span></div><p class="mb-1">{{ $label }}</p><h5 class="card-title mb-0">{{ $value }}</h5></div></div></div>
+            @endforeach
+        </div></div>
+    @endif
 
     {{-- Baris 2: grafik utama dengan radial di dalam card, ringkasan dan laporan di kanan. --}}
     <div class="col-12 col-xxl-8 mb-6 total-revenue"><div class="card h-100"><div class="row row-bordered g-0 h-100">
@@ -55,7 +67,7 @@
     <div class="col-12 col-xxl-4 mb-6 profile-report"><div class="row">
         @if ($isPimpinan)
             <div class="col-6 mb-6"><div class="card h-100"><div class="card-body"><div class="avatar mb-3"><span class="avatar-initial rounded bg-label-primary"><i class="icon-base bx bx-group icon-lg"></i></span></div><p class="mb-1">Pelanggan Kredit</p><h4 class="card-title mb-0">{{ number_format($totalKredit, 0, ',', '.') }}</h4></div></div></div>
-            <div class="col-6 mb-6"><div class="card h-100"><div class="card-body"><div class="avatar mb-3"><span class="avatar-initial rounded bg-label-warning"><i class="icon-base bx bx-error icon-lg"></i></span></div><p class="mb-1">Stok Habis</p><h4 class="card-title mb-0">{{ number_format($barangStokHabis->count(), 0, ',', '.') }}</h4></div></div></div>
+            <div class="col-6 mb-6"><div class="card h-100"><div class="card-body"><div class="avatar mb-3"><span class="avatar-initial rounded bg-label-warning"><i class="icon-base bx bx-error icon-lg"></i></span></div><p class="mb-1">Barang Stok Habis</p><h4 class="card-title mb-0">{{ number_format($jumlahBarangStokHabis, 0, ',', '.') }}</h4></div></div></div>
         @else
             <div class="col-6 mb-6"><div class="card h-100"><div class="card-body"><div class="avatar mb-3"><span class="avatar-initial rounded bg-label-primary"><i class="icon-base bx bx-group icon-lg"></i></span></div><p class="mb-1">Pelanggan</p><h4 class="card-title mb-0">{{ number_format($totalPelanggan, 0, ',', '.') }}</h4></div></div></div>
             <div class="col-6 mb-6"><div class="card h-100"><div class="card-body"><div class="avatar mb-3"><span class="avatar-initial rounded bg-label-info"><i class="icon-base bx bx-package icon-lg"></i></span></div><p class="mb-1">Barang</p><h4 class="card-title mb-0">{{ number_format($totalBarang, 0, ',', '.') }}</h4></div></div></div>
@@ -85,7 +97,7 @@
         @endforelse
     </div></div></div>
 
-    <div class="col-12 col-lg-4 mb-6"><div class="card h-100"><div class="card-header d-flex align-items-center justify-content-between"><div><h5 class="card-title mb-1">Pendapatan Usaha</h5><p class="card-subtitle">Nilai pemesanan selama enam bulan</p></div><span class="avatar"><span class="avatar-initial rounded bg-label-info"><i class="icon-base bx bx-wallet"></i></span></span></div><div class="card-body"><div class="d-flex align-items-start justify-content-between mb-3"><div><small class="text-body-secondary">Bulan ini</small><h4 class="mb-0">Rp {{ number_format($nilaiPesananBulanIni, 0, ',', '.') }}</h4></div><span class="badge {{ $persentasePerubahanNilai >= 0 ? 'bg-label-success' : 'bg-label-danger' }}">{{ $persentasePerubahanNilai > 0 ? '+' : '' }}{{ number_format($persentasePerubahanNilai, 1, ',', '.') }}%</span></div><div id="bumkam-revenue-trend-chart" role="img" aria-label="Grafik nilai pemesanan enam bulan terakhir"></div><div class="d-flex justify-content-between border-top pt-3 mt-3"><span class="text-body-secondary">Bulan lalu</span><strong>Rp {{ number_format($nilaiPesananBulanLalu, 0, ',', '.') }}</strong></div><p class="small text-body-secondary mt-3 mb-0">{{ $isPimpinan ? 'Ringkasan keuangan untuk pemantauan pimpinan.' : 'Ringkasan nilai pemesanan usaha.' }}</p></div></div></div>
+    <div class="col-12 col-lg-4 mb-6"><div class="card h-100"><div class="card-header d-flex align-items-center justify-content-between"><div><h5 class="card-title mb-1">Pembayaran Diterima</h5><p class="card-subtitle">Penerimaan bersih refund selama enam bulan</p></div><span class="avatar"><span class="avatar-initial rounded bg-label-info"><i class="icon-base bx bx-wallet"></i></span></span></div><div class="card-body"><div class="d-flex align-items-start justify-content-between mb-3"><div><small class="text-body-secondary">Bulan ini</small><h4 class="mb-0">Rp {{ number_format($nilaiPembayaranBulanIni, 0, ',', '.') }}</h4></div><span class="badge {{ $persentasePembayaranBerubah >= 0 ? 'bg-label-success' : 'bg-label-danger' }}">{{ $persentasePembayaranBerubah > 0 ? '+' : '' }}{{ number_format($persentasePembayaranBerubah, 1, ',', '.') }}%</span></div><div id="bumkam-revenue-trend-chart" role="img" aria-label="Grafik penerimaan pembayaran bersih refund enam bulan terakhir"></div><div class="d-flex justify-content-between border-top pt-3 mt-3"><span class="text-body-secondary">Bulan lalu</span><strong>Rp {{ number_format($nilaiPembayaranBulanLalu, 0, ',', '.') }}</strong></div><p class="small text-body-secondary mt-3 mb-0">Pokok angsuran dan denda ditampilkan terpisah pada laporan kredit.</p></div></div></div>
 
     <div class="col-12 col-lg-4 mb-6"><div class="card h-100"><div class="card-header d-flex align-items-center justify-content-between"><div><h5 class="card-title mb-1">Transaksi Terbaru</h5><p class="card-subtitle">Lima pemesanan terakhir</p></div><a href="{{ route('laporan.index') }}" class="btn btn-sm btn-label-primary" aria-label="Buka laporan"><i class="icon-base bx bx-right-arrow-alt"></i></a></div><div class="card-body pt-4">
         @forelse ($transaksiTerbaru as $transaksi)

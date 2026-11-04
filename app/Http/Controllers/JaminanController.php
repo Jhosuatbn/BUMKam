@@ -3,8 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Jaminan;
-use App\Models\Pembayaran;
+use App\Models\Pemesanan;
+use App\Services\MonitoringKreditService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class JaminanController extends Controller
@@ -34,17 +38,13 @@ class JaminanController extends Controller
         return view('jaminan.index', compact('jaminan'));
     }
 
-    public function show(Jaminan $jaminan)
+    public function show(Jaminan $jaminan, MonitoringKreditService $monitoring)
     {
         $this->pastikanRoleDiizinkan();
         $jaminan->load('pemesanan.pelanggan', 'verifier', 'penerima');
         abort_unless($jaminan->pemesanan, 404);
-        $jaminan->pemesanan->loadMissing('pembayaran');
-
-        $pemesanan = $jaminan->pemesanan;
-        $wajibDibayar = max(0, (float) $pemesanan->total_harga + (float) $pemesanan->bunga - (float) $pemesanan->dp);
-        $sudahDibayar = (float) $pemesanan->pembayaran->where('status_gateway', 'settlement')->sum('nominal');
-        $bolehDikembalikan = $pemesanan->status_pemesanan === 'Lunas' || $sudahDibayar + 0.01 >= $wajibDibayar;
+        $ringkasan = $this->ringkasanKewajiban($jaminan->pemesanan, $monitoring);
+        $bolehDikembalikan = $ringkasan['sisa_kewajiban'] <= 0.01;
 
         return view('jaminan.show', compact('jaminan', 'bolehDikembalikan'));
     }
@@ -58,7 +58,10 @@ class JaminanController extends Controller
         $extension = pathinfo($jaminan->file_path, PATHINFO_EXTENSION);
         $namaUnduhan = 'dokumen-jaminan-'.$jaminan->id_jaminan.($extension ? '.'.$extension : '');
 
-        return Storage::disk('local')->response($jaminan->file_path, $namaUnduhan);
+        return Storage::disk('local')->response($jaminan->file_path, $namaUnduhan, [
+            'Cache-Control' => 'private, no-store',
+            'X-Content-Type-Options' => 'nosniff',
+        ], 'inline');
     }
 
     public function update(Request $request, Jaminan $jaminan, \App\Services\AuditTrailWriter $audit)
@@ -105,26 +108,49 @@ class JaminanController extends Controller
         return back()->with('success', 'Keputusan verifikasi jaminan berhasil dicatat.');
     }
 
-    public function returnCollateral(Request $request, Jaminan $jaminan)
+    public function returnCollateral(Request $request, Jaminan $jaminan, MonitoringKreditService $monitoring)
     {
         $this->pastikanStaff();
-        $this->pastikanTerhubungKePemesanan($jaminan);
-        abort_if($jaminan->status_pengembalian === 'Sudah Dikembalikan', 422, 'Jaminan sudah tercatat dikembalikan.');
         $request->validate(['status_pengembalian' => ['required', Rule::in(['Sudah Dikembalikan'])]]);
 
-        $pemesanan = $jaminan->pemesanan;
-        abort_unless($pemesanan, 404);
-        $wajibDibayar = max(0, (float) $pemesanan->total_harga + (float) $pemesanan->bunga - (float) $pemesanan->dp);
-        $sudahDibayar = (float) Pembayaran::where('id_pemesanan', $pemesanan->id_pemesanan)
-            ->where('status_gateway', 'settlement')
-            ->sum('nominal');
-        abort_if($sudahDibayar + 0.01 < $wajibDibayar, 422, 'Jaminan hanya dapat ditandai dikembalikan setelah seluruh kewajiban kredit lunas.');
+        DB::transaction(function () use ($jaminan, $monitoring) {
+            $lockedJaminan = Jaminan::whereKey($jaminan->getKey())->lockForUpdate()->firstOrFail();
+            $this->pastikanTerhubungKePemesanan($lockedJaminan);
+            abort_if($lockedJaminan->status_pengembalian === 'Sudah Dikembalikan', 422, 'Jaminan sudah tercatat dikembalikan.');
 
-        $jaminan->update([
-            'status_pengembalian' => 'Sudah Dikembalikan',
-            'tanggal_pengembalian' => now(),
-        ]);
+            // Lock the order row to serialize this decision with payment/refund processing.
+            $pemesanan = Pemesanan::whereKey($lockedJaminan->id_pemesanan)->lockForUpdate()->firstOrFail();
+            $ringkasan = $this->ringkasanKewajiban($pemesanan, $monitoring);
+            abort_if($ringkasan['sisa_kewajiban'] > 0.01, 422, 'Jaminan hanya dapat ditandai dikembalikan setelah seluruh kewajiban kredit dan denda lunas.');
+
+            $lockedJaminan->update([
+                'status_pengembalian' => 'Sudah Dikembalikan',
+                'tanggal_pengembalian' => now(),
+            ]);
+        });
 
         return back()->with('success', 'Jaminan ditandai sudah dikembalikan.');
+    }
+
+    /** Use the same net-payment, refund, and penalty calculation as credit monitoring. */
+    private function ringkasanKewajiban(Pemesanan $pemesanan, MonitoringKreditService $monitoring): array
+    {
+        $relasi = [
+            'pembayaran' => fn ($query) => $query
+                ->whereIn('status_gateway', ['settlement', 'partial_refund'])
+                ->when(Schema::hasTable('alokasi_pembayaran'), fn ($query) => $query->with('alokasiDenda'))
+                ->orderBy('tanggal_pembayaran')
+                ->orderBy('id_pembayaran'),
+        ];
+        if (Schema::hasTable('penyesuaian_denda')) {
+            $relasi[] = 'penyesuaianDenda';
+        }
+        if (Schema::hasTable('denda_angsuran')) {
+            $relasi[] = 'dendaAngsuran';
+        }
+
+        $pemesanan->load($relasi);
+
+        return $monitoring->hitung($pemesanan);
     }
 }

@@ -67,7 +67,10 @@ class PelangganController extends Controller
 
     public function index(Request $request)
     {
-        $pelanggan = Pelanggan::cari($request->q)
+        $filters = $request->validate([
+            'q' => ['nullable', 'string', 'max:100'],
+        ]);
+        $pelanggan = Pelanggan::cari(trim($filters['q'] ?? ''))
             ->orderByRaw('CAST(SUBSTRING(id_pelanggan, 5) AS UNSIGNED)')
             ->paginate(10)
             ->withQueryString();
@@ -92,8 +95,7 @@ class PelangganController extends Controller
             : null;
 
         if ($request->hasFile('foto_ktp')) {
-            // Disimpan di storage/app/public/pelanggan
-            $data['foto_ktp'] = $request->file('foto_ktp')->store('pelanggan', 'public');
+            $data['foto_ktp'] = $request->file('foto_ktp')->store('pelanggan', 'local');
         }
 
         try {
@@ -105,7 +107,7 @@ class PelangganController extends Controller
         } catch (\Throwable $e) {
             // Jika gagal menyimpan ke database, hapus file yang terlanjur diunggah.
             if (! empty($data['foto_ktp'])) {
-                Storage::disk('public')->delete($data['foto_ktp']);
+                Storage::disk('local')->delete($data['foto_ktp']);
             }
 
             throw $e;
@@ -119,6 +121,22 @@ class PelangganController extends Controller
     public function show(Pelanggan $pelanggan)
     {
         return view('pelanggan.show', compact('pelanggan'));
+    }
+
+    public function fotoKtp(Pelanggan $pelanggan)
+    {
+        abort_unless(in_array(auth()->user()?->peran, ['Staff', 'Pimpinan'], true), 403);
+        abort_unless($pelanggan->foto_ktp, 404);
+
+        $disk = Storage::disk('local')->exists($pelanggan->foto_ktp) ? 'local' : 'public';
+        abort_unless(Storage::disk($disk)->exists($pelanggan->foto_ktp), 404);
+
+        return Storage::disk($disk)->response(
+            $pelanggan->foto_ktp,
+            'foto-ktp-'.$pelanggan->id_pelanggan.'.'.pathinfo($pelanggan->foto_ktp, PATHINFO_EXTENSION),
+            ['Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff'],
+            'inline'
+        );
     }
 
     public function edit(Pelanggan $pelanggan)
@@ -139,24 +157,30 @@ class PelangganController extends Controller
                 : now(config('kredit.zona_waktu', 'Asia/Jakarta')))
             : null;
 
+        $fotoLama = $pelanggan->foto_ktp;
+        $fotoBaru = null;
         if ($request->hasFile('foto_ktp')) {
-            // Ganti foto: hapus file lama, simpan yang baru.
-            if ($pelanggan->foto_ktp) {
-                Storage::disk('public')->delete($pelanggan->foto_ktp);
-            }
-
-            $data['foto_ktp'] = $request->file('foto_ktp')->store('pelanggan', 'public');
+            $fotoBaru = $request->file('foto_ktp')->store('pelanggan', 'local');
+            $data['foto_ktp'] = $fotoBaru;
         } elseif ($request->boolean('hapus_foto')) {
-            // Hanya hapus foto, tanpa menggantinya.
-            if ($pelanggan->foto_ktp) {
-                Storage::disk('public')->delete($pelanggan->foto_ktp);
-            }
-
             $data['foto_ktp'] = null;
         }
 
-        // id_pelanggan tidak ikut diubah.
-        $pelanggan->update($data);
+        try {
+            // Simpan data terlebih dahulu; file lama dibersihkan hanya setelah DB berhasil.
+            $pelanggan->update($data);
+        } catch (\Throwable $e) {
+            if ($fotoBaru) {
+                Storage::disk('local')->delete($fotoBaru);
+            }
+
+            throw $e;
+        }
+
+        if ($fotoLama && $fotoLama !== $pelanggan->foto_ktp) {
+            Storage::disk('local')->delete($fotoLama);
+            Storage::disk('public')->delete($fotoLama);
+        }
 
         return redirect()
             ->route('pelanggan.index')
@@ -175,6 +199,7 @@ class PelangganController extends Controller
 
         if ($foto) {
             Storage::disk('public')->delete($foto);
+            Storage::disk('local')->delete($foto);
         }
 
         return redirect()
@@ -187,8 +212,12 @@ class PelangganController extends Controller
      */
     public function cari(Request $request)
     {
+        $filters = $request->validate([
+            'q' => ['required', 'string', 'min:2', 'max:100'],
+        ]);
+
         return response()->json(
-            Pelanggan::cari($request->q)
+            Pelanggan::cari(trim($filters['q']))
                 ->orderBy('nama_pelanggan')
                 ->limit(20)
                 ->get(['id_pelanggan', 'nama_pelanggan'])

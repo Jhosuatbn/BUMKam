@@ -7,6 +7,11 @@
         @if (session('success'))
             <div role="status" class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900">{{ session('success') }}</div>
         @endif
+        @if ($errors->any())
+            <div role="alert" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900" aria-live="assertive">
+                @foreach ($errors->all() as $error)<div>{{ $error }}</div>@endforeach
+            </div>
+        @endif
 
         <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-labelledby="pemesanan-detail-heading">
             <h2 id="pemesanan-detail-heading" class="border-b border-slate-200 px-5 py-4 text-base font-semibold text-slate-900 sm:px-6">Informasi Pemesanan</h2>
@@ -23,6 +28,13 @@
                 <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Angsuran</dt><dd class="mt-1 tabular-nums text-sm font-semibold text-slate-900">Rp {{ number_format($pemesanan->angsuran, 0, ',', '.') }}</dd></div>
                 <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Status Persetujuan</dt><dd class="mt-1 text-sm font-semibold text-slate-900">{{ $pemesanan->status_persetujuan ?? 'Data lama — tidak memerlukan approval' }}</dd></div>
                 <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Status Pembayaran</dt><dd class="mt-1 text-sm font-semibold text-slate-900">{{ $pemesanan->status_pemesanan }}</dd></div>
+                <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Status Penyerahan</dt><dd class="mt-1 text-sm font-semibold text-slate-900">{{ $pemesanan->status_penyerahan === 'Riwayat Lama' ? 'Riwayat stok sebelum pencatatan penyerahan diterapkan' : $pemesanan->status_penyerahan }}</dd></div>
+                @if ($pemesanan->diserahkan_pada)
+                    <div class="border-b border-slate-100 py-4"><dt class="text-sm font-medium text-slate-500">Diserahkan oleh</dt><dd class="mt-1 text-sm font-semibold text-slate-900">{{ $pemesanan->diserahkanOleh?->nama_lengkap ?? $pemesanan->diserahkanOleh?->username ?? 'Pengguna' }} · {{ $pemesanan->diserahkan_pada->locale('id')->translatedFormat('d M Y, H:i') }}</dd></div>
+                @endif
+                @if ($pemesanan->status_persetujuan === 'Dibatalkan')
+                    <div class="border-b border-slate-100 py-4 sm:col-span-2"><dt class="text-sm font-medium text-slate-500">Alasan Pembatalan</dt><dd class="mt-1 whitespace-pre-line text-sm text-slate-900">{{ $pemesanan->alasan_pembatalan }}</dd></div>
+                @endif
                 @if ($pemesanan->status_persetujuan === 'Ditolak')
                     <div class="border-b border-slate-100 py-4 sm:col-span-2"><dt class="text-sm font-medium text-slate-500">Alasan Penolakan</dt><dd class="mt-1 whitespace-pre-line text-sm text-rose-800">{{ $pemesanan->catatan_persetujuan }}</dd></div>
                 @elseif ($pemesanan->persetujuan_pada)
@@ -64,6 +76,26 @@
                             <button type="submit" name="status_persetujuan" value="Ditolak" formnovalidate class="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-rose-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-rose-800" onclick="if (!this.form.elements.catatan_persetujuan.value.trim()) { this.form.elements.catatan_persetujuan.setCustomValidity('Alasan penolakan wajib diisi.'); this.form.elements.catatan_persetujuan.reportValidity(); this.form.elements.catatan_persetujuan.setCustomValidity(''); return false; }"><i class="icon-base bx bx-x" aria-hidden="true"></i>Tolak Pemesanan</button>
                         </div>
                     </form>
+                @endif
+
+                @if (auth()->user()?->peran === 'Staff' && $pemesanan->status_persetujuan === 'Disetujui' && $pemesanan->status_penyerahan === 'Belum Diserahkan')
+                    <div class="border-b border-slate-100 p-5 sm:px-6">
+                        <form action="{{ route('pemesanan.handover', $pemesanan) }}" method="POST" onsubmit="return confirm('Catat penyerahan barang dan kurangi stok fisik sekarang?')">
+                            @csrf
+                            <button type="submit" class="bumkam-green-action inline-flex min-h-10 items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm">Catat Penyerahan Barang</button>
+                        </form>
+                    </div>
+                @endif
+
+                @if (auth()->user()?->peran === 'Staff' && in_array($pemesanan->status_persetujuan, ['Menunggu Persetujuan', 'Disetujui'], true) && $pemesanan->status_penyerahan === 'Belum Diserahkan' && ! $pemesanan->pembayaran->isNotEmpty())
+                    <div class="border-b border-slate-100 p-5 sm:px-6">
+                        <form action="{{ route('pemesanan.cancel', $pemesanan) }}" method="POST" data-confirm-delete="Batalkan pemesanan ini? Reservasi stok akan dilepas.">
+                            @csrf
+                            <label for="alasan_pembatalan" class="mb-2 block text-sm font-semibold text-slate-700">Alasan pembatalan</label>
+                            <textarea id="alasan_pembatalan" name="alasan_pembatalan" required maxlength="2000" rows="2" class="mb-3 block w-full rounded-xl border border-slate-300 px-3 py-2 text-sm" placeholder="Jelaskan alasan pembatalan">{{ old('alasan_pembatalan') }}</textarea>
+                            <button type="submit" class="inline-flex min-h-10 items-center justify-center rounded-xl border border-rose-300 px-4 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50">Batalkan Pemesanan</button>
+                        </form>
+                    </div>
                 @endif
 
                 <div class="divide-y divide-slate-100 px-5 sm:px-6"><h3 class="py-4 text-sm font-semibold text-slate-800">Riwayat Persetujuan</h3>

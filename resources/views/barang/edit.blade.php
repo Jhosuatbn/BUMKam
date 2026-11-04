@@ -44,11 +44,7 @@
                             <input id="harga" type="text" inputmode="numeric" data-rupiah-input name="harga" value="{{ old('harga', $barang->harga) }}" required class="block min-w-0 flex-1 border-0 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-0">
                         </div>
                     </div>
-                    <div class="md:col-span-2">
-                        <label for="stok" class="block text-sm font-semibold text-slate-700">Stok tersedia</label>
-                        <input id="stok" type="number" name="stok" value="{{ old('stok', $barang->stok) }}" min="0" step="1" placeholder="Masukkan jumlah stok" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
-                        <p class="mt-1 text-xs text-slate-500">Biarkan kosong hanya jika jumlah stok belum diketahui.</p>
-                    </div>
+                    <div class="md:col-span-2 rounded-xl bg-slate-50 p-4 text-sm text-slate-700">Stok fisik: <strong>{{ $barang->stok === null ? 'Belum diatur' : number_format($barang->stok, 0, ',', '.') . ' unit' }}</strong>. Perubahan stok dicatat melalui Barang Masuk.</div>
                 </div>
                 <div class="mt-8 flex flex-wrap justify-end gap-3 border-t border-slate-200 pt-5">
                     <a href="{{ route('barang.index') }}" class="bumkam-cancel-button inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-bold text-black shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Batal</a>

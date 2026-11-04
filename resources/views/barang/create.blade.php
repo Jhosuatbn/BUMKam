@@ -52,10 +52,7 @@
                             <input id="harga" type="text" inputmode="numeric" data-rupiah-input name="harga" value="{{ old('harga') }}" placeholder="Contoh: 1.500.000" required class="block min-w-0 flex-1 border-0 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-0">
                         </div>
                     </div>
-                    <div>
-                        <label for="stok" class="block text-sm font-semibold text-slate-700">Stok awal (opsional)</label>
-                        <input id="stok" type="number" name="stok" value="{{ old('stok') }}" min="0" step="1" placeholder="Kosongkan jika belum diketahui" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
-                    </div>
+                    <p class="text-sm text-slate-600 md:col-span-2">Stok awal barang adalah 0. Tambahkan persediaan melalui menu Barang Masuk.</p>
                 </div>
                 <div class="mt-8 flex flex-wrap gap-3 border-t border-slate-200 pt-5">
                     <button type="submit" data-no-auto-icon class="inline-flex min-h-11 items-center justify-center rounded-xl bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Simpan</button>

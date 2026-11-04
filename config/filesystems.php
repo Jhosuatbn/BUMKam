@@ -33,7 +33,8 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // Private documents are served only by role-checked application routes.
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Schema;
 
 class DendaKeterlambatanService
 {
+    public function __construct(private readonly PengembalianAlokasiPembayaranService $pengembalian) {}
     public function tersedia(): bool
     {
         return Schema::hasTable('denda_angsuran')
@@ -48,10 +49,13 @@ class DendaKeterlambatanService
             ->map(fn ($items) => (float) $items->sum('nominal_pengurangan'));
         $dendaDitetapkan = $pemesanan->dendaAngsuran->keyBy('nomor_angsuran');
         $alokasiDenda = $pemesanan->pembayaran
-            ->where('status_gateway', 'settlement')
-            ->flatMap(fn ($payment) => $payment->alokasiDenda)
+            ->whereIn('status_gateway', ['settlement', 'partial_refund'])
+            ->flatMap(fn ($payment) => $payment->alokasiDenda->map(fn ($allocation) => [
+                'nomor_angsuran' => $allocation->nomor_angsuran,
+                'amount' => max(0, (float) $allocation->alokasi_denda - (Schema::hasTable('alokasi_pembayaran_pengembalian') ? (float) $allocation->pengembalian()->sum('nominal_denda_dibalik') : 0)),
+            ]))
             ->groupBy('nomor_angsuran')
-            ->map(fn ($items) => (float) $items->sum('alokasi_denda'));
+            ->map(fn ($items) => (float) $items->sum('amount'));
 
         foreach ($jadwal as &$angsuran) {
             $sisaPokok = max(0, round($angsuran['nominal'] - $angsuran['nominal_terbayar'], 2));

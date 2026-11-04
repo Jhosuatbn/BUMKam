@@ -3,32 +3,32 @@
 namespace App\Http\Controllers;
 
 use App\Models\Barang;
-use App\Services\StockMovementService;
 use App\Services\AuditTrailWriter;
+use App\Services\InventoryAvailabilityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class BarangController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, InventoryAvailabilityService $availability)
     {
-        $query = Barang::query();
+        $filters = $request->validate([
+            'search' => ['nullable', 'string', 'max:100'],
+        ]);
+        $search = trim($filters['search'] ?? '');
 
-        // Fitur Pencarian Barang
-        if ($request->has('search') && $request->search != '') {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('id_barang', 'like', "%{$search}%")
-                  ->orWhere('nama_barang', 'like', "%{$search}%")
-                  ->orWhere('kategori', 'like', "%{$search}%");
-            });
-        }
-
-        $barang = $query
+        $barang = Barang::query()
+            ->when($search !== '', fn ($query) => $query->where(function ($matches) use ($search) {
+                $matches->where('id_barang', 'like', "%{$search}%")
+                    ->orWhere('nama_barang', 'like', "%{$search}%")
+                    ->orWhere('kategori', 'like', "%{$search}%");
+            }))
             ->orderBy('kategori')
             ->orderByRaw('CAST(SUBSTRING(id_barang, 4) AS UNSIGNED)')
             ->orderBy('id_barang')
-            ->get();
+            ->paginate(20)
+            ->withQueryString();
+        $availability->withAvailability($barang->getCollection());
         $kategoriList = ['Elektronik', 'Pertanian', 'Furniture', 'Kendaraan'];
 
         return view('barang.index', compact('barang', 'kategoriList'));
@@ -40,13 +40,12 @@ class BarangController extends Controller
         return view('barang.create', compact('kategoriList'));
     }
 
-    public function store(Request $request, StockMovementService $movements, AuditTrailWriter $auditTrail)
+    public function store(Request $request, AuditTrailWriter $auditTrail)
     {
         $request->validate([
             'kategori' => 'required|string|in:Elektronik,Pertanian,Furniture,Kendaraan',
             'nama_barang' => 'required|string|max:100',
             'harga' => 'required|numeric|min:0',
-            'stok' => 'nullable|integer|min:0',
         ]);
 
         // Pemetaan Prefix ID berdasarkan Kategori
@@ -69,17 +68,14 @@ class BarangController extends Controller
         // Format angka menjadi 2 digit berurutan (01, 02, dst)
         $generatedId = $prefix . str_pad($nextNumber, 2, '0', STR_PAD_LEFT);
 
-        DB::transaction(function () use ($request, $generatedId, $movements) {
-            $barang = Barang::create([
+        DB::transaction(function () use ($request, $generatedId) {
+            Barang::create([
                 'id_barang' => $generatedId,
                 'nama_barang' => $request->nama_barang,
                 'kategori' => $request->kategori,
                 'harga' => $request->harga,
-                'stok' => $request->filled('stok') ? 0 : null,
+                'stok' => 0,
             ]);
-            if ($request->filled('stok')) {
-                $movements->apply($barang, (int) $request->input('stok'), $request->user()->id_pengguna, 'Stok Awal', 'Barang', $generatedId, 'Saldo awal saat barang dibuat.');
-            }
         });
         $auditTrail->record($request->user(), $request, 'create', 'Barang', 'Barang ditambahkan: ' . $request->nama_barang . ' (' . $generatedId . ').');
 
@@ -99,32 +95,19 @@ class BarangController extends Controller
         return view('barang.edit', compact('barang', 'kategoriList'));
     }
 
-    public function update(Request $request, Barang $barang, StockMovementService $movements, AuditTrailWriter $auditTrail)
+    public function update(Request $request, Barang $barang, AuditTrailWriter $auditTrail)
     {
         $request->validate([
             'kategori' => 'required|string|in:Elektronik,Pertanian,Furniture,Kendaraan',
             'nama_barang' => 'required|string|max:100',
             'harga' => 'required|numeric|min:0',
-            'stok' => 'nullable|integer|min:0',
         ]);
 
-        DB::transaction(function () use ($request, $barang, $movements) {
+        DB::transaction(function () use ($request, $barang) {
             $locked = Barang::whereKey($barang->id_barang)->lockForUpdate()->firstOrFail();
             $locked->update(['kategori' => $request->kategori, 'nama_barang' => $request->nama_barang, 'harga' => $request->harga]);
-            if ($request->filled('stok')) {
-                $target = (int) $request->input('stok');
-                $wasUnconfigured = $locked->stok === null;
-                if ($wasUnconfigured) {
-                    $locked->update(['stok' => 0]);
-                    $locked->refresh();
-                }
-                $delta = $target - (int) $locked->stok;
-                if ($delta !== 0 || $wasUnconfigured) $movements->apply($locked, $delta, $request->user()->id_pengguna, $wasUnconfigured ? 'Stok Awal' : 'Penyesuaian Stok', 'Barang', $locked->id_barang, $wasUnconfigured ? 'Saldo awal ditetapkan melalui edit barang.' : 'Penyesuaian manual melalui edit barang.');
-            } elseif ($locked->stok !== null) {
-                throw \Illuminate\Validation\ValidationException::withMessages(['stok' => 'Stok yang sudah diketahui tidak dapat dikosongkan. Gunakan 0 bila stok barang habis.']);
-            }
         });
-        $auditTrail->record($request->user(), $request, 'update', 'Barang', 'Data barang diperbarui: ' . $barang->nama_barang . '; perubahan stok tercatat bila ada.');
+        $auditTrail->record($request->user(), $request, 'update', 'Barang', 'Identitas barang diperbarui: ' . $barang->nama_barang . '.');
 
         return redirect()
             ->route('barang.index')

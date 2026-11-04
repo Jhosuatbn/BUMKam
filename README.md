@@ -10,25 +10,61 @@ Proyek ini adalah aplikasi administrasi BUMKam yang dibangun dengan Laravel. Apl
 
 - **Dashboard** — ringkasan pelanggan, barang, pemesanan, pembayaran, kondisi kredit, dan informasi operasional. Tampilan dashboard menyesuaikan peran pengguna.
 - **Pelanggan** — pencatatan dan pengelolaan identitas serta informasi kontak, termasuk foto KTP dan pencarian pelanggan.
-- **Barang dan stok** — pengelolaan katalog barang dan jumlah stok. Stok diperiksa saat pesanan dibuat, dikurangi ketika barang dipesan, dan disesuaikan kembali pada kondisi pembatalan atau penolakan pesanan.
+- **Barang, supplier, dan stok** — pengelolaan katalog barang, supplier, penerimaan barang, riwayat pergerakan, pemantauan stok, pengajuan retur, dan stok opname. Retur serta selisih stok opname harus disetujui Pimpinan dan dicatat melalui riwayat pergerakan stok.
 - **Pemesanan** — pencatatan pelanggan, barang, jumlah, harga, tanggal, skema pembayaran, uang muka, tenor, bunga, angsuran, serta data jaminan kredit. Pimpinan dapat menyetujui atau menolak pengajuan dan memberikan alasan penolakan.
-- **Pembayaran** — pencatatan pembayaran dan bukti pembayaran. Pembayaran dapat dicatat sebagai tunai/di tempat atau dilakukan secara online melalui Midtrans Snap. Status online diperbarui melalui notifikasi gateway yang tervalidasi.
-- **Monitoring kredit** — perhitungan total kewajiban, jumlah terbayar, sisa kewajiban, jadwal jatuh tempo, dan status angsuran. Pembayaran online baru dihitung setelah berstatus `settlement`.
+- **Pembayaran** — pencatatan pembayaran dan bukti pembayaran, termasuk pratinjau file sebelum disimpan. Pembayaran dapat dicatat secara langsung atau dilakukan secara online melalui Midtrans Snap. Status online diperbarui melalui notifikasi gateway yang tervalidasi; transaksi settlement dihitung diterima dan refund mengurangi penerimaan serta alokasi secara tercatat.
+- **Monitoring kredit dan denda** — daftar kredit, detail kewajiban, jadwal angsuran, status jatuh tempo, alokasi pembayaran ke pokok dan denda, serta daftar denda. Pengurangan denda oleh Pimpinan wajib memiliki alasan dan tercatat pada Audit Trail.
 - **Pengingat tagihan WhatsApp** — pengiriman pengingat angsuran H-3 melalui Kirima untuk pelanggan yang menyetujui pesan WhatsApp, dengan catatan unik agar pengingat tidak terkirim dua kali.
-- **Jaminan** — penyimpanan dokumen jaminan secara privat, pemeriksaan dan persetujuan Pimpinan, serta pencatatan pengembalian jaminan setelah kewajiban kredit lunas.
-- **Laporan** — ringkasan dan rincian transaksi untuk membantu pemantauan kegiatan usaha.
-- **Pengguna dan hak akses** — pengelolaan akun Staff oleh Pimpinan, termasuk status aktif dan reset kata sandi. Akun nonaktif tidak dapat masuk.
+- **Jaminan** — data jaminan terhubung dengan pemesanan, ditinjau dan disetujui/ditolak oleh Pimpinan, serta pengembalian dicatat setelah kredit lunas. Pratinjau dokumen tersedia pada halaman yang sama bila file jaminan tersedia di penyimpanan privat.
+- **Laporan** — laporan pemesanan, kredit, penerimaan pembayaran, penerimaan barang, piutang, denda, persediaan, dan pengeluaran operasional. Laporan memiliki filter periode dan tata letak cetak.
+- **Pengeluaran operasional** — pencatatan nomor transaksi, tanggal, kategori, keterangan, nominal, serta pengguna pencatat. Histori pengeluaran tidak dihapus dari halaman operasional.
+- **Pengguna dan hak akses** — Pimpinan mengelola akun Staff, termasuk status aktif dan reset kata sandi. ID akun dibuat otomatis; akun nonaktif tidak dapat masuk.
 - **Audit Trail** — pencatatan login/logout dan aktivitas perubahan data untuk membantu penelusuran aktivitas aplikasi.
-- **Antarmuka operasional** — dashboard, navigasi, tabel data, form, detail, dan aksi dibuat dengan Blade serta komponen gaya Tailwind CSS/Bootstrap. Halaman detail dan edit memakai tampilan yang lebih ringkas, sedangkan aksi tabel menggunakan ikon yang konsisten.
+- **Antarmuka operasional** — dashboard, navigasi, tabel, form, halaman detail, dan aksi dibuat dengan Blade serta gaya Tailwind CSS/Bootstrap. Form unggah foto KTP dan bukti pembayaran menampilkan pratinjau; pratinjau gambar/PDF dapat dibuka tanpa meninggalkan halaman. Tabel dan laporan disusun agar mudah dibaca dan dicetak.
 
-### Alur kerja utama
+### Catatan pengerjaan antarmuka
 
-1. Staff memasukkan data pelanggan dan barang, termasuk stok yang tersedia.
-2. Staff membuat pemesanan dan memilih skema pembayaran. Pesanan kredit dapat menyertakan uang muka, tenor, serta dokumen jaminan.
-3. Pimpinan memeriksa pengajuan kredit, lalu menyetujui atau menolaknya. Pengajuan yang ditolak menyimpan alasan keputusan.
-4. Pembayaran dicatat secara tunai/di tempat atau diproses melalui Midtrans. Status pembayaran online mengikuti notifikasi resmi dari Midtrans.
-5. Monitoring kredit menyusun jadwal angsuran dan menghitung sisa kewajiban berdasarkan pembayaran yang telah terverifikasi.
-6. Setelah kewajiban lunas, pengembalian jaminan dapat dicatat. Dashboard, laporan, dan Audit Trail membantu pemantauan aktivitas.
+- Susunan isian pelanggan menempatkan NIK dan nama berdampingan, diikuti nomor telepon, foto KTP, lalu alamat. Urutan ini dipakai pada form tambah dan edit.
+- Foto KTP dan bukti pembayaran menampilkan nama file, pratinjau gambar atau PDF, dan tombol untuk menghapus pilihan sebelum disimpan.
+- Pencarian barang pada penerimaan stok memakai saran setelah tiga karakter. Nama barang dengan harga yang sama digabung menjadi satu hasil; harga berbeda tetap menjadi pilihan terpisah.
+- Baris barang masuk dibuat otomatis saat nama barang, jumlah, dan harga satuan sudah diisi. Harga ditampilkan dalam format Rupiah dengan pemisah ribuan.
+- Form tambah/edit, tombol aksi, konfirmasi hapus, halaman detail, serta tab persetujuan dirapikan dengan gaya dan warna yang konsisten. Tombol tema menampilkan satu ikon untuk beralih antara mode terang dan gelap.
+- Tampilan Pimpinan pada daftar barang menyediakan aksi lihat saja. Status persetujuan pemesanan dipisah menjadi tab menunggu, disetujui, dan ditolak; hak akses tetap diperiksa di backend.
+- Filter Audit Trail disusun mendatar pada layar lebar. Laporan kredit dirapikan untuk pembacaan dan pencetakan serta menampilkan nama pelanggan dan barang.
+
+### Alur kerja aplikasi
+
+#### Alur operasional Staff
+
+1. Catat pelanggan beserta NIK, nama, kontak, alamat, dan foto KTP bila tersedia.
+2. Catat barang yang dijual. Untuk mengisi stok, catat supplier dan penerimaan barang agar perubahan stok masuk ke riwayat pergerakan.
+3. Buat pemesanan dengan memilih pelanggan, barang, jumlah, dan skema pembayaran. Untuk kredit, masukkan uang muka, tenor, dan informasi jaminan. Nomor jaminan berarti nomor resmi yang tercetak pada dokumen.
+4. Pengajuan kredit berstatus menunggu persetujuan sampai diperiksa Pimpinan. Staff dapat melihat status serta alasan penolakan.
+5. Catat pembayaran langsung atau arahkan pelanggan ke pembayaran online. Pembayaran dapat sebagian atau penuh; bukti pembayaran dapat dilampirkan.
+6. Pantau sisa pokok, jadwal, status angsuran, dan denda di Monitoring Kredit. Setelah kewajiban lunas, catat pengembalian jaminan.
+7. Jika pelanggan mengembalikan barang, ajukan retur untuk pemesanan yang sudah diserahkan, isi jumlah dan kondisi, lalu tunggu keputusan Pimpinan. Barang rusak atau belum diperiksa tidak otomatis ditambahkan ke stok.
+8. Untuk pemeriksaan persediaan, catat jumlah fisik pada Stok Opname. Pimpinan menyetujui atau menolak; persetujuan menerapkan selisih sebagai pergerakan stok. Jika stok berubah sejak penghitungan, opname harus dihitung ulang.
+9. Catat pengeluaran operasional dengan tanggal, kategori, keterangan, dan nominal; gunakan laporan Pengeluaran untuk meninjau data menurut periode.
+
+#### Alur persetujuan Pimpinan
+
+1. Buka daftar persetujuan dan pilih pengajuan yang menunggu.
+2. Periksa rincian pelanggan, barang, nilai, tenor, angsuran, dan informasi jaminan.
+3. Setujui pengajuan atau tolak dengan alasan. Keputusan tersimpan bersama identitas Pimpinan dan waktu proses.
+4. Pantau pembayaran, jadwal kredit, dan laporan. Jika diperlukan, setujui pengurangan denda dengan nominal serta alasan; sistem menyimpan riwayat dan Audit Trail.
+5. Tinjau jaminan. Pimpinan hanya melakukan verifikasi, bukan mengedit atau menghapus data jaminan.
+
+#### Alur pembayaran, angsuran, dan denda
+
+1. Pembayaran online berstatus `pending` belum dihitung sebagai uang yang diterima. Sistem menghitungnya setelah notifikasi Midtrans yang sah menetapkan status `settlement`; refund parsial mengurangi saldo pembayaran sesuai alokasi yang dibalik.
+2. Pembayaran dialokasikan ke sisa pokok angsuran dan, bila ada, denda terkait. Pembayaran sebagian mengurangi sisa angsuran; pokok yang sudah dibayar tidak menjadi dasar denda.
+3. Denda berjalan dihitung setelah masa tenggang tujuh hari sejak jatuh tempo: `sisa angsuran × 0,1% × hari terlambat`, dengan batas maksimal 5% dari sisa angsuran. Denda tidak berbunga dan tidak dikenakan pada angsuran yang lunas.
+4. Pimpinan dapat mengurangi atau membebaskan denda dengan alasan wajib. Pengurangan tidak menghapus catatan denda awal maupun keputusan terdahulu.
+5. Monitoring Kredit dan Laporan menampilkan pokok serta denda secara terpisah agar pendapatan denda tidak tercampur dengan angsuran pokok.
+
+#### Alur data dan pemantauan
+
+Data pelanggan, pemesanan, pembayaran, stok, dan jaminan saling terhubung melalui ID masing-masing. Dashboard menyajikan ringkasan, laporan membantu peninjauan transaksi dan kredit, sedangkan Audit Trail mencatat aktivitas penting untuk pelacakan.
 
 ### Pengguna aplikasi
 
@@ -143,15 +179,21 @@ Perintah harian hanya memproses angsuran yang jatuh tempo tepat tiga hari lagi d
 | Logo dan warna brand BUMKam | `public/assets/img/bumkam-mark.png`, `resources/css/app.css`, `resources/views/login.blade.php` |
 | Sidebar/layout lama atau pendukung | `resources/views/dashboard-layout.blade.php`, `resources/views/layouts/app.blade.php` |
 | Pelanggan | `app/Http/Controllers/PelangganController.php`, `resources/views/pelanggan/` |
-| Barang dan stok | `app/Http/Controllers/BarangController.php`, `resources/views/barang/` |
+| Barang dan stok | `app/Http/Controllers/BarangController.php`, `app/Http/Controllers/MonitoringStokController.php`, `resources/views/barang/`, `resources/views/monitoring-stok/` |
+| Supplier dan penerimaan barang | `app/Http/Controllers/SupplierController.php`, `app/Http/Controllers/BarangMasukController.php`, `app/Services/StockMovementService.php`, `resources/views/supplier/`, `resources/views/barang-masuk/` |
+| Retur pelanggan dan stok opname | `app/Http/Controllers/ReturPelangganController.php`, `app/Http/Controllers/StokOpnameController.php`, `app/Services/StockMovementService.php`, `resources/views/retur/`, `resources/views/stok-opname/` |
+| Pengeluaran operasional | `app/Http/Controllers/PengeluaranOperasionalController.php`, `resources/views/pengeluaran/` |
 | Pemesanan | `app/Http/Controllers/PemesananController.php`, `resources/views/pemesanan/` |
 | Pembayaran dan Midtrans | `app/Http/Controllers/PembayaranController.php`, `resources/views/pembayaran/` |
-| Monitoring kredit | `app/Http/Controllers/MonitoringKreditController.php`, `app/Services/MonitoringKreditService.php`, `resources/views/monitoring-kredit/` |
+| Monitoring kredit dan denda | `app/Http/Controllers/MonitoringKreditController.php`, `app/Services/MonitoringKreditService.php`, `app/Services/DendaKeterlambatanService.php`, `app/Services/AlokasiPembayaranService.php`, `resources/views/monitoring-kredit/` |
 | Laporan | `app/Http/Controllers/LaporanController.php`, `resources/views/laporan/index.blade.php` |
 | Middleware akses Pimpinan | `app/Http/Middleware/PimpinanAccess.php`, didaftarkan di `bootstrap/app.php` |
-| Dokumen jaminan privat | `app/Models/Jaminan.php`, `app/Http/Controllers/JaminanController.php`, `resources/views/jaminan/`, migration `2026_10_31_000001_create_jaminan_table.php` |
+| Jaminan | `app/Models/Jaminan.php`, `app/Http/Controllers/JaminanController.php`, `resources/views/jaminan/`, migration `2026_10_31_000001_create_jaminan_table.php` |
+| Pratinjau lampiran | `resources/views/components/photo-preview-dialog.blade.php`, `resources/views/components/file-preview-dialog.blade.php`, `resources/js/app.js` |
 | Audit Trail | `app/Models/AuditTrail.php`, `app/Services/AuditTrailWriter.php`, `app/Http/Middleware/RecordAuditTrail.php`, `app/Http/Controllers/AuditTrailController.php`, `resources/views/audit-trail/` |
 | Skema database | `database/migrations/` |
+
+Migration `2026_11_04_000004_add_returns_stocktakes_and_operating_expenses.php` menambahkan histori retur dan detail kondisi barang, pencatatan serta keputusan stok opname, dan pengeluaran operasional. Migration ini disiapkan sebagai perubahan tambahan; jangan menjalankannya sebelum meninjau status database dan mengikuti prosedur migrasi lingkungan aplikasi.
 
 Model utama menggunakan nama tabel dan primary key khusus (misalnya `Pelanggan` memakai tabel `pelanggan` dan primary key string `id_pelanggan`). Periksa model serta migration sebelum mengubah query atau struktur data.
 
@@ -165,9 +207,11 @@ Logo BUMKam dipakai di halaman login dan sidebar. Warna identitas utamanya hijau
 - Menu yang disembunyikan di Blade bukan pengganti pemeriksaan akses backend. Periksa `PimpinanAccess` dan validasi/otorisasi controller ketika mengubah hak akses.
 - Role yang dipakai adalah nilai `peran` pada pengguna, antara lain `Staff` dan `Pimpinan`.
 
-## Dokumen jaminan kredit
+## Data jaminan kredit
 
-Dokumen jaminan (BPKB atau Sertifikat Tanah) diinput saat Staff membuat pengajuan pada form Pemesanan dan disimpan sebagai satu record yang terhubung ke pemesanan. Perbaikan informasi atau penggantian file dilakukan dari menu Manajemen Jaminan, yang menggunakan record yang sama. Dokumen disimpan pada disk `local` Laravel dengan root `storage/app/private`; jangan buat symbolic link ke folder `public`. Pimpinan dapat melihat dokumen dan menyetujui atau menolak dengan alasan. Keputusan menyimpan identitas Pimpinan serta waktu verifikasi. Staff hanya dapat mencatat pengembalian dokumen jika seluruh kewajiban sudah lunas. File valid: JPG, PNG, WEBP, PDF, maksimum 5 MB. Seluruh akses file melalui route terautentikasi `jaminan.document`.
+Saat membuat pemesanan kredit, Staff mencatat jenis jaminan, nomor resmi dokumen, tanggal penyerahan, dan keterangan. Informasi itu terhubung ke pemesanan yang sama dan tidak meminta nomor pemesanan sebagai nomor dokumen. Form saat ini mencatat identitas jaminan dan tidak mengunggah foto/salinan dokumen pribadi. Halaman Manajemen Jaminan dipakai untuk melihat data, memverifikasi, memperbaiki identitas, dan mencatat pengembalian. Jika suatu record memiliki file di penyimpanan privat, file dilayani lewat route terautentikasi `jaminan.document` dan dapat dipratinjau di halaman detail. Pimpinan hanya memverifikasi; Staff dapat memperbaiki metadata dan mencatat pengembalian setelah lunas.
+
+Foto KTP dan bukti pembayaran adalah lampiran berbeda yang disimpan pada disk privat Laravel. Akses lampiran lama maupun baru melalui route aplikasi yang terautentikasi; form menyediakan pratinjau sebelum simpan. Jangan mencampur lampiran tersebut dengan data jaminan.
 
 ## Akun pengguna dan Audit Trail
 
@@ -210,6 +254,12 @@ php artisan route:list --path=pembayaran/midtrans/notification
 ```
 
 Jika Midtrans menerima callback tetapi aplikasi tidak, periksa URL tunnel, tujuan forwarding, Apache/Laravel access log, dan halaman ngrok Inspector. Jangan menganggap redirect browser sebagai bukti pembayaran berhasil.
+
+## Backup, restore, dan dokumen pribadi
+
+Foto KTP dan bukti pembayaran baru disimpan di `storage/app/private` dan ditayangkan lewat route login `pelanggan.foto-ktp` dan `pembayaran.bukti`. Dokumen jaminan juga dilayani lewat route terautentikasi `jaminan.document`. Jangan membuat symlink ke disk privat.
+
+Panduan backup database dan storage untuk Windows/XAMPP serta Linux, termasuk uji restore pada database pengujian, tersedia di [docs/backup-restore.md](docs/backup-restore.md). Berkas KTP dan bukti lama dapat ditinjau menggunakan `php artisan documents:secure-legacy`; command menolak konflik checksum dan tidak menimpa file privat. Gunakan `--apply` hanya setelah backup terverifikasi.
 
 ## Petunjuk untuk Codex atau kontributor berikutnya
 
