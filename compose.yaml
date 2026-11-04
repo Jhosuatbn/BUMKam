@@ -53,9 +53,11 @@ services:
       MYSQL_DATABASE: ${DB_DATABASE:?Set DB_DATABASE in .env}
       MYSQL_USER: ${DB_USERNAME:?Set DB_USERNAME in .env}
       MYSQL_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Add a unique MYSQL_ROOT_PASSWORD to .env}
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
     volumes:
       - mysql_data:/var/lib/mysql
+    secrets:
+      - mysql_root_password
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p$${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
@@ -65,3 +67,7 @@ services:
 volumes:
   app_storage:
   mysql_data:
+
+secrets:
+  mysql_root_password:
+    file: ./.mysql_root_password
