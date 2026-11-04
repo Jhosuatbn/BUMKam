@@ -99,6 +99,13 @@
                     @endif
 
                     <div class="md:col-span-2">
+                        <div class="mb-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                            <label for="wa_reminder_opt_in" class="flex items-start gap-3 text-sm font-medium text-slate-800">
+                                <input id="wa_reminder_opt_in" type="checkbox" name="wa_reminder_opt_in" value="1" @checked(old('wa_reminder_opt_in', $pelanggan->wa_reminder_opt_in)) class="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-700 focus:ring-blue-700">
+                                <span>Pelanggan menyetujui menerima pengingat tagihan melalui WhatsApp.</span>
+                            </label>
+                            <p class="mt-2 pl-7 text-xs text-slate-500">Centang hanya setelah persetujuan pelanggan diperoleh. Hilangkan centang untuk berhenti mengirim pengingat.</p>
+                        </div>
                         <label for="alamat" class="block text-sm font-semibold text-slate-700">Alamat</label>
                         <textarea id="alamat" name="alamat" rows="4" required maxlength="255" autocomplete="street-address" class="mt-2 block w-full rounded-xl border bg-white px-3.5 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 @error('alamat') border-rose-400 focus:border-rose-600 focus:ring-rose-600/20 @else border-slate-300 focus:border-blue-600 focus:ring-blue-600/20 @enderror">{{ old('alamat', $pelanggan->alamat) }}</textarea>
                         @error('alamat')
