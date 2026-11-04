@@ -14,6 +14,7 @@ Proyek ini adalah aplikasi administrasi BUMKam yang dibangun dengan Laravel. Apl
 - **Pemesanan** — pencatatan pelanggan, barang, jumlah, harga, tanggal, skema pembayaran, uang muka, tenor, bunga, angsuran, serta data jaminan kredit. Pimpinan dapat menyetujui atau menolak pengajuan dan memberikan alasan penolakan.
 - **Pembayaran** — pencatatan pembayaran dan bukti pembayaran. Pembayaran dapat dicatat sebagai tunai/di tempat atau dilakukan secara online melalui Midtrans Snap. Status online diperbarui melalui notifikasi gateway yang tervalidasi.
 - **Monitoring kredit** — perhitungan total kewajiban, jumlah terbayar, sisa kewajiban, jadwal jatuh tempo, dan status angsuran. Pembayaran online baru dihitung setelah berstatus `settlement`.
+- **Pengingat tagihan WhatsApp** — pengiriman pengingat angsuran H-3 melalui Kirima untuk pelanggan yang menyetujui pesan WhatsApp, dengan catatan unik agar pengingat tidak terkirim dua kali.
 - **Jaminan** — penyimpanan dokumen jaminan secara privat, pemeriksaan dan persetujuan Pimpinan, serta pencatatan pengembalian jaminan setelah kewajiban kredit lunas.
 - **Laporan** — ringkasan dan rincian transaksi untuk membantu pemantauan kegiatan usaha.
 - **Pengguna dan hak akses** — pengelolaan akun Staff oleh Pimpinan, termasuk status aktif dan reset kata sandi. Akun nonaktif tidak dapat masuk.
@@ -114,6 +115,20 @@ Pastikan PHP, Composer, Node.js/npm dan MySQL tersedia. Jalankan perintah dari f
    ```
 
    Buka `http://127.0.0.1:8000`. Untuk membuat aset siap deploy, gunakan `npm run build`.
+
+### Pengingat angsuran lewat Kirima
+
+Pengingat dijadwalkan pukul 09.00 waktu `KREDIT_TIMEZONE` (default `Asia/Jakarta`), tiga hari sebelum angsuran jatuh tempo. Pengiriman hanya mencakup kredit yang disetujui dan pelanggan yang memberi persetujuan pada halaman tambah/edit pelanggan. Semua data pelanggan lama secara default tidak ikut menerima pesan.
+
+1. Terapkan migration baru: `php artisan migrate`.
+2. Tambahkan `KIRIMA_CLIENT_ID`, `KIRIMA_CLIENT_SECRET`, dan `KIRIMA_DEVICE_JID` ke `.env` lokal. Gunakan nilai `device_jid` persis dari `GET /api/v1/wa/devices` (key perlu scope `wa.read`) atau detail perangkat di dashboard. Jangan menebak format JID. Lalu jalankan `php artisan config:clear`. Jangan mengirim atau memasukkan secret ke Git. Biarkan `KIRIMA_ENABLED=false` saat menyiapkan data.
+3. Tandai persetujuan WhatsApp hanya pada pelanggan yang memang telah setuju menerima pengingat.
+4. Simulasikan pemilihan angsuran tanpa mengirim pesan: `php artisan kirima:remind-installments --dry-run`.
+5. Uji koneksi tanpa mengirim: `php artisan kirima:test 6281234567890`. Untuk mengirim satu pesan uji ke nomor Anda sendiri, set sementara `KIRIMA_ENABLED=true`, lalu jalankan `php artisan kirima:test 6281234567890 --send`. Setelah selesai, set kembali ke `false`.
+6. Untuk uji pengingat, pastikan hanya pelanggan uji yang menyetujui WA dan jatuh temponya tiga hari lagi, lalu jalankan `php artisan kirima:remind-installments`. Setelah uji selesai, set `KIRIMA_ENABLED=false` sampai siap operasi.
+7. Untuk jadwal otomatis, pastikan scheduler Laravel berjalan setiap menit. Pada server Linux, tambahkan cron `* * * * * cd /path/ke/aplikasi && php artisan schedule:run >> /dev/null 2>&1`. Pada pengembangan lokal, jalankan `php artisan schedule:work`.
+
+Perintah harian hanya memproses angsuran yang jatuh tempo tepat tiga hari lagi dan belum lunas. Hasil pengiriman dicatat pada tabel `pengingat_tagihan`; kegagalan tersimpan untuk ditinjau di log aplikasi. Kirima menggunakan perangkat tertaut WhatsApp dan bukan WhatsApp Business Platform resmi; gunakan pengingat yang diharapkan penerima dan kirim secara wajar.
 
 > Perintah `migrate:fresh` menghapus seluruh tabel dan datanya. Jangan gunakan kecuali memang ingin menghapus dan membuat ulang database lokal.
 

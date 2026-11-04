@@ -38,6 +38,8 @@ class PelangganController extends Controller
             // No. telepon: angka, maksimal 13 digit.
             'no_telepon' => ['required', 'digits_between:10,13'],
 
+            'wa_reminder_opt_in' => ['nullable', 'boolean'],
+
             'alamat' => ['required', 'string', 'max:255'],
 
             // Foto KTP: opsional, gambar JPG/PNG/WEBP, maksimal 2 MB.
@@ -84,6 +86,11 @@ class PelangganController extends Controller
 
         unset($data['foto_ktp'], $data['hapus_foto']);
 
+        $data['wa_reminder_opt_in'] = $request->boolean('wa_reminder_opt_in');
+        $data['wa_reminder_opted_in_at'] = $data['wa_reminder_opt_in']
+            ? now(config('kredit.zona_waktu', 'Asia/Jakarta'))
+            : null;
+
         if ($request->hasFile('foto_ktp')) {
             // Disimpan di storage/app/public/pelanggan
             $data['foto_ktp'] = $request->file('foto_ktp')->store('pelanggan', 'public');
@@ -124,6 +131,13 @@ class PelangganController extends Controller
         $data = $request->validate($this->rules($pelanggan), $this->messages());
 
         unset($data['foto_ktp'], $data['hapus_foto']);
+
+        $data['wa_reminder_opt_in'] = $request->boolean('wa_reminder_opt_in');
+        $data['wa_reminder_opted_in_at'] = $data['wa_reminder_opt_in']
+            ? ($pelanggan->wa_reminder_opt_in
+                ? $pelanggan->wa_reminder_opted_in_at
+                : now(config('kredit.zona_waktu', 'Asia/Jakarta')))
+            : null;
 
         if ($request->hasFile('foto_ktp')) {
             // Ganti foto: hapus file lama, simpan yang baru.

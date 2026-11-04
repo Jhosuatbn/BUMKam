@@ -20,9 +20,19 @@ class Pelanggan extends Model
         'nama_pelanggan',
         'nik',
         'no_telepon',
+        'wa_reminder_opt_in',
+        'wa_reminder_opted_in_at',
         'alamat',
         'foto_ktp',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'wa_reminder_opt_in' => 'boolean',
+            'wa_reminder_opted_in_at' => 'datetime',
+        ];
+    }
 
     public function pemesanan()
     {
