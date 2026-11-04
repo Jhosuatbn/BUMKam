@@ -1,0 +1,58 @@
+name: Deploy BUMKam to VPS
+
+on:
+  push:
+    branches:
+      - docker-deployment
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bumkam-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy Docker stack
+    runs-on: ubuntu-latest
+    environment: BUMKam
+    timeout-minutes: 30
+    steps:
+      - name: Prepare SSH
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          test -n "$VPS_SSH_KEY"
+          test -n "$VPS_KNOWN_HOSTS"
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$VPS_SSH_KEY" > "$HOME/.ssh/id_ed25519"
+          chmod 600 "$HOME/.ssh/id_ed25519"
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/known_hosts"
+
+      - name: Deploy over SSH
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_PORT: ${{ secrets.VPS_SSH_PORT }}
+        run: |
+          test -n "$VPS_HOST"
+          test -n "$VPS_USER"
+          ssh -p "${VPS_SSH_PORT:-22}" \
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            "$VPS_USER@$VPS_HOST" 'bash -se' <<'REMOTE'
+              set -euo pipefail
+              cd /var/www/bumkam-docker
+              git fetch origin docker-deployment
+              git checkout docker-deployment
+              git pull --ff-only origin docker-deployment
+              docker compose build app scheduler
+              docker compose run --rm --no-deps app php artisan migrate --force
+              docker compose up -d --force-recreate app scheduler
+              docker compose ps
+              curl --fail --silent --show-error http://127.0.0.1:8080/up >/dev/null
+          REMOTE
