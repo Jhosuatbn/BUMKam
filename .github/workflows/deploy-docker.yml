@@ -3,7 +3,7 @@ name: Deploy BUMKam to VPS
 on:
   push:
     branches:
-      - docker-deployment
+      - main
   workflow_dispatch:
 
 permissions:
@@ -47,9 +47,9 @@ jobs:
             "$VPS_USER@$VPS_HOST" 'bash -se' <<'REMOTE'
               set -euo pipefail
               cd /var/www/bumkam-docker
-              git fetch origin docker-deployment
-              git checkout docker-deployment
-              git pull --ff-only origin docker-deployment
+              git fetch origin main
+              git checkout main
+              git pull --ff-only origin main
               docker compose build app scheduler
               docker compose run --rm --no-deps app php artisan migrate --force
               docker compose up -d --force-recreate app scheduler
