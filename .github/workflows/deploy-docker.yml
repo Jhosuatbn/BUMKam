@@ -47,8 +47,8 @@ jobs:
             "$VPS_USER@$VPS_HOST" 'bash -se' <<'REMOTE'
               set -euo pipefail
               cd /var/www/bumkam-docker
-              git fetch origin main
-              git checkout main
+              git fetch origin main:refs/remotes/origin/main
+              git checkout -B main origin/main
               git pull --ff-only origin main
               docker compose build app scheduler
               docker compose run --rm --no-deps app php artisan migrate --force
