@@ -139,8 +139,7 @@
                         <ul class="navbar-nav flex-row align-items-center ms-md-auto">
                             <li class="nav-item me-2">
                                 <button type="button" class="btn btn-icon rounded-pill bumkam-theme-toggle" data-theme-toggle aria-label="Aktifkan mode gelap" title="Aktifkan mode gelap">
-                                    <i class="icon-base bx bx-moon theme-icon-dark" aria-hidden="true"></i>
-                                    <i class="icon-base bx bx-sun theme-icon-light" aria-hidden="true"></i>
+                                    <i class="icon-base bx bx-moon" aria-hidden="true"></i>
                                 </button>
                             </li>
                             <li class="nav-item navbar-dropdown dropdown-user dropdown">

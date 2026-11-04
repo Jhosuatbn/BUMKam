@@ -165,9 +165,9 @@
                 </div>
             </fieldset>
 
-            <section class="rounded-2xl border border-blue-200 bg-blue-50/70 p-5 sm:p-6">
+            <section class="rounded-2xl border border-green-200 bg-green-50/70 p-5 sm:p-6">
                 <div class="flex items-center gap-2">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-green-100 text-green-700">
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect width="16" height="20" x="4" y="2" rx="2"/>
                             <line x1="8" x2="16" y1="6" y2="6"/>
@@ -192,17 +192,17 @@
                         <p id="ringkasanTotal" class="mt-1 text-lg font-bold text-slate-800">Rp 0</p>
                         <p class="mt-1 text-xs text-slate-500">Total harga + bunga, belum dikurangi DP.</p>
                     </div>
-                    <div class="rounded-xl border border-blue-200 bg-white p-4 sm:col-span-2">
+                    <div class="rounded-xl border border-green-200 bg-white p-4 sm:col-span-2">
                         <p class="text-sm font-medium text-slate-600">Angsuran per Bulan</p>
-                        <p id="ringkasanAngsuran" aria-live="polite" class="mt-2 text-3xl font-extrabold tracking-tight text-blue-700">Rp 0</p>
+                        <p id="ringkasanAngsuran" aria-live="polite" class="mt-2 text-3xl font-extrabold tracking-tight text-green-700">Rp 0</p>
                         <p id="keteranganAngsuran" class="mt-2 text-sm text-slate-500">Pilih barang, skema pembayaran, dan isi tenor untuk melihat angsuran.</p>
                     </div>
                 </div>
             </section>
 
             <div class="flex flex-wrap justify-end gap-3 border-t border-slate-200 pt-5">
-                <a href="{{ route('pemesanan.index') }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50">Batal</a>
-                <button type="submit" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"><i class="icon-base bx bx-check" aria-hidden="true"></i>Simpan Pemesanan</button>
+                <a href="{{ route('pemesanan.index') }}" class="bumkam-cancel-button inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-bold text-black shadow-sm transition hover:bg-slate-50">Batal</a>
+                <button type="submit" data-no-auto-icon class="bumkam-green-action inline-flex min-h-11 items-center justify-center rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">Simpan Pemesanan</button>
             </div>
         </form>
     </section>

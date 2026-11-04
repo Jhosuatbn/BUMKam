@@ -30,26 +30,38 @@ class PenggunaController extends Controller
     public function create()
     {
         $this->pastikanPimpinan();
+        $idPengguna = $this->idPenggunaBerikutnya();
 
-        return view('pengguna.create');
+        return view('pengguna.create', compact('idPengguna'));
     }
 
     public function store(Request $request)
     {
         $this->pastikanPimpinan();
         $data = $request->validate([
-            'id_pengguna' => ['required', 'string', 'max:20', 'unique:pengguna,id_pengguna'],
             'username' => ['required', 'string', 'max:50', 'unique:pengguna,username'],
             'password' => ['required', 'string', 'min:10'],
             'nama_lengkap' => ['required', 'string', 'max:100'],
         ]);
         Pengguna::create(array_merge($data, [
+            'id_pengguna' => $this->idPenggunaBerikutnya(),
             'password' => Hash::make($data['password']),
             'peran' => 'Staff',
             'is_active' => true,
         ]));
 
         return redirect()->route('pengguna.index')->with('success', 'Akun Staff berhasil dibuat. Sampaikan password awal secara aman kepada pemilik akun.');
+    }
+
+    private function idPenggunaBerikutnya(): string
+    {
+        $nomorTerbesar = Pengguna::query()->pluck('id_pengguna')->reduce(function (int $terbesar, string $id): int {
+            return preg_match('/^PGN-(\d+)$/', $id, $matches)
+                ? max($terbesar, (int) $matches[1])
+                : $terbesar;
+        }, 0);
+
+        return 'PGN-' . str_pad((string) ($nomorTerbesar + 1), 3, '0', STR_PAD_LEFT);
     }
 
     public function show(Pengguna $pengguna)

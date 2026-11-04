@@ -36,7 +36,7 @@
                             <th scope="col" class="px-4 py-3 font-semibold sm:px-6">Sisa</th>
                             <th scope="col" class="px-4 py-3 font-semibold sm:px-6">Status</th>
                             <th scope="col" class="px-4 py-3 font-semibold sm:px-6">Metode / Bukti</th>
-                            <th scope="col" class="px-4 py-3 font-semibold sm:px-6">Aksi</th>
+                            <th scope="col" class="whitespace-nowrap px-4 py-3 text-center font-semibold sm:px-6">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 text-slate-700">

@@ -90,11 +90,11 @@
                     <p class="py-8 text-center text-sm text-slate-500">Belum ada detail barang.</p>
                 @endforelse
             </div>
-            <div class="flex flex-wrap gap-3 border-t border-slate-200 px-5 py-4 sm:px-6">
+            <div class="flex flex-wrap justify-end gap-3 border-t border-slate-200 px-5 py-4 sm:px-6">
                 @if (auth()->user()?->peran !== 'Pimpinan' && ($pemesanan->status_persetujuan === null || $pemesanan->status_persetujuan === 'Menunggu Persetujuan'))
-                    <a href="{{ route('pemesanan.edit', $pemesanan->id_pemesanan) }}" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Edit</a>
+                    <a href="{{ route('pemesanan.edit', $pemesanan->id_pemesanan) }}" class="bumkam-green-action inline-flex min-h-10 items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold shadow-sm transition">Edit</a>
                 @endif
-                <a href="{{ route('pemesanan.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Kembali</a>
+                <a href="{{ route('pemesanan.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-black shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Kembali</a>
             </div>
         </section>
     </div>

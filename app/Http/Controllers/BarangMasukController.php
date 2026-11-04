@@ -31,6 +31,32 @@ class BarangMasukController extends Controller
         return view('barang-masuk.create', compact('suppliers','barang'));
     }
 
+    public function cariBarang(Request $request)
+    {
+        $this->staffOnly();
+        $term = trim((string) $request->query('q', ''));
+        if (mb_strlen($term) < 3) {
+            return response()->json(['data' => [], 'message' => 'Ketik minimal 3 karakter untuk mencari.']);
+        }
+
+        $data = Barang::query()
+            ->where('nama_barang', 'like', '%' . $term . '%')
+            ->orderBy('nama_barang')
+            ->orderBy('id_barang')
+            ->get(['id_barang', 'nama_barang', 'harga', 'stok'])
+            ->unique(function (Barang $barang) {
+                // Suggestions display whole rupiah; treat prices that render identically as equal.
+                $nama = mb_strtolower(preg_replace('/[\\s\\p{Z}]+/u', ' ', trim($barang->nama_barang)));
+                $harga = (string) round((float) $barang->harga);
+
+                return $nama . '|' . $harga;
+            })
+            ->take(12)
+            ->values();
+
+        return response()->json(['data' => $data]);
+    }
+
     public function store(Request $request, StockMovementService $movements, AuditTrailWriter $audit)
     {
         $this->staffOnly();

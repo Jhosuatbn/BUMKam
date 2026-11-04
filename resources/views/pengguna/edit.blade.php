@@ -4,14 +4,6 @@
 
 @section('content')
     <div class="space-y-6">
-        <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-            <div>
-                <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Edit Pengguna</h1>
-                <p class="mt-2 text-sm text-slate-600">Kelola informasi, status, dan reset password akun Staff. Password lama tidak ditampilkan.</p>
-            </div>
-            <a href="{{ route('pengguna.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Kembali</a>
-        </header>
-
         @if ($errors->any())
             <div role="alert" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900">
                 <p class="font-semibold">Terjadi kesalahan:</p>
@@ -48,9 +40,9 @@
                         <input id="nama_lengkap" type="text" name="nama_lengkap" value="{{ old('nama_lengkap', $pengguna->nama_lengkap) }}" class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                     </div>
                 </div>
-                <div class="mt-8 flex flex-wrap gap-3 border-t border-slate-200 pt-5">
-                    <button type="submit" class="inline-flex min-h-11 items-center justify-center rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Simpan Perubahan</button>
-                    <a href="{{ route('pengguna.index') }}" class="inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Batal</a>
+                <div class="mt-8 flex flex-wrap justify-end gap-3 border-t border-slate-200 pt-5">
+                    <a href="{{ route('pengguna.index') }}" class="bumkam-cancel-button inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-bold text-slate-900 shadow-sm transition hover:bg-slate-100">Batal</a>
+                    <button data-no-auto-icon type="submit" class="bumkam-green-action inline-flex min-h-11 items-center justify-center rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition">Simpan Perubahan</button>
                 </div>
             </form>
         </section>

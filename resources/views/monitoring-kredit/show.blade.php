@@ -15,7 +15,7 @@
                 <h1 class="mt-0.5 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Rincian Kredit</h1>
                 <p class="mt-1 text-sm text-slate-600">Pemesanan {{ $pemesanan->id_pemesanan }} · {{ $pemesanan->pelanggan?->nama_pelanggan ?? 'Pelanggan tidak ditemukan' }}</p>
                 </div>
-                <a href="{{ route('monitoring-kredit.index') }}" class="btn btn-success shrink-0" aria-label="Kembali ke Monitoring"><i class="icon-base bx bx-arrow-back me-1" aria-hidden="true"></i>Kembali</a>
+                <a href="{{ route('monitoring-kredit.index') }}" class="btn bumkam-green-action shrink-0" aria-label="Kembali ke Monitoring"><i class="icon-base bx bx-arrow-back me-1" aria-hidden="true"></i>Kembali</a>
             </div>
             <div class="grid grid-cols-1 gap-3 px-4 py-4 sm:grid-cols-2 sm:px-5 xl:grid-cols-4">
                 <article class="rounded-xl border border-slate-200 p-4"><p class="mb-2 text-sm text-body-secondary">Total Kewajiban</p><p class="mb-0 text-xl font-bold">Rp {{ number_format($ringkasan['total_kewajiban'], 0, ',', '.') }}</p></article>

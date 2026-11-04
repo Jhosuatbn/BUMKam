@@ -74,10 +74,12 @@
                             @php($statusClass = match ($monitoringItem['status']) { 'Lunas' => 'success', 'Terlambat' => 'danger', 'Jatuh Tempo Hari Ini' => 'warning', default => 'info' })
                             @php($namaBarang = $item->detailPemesanan->pluck('barang.nama_barang')->filter()->implode(', '))
                             <tr>
-                                <td>
+                                <td class="monitoring-credit-identity">
+                                    <div class="d-flex flex-column gap-1">
                                     <a href="{{ route('monitoring-kredit.show', $item->id_pemesanan) }}" class="fw-semibold">{{ $item->id_pemesanan }}</a>
                                     <span class="d-block text-body-secondary">{{ $item->pelanggan?->nama_pelanggan ?? 'Pelanggan tidak ditemukan' }}</span>
-                                    <span class="d-block text-body-secondary small">{{ \Carbon\Carbon::parse($item->tanggal_pemesanan)->format('d/m/Y') }}</span>
+                                    <span class="d-block small text-body-secondary">Tanggal pemesanan · {{ \Carbon\Carbon::parse($item->tanggal_pemesanan)->format('d/m/Y') }}</span>
+                                    </div>
                                 </td>
                                 <td>{{ $namaBarang !== '' ? $namaBarang : '—' }}</td>
                                 <td class="text-nowrap">Rp {{ number_format($monitoringItem['total_kewajiban'], 0, ',', '.') }}</td>
