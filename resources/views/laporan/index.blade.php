@@ -172,7 +172,7 @@
                                     </td>
                                     <td class="fw-semibold">
                                         @forelse ($kredit->detailPemesanan as $detail)
-                                            {{ $detail->barang->nama_barang ?? '—' }}@if (!$loop->last), @endif
+                                            <span class="d-block">{{ $detail->barang->nama_barang ?? '—' }}</span>
                                         @empty
                                             —
                                         @endforelse

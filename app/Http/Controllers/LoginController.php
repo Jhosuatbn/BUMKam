@@ -23,7 +23,7 @@ class LoginController extends Controller
             'username' => $credentials['username'],
             'password' => $credentials['password'],
             'is_active' => true,
-        ])) {
+        ], $request->boolean('remember'))) {
             $request->session()->regenerate();
 
             return redirect()->route('dashboard');
