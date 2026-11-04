@@ -51,7 +51,7 @@ jobs:
               git checkout -B main origin/main
               git pull --ff-only origin main
               docker compose build app scheduler
-              docker compose run --rm --no-deps app php artisan migrate --force
+              docker compose run --rm --no-deps --interactive=false app php artisan migrate --force </dev/null
               docker compose up -d --force-recreate app scheduler
               docker compose ps
               curl --fail --silent --show-error http://127.0.0.1:8080/up >/dev/null
