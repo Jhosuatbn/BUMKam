@@ -18,7 +18,12 @@ class ReturPelangganController extends Controller
     {
         $rows = ReturPelanggan::with(['pemesanan.pelanggan', 'pencatat', 'pemutus'])
             ->latest()->paginate(20)->withQueryString();
-        return view('retur.index', compact('rows'));
+        $orders = auth()->user()?->peran === 'Staff'
+            ? Pemesanan::with(['pelanggan', 'detailPemesanan.barang', 'returPelanggan.details'])
+                ->whereIn('status_penyerahan', ['Diserahkan', 'Riwayat Lama'])
+                ->orderByDesc('tanggal_pemesanan')->get()
+            : collect();
+        return view('retur.index', compact('rows', 'orders'));
     }
 
     public function create()

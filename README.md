@@ -2,6 +2,8 @@
 
 Aplikasi web untuk membantu operasional BUMKam Tuah Rezeki, mulai dari pengelolaan pelanggan dan persediaan barang sampai pemesanan, pembayaran, pemantauan kredit, dan laporan.
 
+Untuk panduan penggunaan tiap modul dan alur kerja dari awal sampai akhir, lihat [Panduan Pengguna dan Alur Sistem](docs/panduan-pengguna.md).
+
 ## Gambaran proyek
 
 Proyek ini adalah aplikasi administrasi BUMKam yang dibangun dengan Laravel. Aplikasi menyimpan data operasional dalam database dan menyediakan halaman kerja untuk Staff serta halaman pemantauan dan persetujuan untuk Pimpinan.

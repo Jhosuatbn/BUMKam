@@ -41,7 +41,17 @@ class SupplierController extends Controller
     public function store(Request $request, AuditTrailWriter $audit)
     {
         $this->staffOnly();
-        $data = $request->validate(['nama_supplier' => ['required','string','max:150'], 'kontak_person' => ['nullable','string','max:100'], 'no_telepon' => ['nullable','string','max:30'], 'email' => ['nullable','email','max:255'], 'alamat' => ['nullable','string','max:2000'], 'catatan' => ['nullable','string','max:2000']]);
+        $data = $request->validate([
+            'nama_supplier' => ['required', 'string', 'max:150'],
+            'kontak_person' => ['nullable', 'string', 'max:100'],
+            'no_telepon' => ['required', 'regex:/^[0-9]{10,13}$/'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'alamat' => ['nullable', 'string', 'max:2000'],
+            'catatan' => ['nullable', 'string', 'max:2000'],
+        ], [
+            'no_telepon.required' => 'Nomor HP supplier wajib diisi.',
+            'no_telepon.regex' => 'Nomor HP harus terdiri dari 10 sampai 13 angka tanpa spasi atau tanda baca.',
+        ]);
         $data['id_supplier'] = 'SUP-' . Str::upper(Str::random(12));
         $supplier = Supplier::create($data);
         $audit->record($request->user(), $request, 'create', 'Supplier', 'Supplier ditambahkan: ' . $supplier->nama_supplier);
@@ -53,7 +63,18 @@ class SupplierController extends Controller
     public function update(Request $request, Supplier $supplier, AuditTrailWriter $audit)
     {
         $this->staffOnly();
-        $data = $request->validate(['nama_supplier' => ['required','string','max:150'], 'kontak_person' => ['nullable','string','max:100'], 'no_telepon' => ['nullable','string','max:30'], 'email' => ['nullable','email','max:255'], 'alamat' => ['nullable','string','max:2000'], 'catatan' => ['nullable','string','max:2000'], 'is_active' => ['required','boolean']]);
+        $data = $request->validate([
+            'nama_supplier' => ['required', 'string', 'max:150'],
+            'kontak_person' => ['nullable', 'string', 'max:100'],
+            'no_telepon' => ['required', 'regex:/^[0-9]{10,13}$/'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'alamat' => ['nullable', 'string', 'max:2000'],
+            'catatan' => ['nullable', 'string', 'max:2000'],
+            'is_active' => ['required', 'boolean'],
+        ], [
+            'no_telepon.required' => 'Nomor HP supplier wajib diisi.',
+            'no_telepon.regex' => 'Nomor HP harus terdiri dari 10 sampai 13 angka tanpa spasi atau tanda baca.',
+        ]);
         $supplier->update($data);
         $audit->record($request->user(), $request, 'update', 'Supplier', 'Supplier diperbarui: ' . $supplier->nama_supplier);
         return redirect()->route('supplier.index')->with('success', 'Data supplier berhasil diperbarui.');

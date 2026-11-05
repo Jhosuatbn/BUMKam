@@ -220,7 +220,7 @@
     <style>
         .laporan-table { min-width: 980px; }
         .laporan-table th { white-space: nowrap; font-size: .75rem; }
-        .laporan-credit-table { min-width: 1050px; }
+        .laporan-credit-table { min-width: 1500px; }
         .laporan-official-header, .laporan-signature { display: none; }
         @media print {
             @page { size: A4 landscape; margin: 12mm; }
@@ -232,7 +232,6 @@
             .table-responsive { overflow: visible !important; }
             .laporan-table { min-width: 0; width: 100%; font-size: 8px; }
             .laporan-page .laporan-credit-table { min-width: 0; width: 100%; table-layout: fixed; }
-            .laporan-page .laporan-credit-table { table-layout: auto; }
             .laporan-page .laporan-credit-table th, .laporan-page .laporan-credit-table td { white-space: normal !important; overflow-wrap: anywhere; word-break: normal; }
             .laporan-page .laporan-credit-table thead { display: table-header-group; }
             .laporan-page .laporan-credit-table tbody > tr { break-inside: avoid; page-break-inside: avoid; }

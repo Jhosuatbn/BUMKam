@@ -111,7 +111,7 @@
                                     <label class="form-label" for="catatan">Keterangan tambahan</label>
                                     <textarea id="catatan" class="form-control" name="catatan" rows="2" maxlength="2000">{{ old('catatan', $jaminan->catatan) }}</textarea>
                                 </div>
-                                <button class="btn bumkam-green-action md:col-span-2" data-no-auto-icon type="submit">Simpan Perbaikan</button>
+                                <div class="md:col-span-2 d-flex justify-content-end"><button class="btn bumkam-green-action" data-no-auto-icon type="submit">Simpan Perbaikan</button></div>
                             </form>
                         </div>
 

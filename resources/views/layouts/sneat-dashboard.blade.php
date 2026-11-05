@@ -27,7 +27,7 @@
             $navigationItems[] = ['label' => 'Barang Masuk', 'route' => 'barang-masuk.index', 'active' => 'barang-masuk.*', 'icon' => 'bx-log-in-circle'];
         }
         $navigationItems[] = ['label' => 'Monitoring Stok', 'route' => 'monitoring-stok.index', 'active' => 'monitoring-stok.*', 'icon' => 'bx-bar-chart-alt-2'];
-        $navigationItems[] = ['label' => 'Retur Pelanggan', 'route' => 'retur.index', 'active' => 'retur.*', 'icon' => 'bx-undo'];
+        $navigationItems[] = ['label' => 'Returan Pelanggan', 'route' => 'retur.index', 'active' => 'retur.*', 'icon' => 'bx-undo'];
         $navigationItems[] = ['label' => 'Stok Opname', 'route' => 'stok-opname.index', 'active' => 'stok-opname.*', 'icon' => 'bx-clipboard'];
         $navigationItems[] = ['label' => 'Pengeluaran', 'route' => 'pengeluaran.index', 'active' => 'pengeluaran.*', 'icon' => 'bx-money-withdraw'];
         $jumlahPersetujuanMenunggu = $authenticatedUser?->peran === 'Pimpinan'
@@ -56,7 +56,7 @@
             request()->routeIs('supplier.*') => 'Data Supplier',
             request()->routeIs('barang-masuk.*') => 'Barang Masuk',
             request()->routeIs('monitoring-stok.*') => 'Monitoring Stok',
-            request()->routeIs('retur.*') => 'Retur Pelanggan',
+            request()->routeIs('retur.*') => 'Returan Pelanggan',
             request()->routeIs('stok-opname.*') => 'Stok Opname',
             request()->routeIs('pengeluaran.*') => 'Pengeluaran Operasional',
             request()->routeIs('pemesanan.persetujuan') => 'Persetujuan Pemesanan',
