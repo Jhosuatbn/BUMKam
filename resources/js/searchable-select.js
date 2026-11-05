@@ -33,6 +33,46 @@ function initSearchableSelect(wrapper) {
             input.setAttribute('aria-expanded', 'true');
             return;
         }
+
+        // Some forms (including payment creation) render their options in the
+        // hidden select instead of loading them from an endpoint.
+        if (!input.dataset.searchUrl) {
+            const normalizedQuery = query.toLocaleLowerCase('id-ID');
+            const matchingOptions = Array.from(select.options).filter(option => {
+                if (!option.value) return false;
+                const searchableText = (option.dataset.search || option.textContent).trim().toLocaleLowerCase('id-ID');
+                return searchableText.includes(normalizedQuery);
+            });
+
+            if (matchingOptions.length === 0) {
+                const emptyMessage = document.createElement('div');
+                emptyMessage.className = 'px-4 py-3 text-sm text-slate-500';
+                emptyMessage.textContent = 'Data tidak ditemukan.';
+                results.appendChild(emptyMessage);
+            } else {
+                matchingOptions.forEach(option => {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.setAttribute('role', 'option');
+                    button.className = 'block w-full px-4 py-3 text-left text-sm text-slate-700 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none';
+                    button.textContent = option.textContent.trim();
+                    button.addEventListener('click', () => {
+                        select.value = option.value;
+                        input.value = selectedLabel(option);
+                        input.setCustomValidity('');
+                        input.removeAttribute('aria-invalid');
+                        select.dispatchEvent(new Event('change', { bubbles: true }));
+                        closeResults();
+                    });
+                    results.appendChild(button);
+                });
+            }
+
+            results.classList.remove('hidden');
+            input.setAttribute('aria-expanded', 'true');
+            return;
+        }
+
         controller = new AbortController();
         let records = [];
         try {
