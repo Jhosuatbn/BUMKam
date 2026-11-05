@@ -1,7 +1,7 @@
 @extends('layouts.sneat-dashboard')
 @section('title', 'Catat Stok Opname')
 @section('content')
-<div class="mx-auto max-w-5xl">@if ($errors->any())<div role="alert" class="alert alert-danger" aria-live="assertive"><div class="fw-semibold">Stok opname belum dapat disimpan:</div><ul class="mb-0 mt-2 ps-3">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
+<div class="w-full">@if ($errors->any())<div role="alert" class="alert alert-danger" aria-live="assertive"><div class="fw-semibold">Stok opname belum dapat disimpan:</div><ul class="mb-0 mt-2 ps-3">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
 <form action="{{ route('stok-opname.store') }}" method="POST" class="card">@csrf
     <div class="card-header"><h2 class="card-title mb-1">Catat Stok Opname</h2><p class="mb-0 text-body-secondary">Masukkan hasil hitung fisik untuk barang dengan stok aktif. Stok sistem dicatat sebagai pembanding.</p></div>
     <div class="card-body space-y-4"><div class="max-w-xs"><label class="form-label" for="tanggal_opname">Tanggal Opname</label><input required type="date" id="tanggal_opname" name="tanggal_opname" value="{{ old('tanggal_opname', now()->toDateString()) }}" class="form-control"></div>

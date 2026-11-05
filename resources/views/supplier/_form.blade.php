@@ -21,14 +21,17 @@
             <div class="col-md-6">
                 <label class="form-label" for="nama_supplier">Nama Supplier</label>
                 <input id="nama_supplier" name="nama_supplier" required maxlength="150" class="form-control" value="{{ old('nama_supplier',$supplier->nama_supplier ?? '') }}">
+                <div class="form-text">Nama toko atau perusahaan pemasok.</div>
             </div>
             <div class="col-md-6">
-                <label class="form-label" for="kontak_person">Nama Kontak</label>
+                <label class="form-label" for="kontak_person">Nama Orang Kontak</label>
                 <input id="kontak_person" name="kontak_person" maxlength="100" class="form-control" value="{{ old('kontak_person',$supplier->kontak_person ?? '') }}">
+                <div class="form-text">Nama orang yang menjadi narahubung toko.</div>
             </div>
             <div class="col-md-6">
-                <label class="form-label" for="no_telepon">Nomor Telepon</label>
-                <input id="no_telepon" name="no_telepon" maxlength="30" class="form-control" value="{{ old('no_telepon',$supplier->no_telepon ?? '') }}">
+                <label class="form-label" for="no_telepon">Nomor HP</label>
+                <input id="no_telepon" name="no_telepon" type="tel" inputmode="numeric" required minlength="10" maxlength="13" pattern="[0-9]{10,13}" class="form-control" value="{{ old('no_telepon',$supplier->no_telepon ?? '') }}" aria-describedby="no-telepon-hint">
+                <div id="no-telepon-hint" class="form-text">Masukkan 10–13 angka tanpa spasi atau tanda baca.</div>
             </div>
             <div class="col-md-6">
                 <label class="form-label" for="email">Email</label>

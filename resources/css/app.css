@@ -540,3 +540,12 @@ html.dark .content-wrapper table tbody { color: #cbd5e1 !important; }
 html.dark .pengguna-page .pengguna-role { color: #86efac; background-color: #173824; }
 html.dark .pengguna-page .pengguna-action { border-color: #28583d; background: #173824; color: #86efac; }
 html.dark .pengguna-page .pengguna-action:hover { border-color: #3d8058; background: #1e4930; }
+.modal-backdrop.show {
+    background-color: rgb(15 23 42 / 45%) !important;
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+}
+body.modal-open .layout-wrapper {
+    filter: blur(5px);
+    transition: filter .18s ease;
+}
