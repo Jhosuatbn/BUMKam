@@ -25,10 +25,14 @@ class LaporanController extends Controller
             'start_date' => ['nullable', 'date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
             'tab' => ['nullable', 'in:pemesanan,kredit,penerimaan,pembelian,piutang,denda,persediaan,pengeluaran'],
+            'persediaan_mode' => ['nullable', 'in:stok,penerimaan'],
             'pelanggan' => ['nullable', 'string', 'max:100'],
         ]);
 
         $tab = $validated['tab'] ?? 'pemesanan';
+        // Keep the consolidated stock selector and preserve legacy report URLs.
+        $persediaanMode = $validated['persediaan_mode'] ?? ($tab === 'pembelian' ? 'penerimaan' : 'stok');
+        $validated['persediaan_mode'] = $persediaanMode;
         if (! in_array($tab, ['pemesanan', 'kredit'], true)) {
             return $this->laporanKeuangan($tab, $validated, $monitoring);
         }
@@ -238,13 +242,20 @@ class LaporanController extends Controller
                 return $payment;
             });
             $data += ['rows' => $rows, 'total' => $rows->sum('diterima_bersih'), 'totalPokok' => $rows->sum('pokok_bersih'), 'totalDenda' => $rows->sum('denda_bersih')];
+        } elseif ($tab === 'persediaan' && ($filter['persediaan_mode'] ?? 'stok') === 'penerimaan') {
+            $rows = BarangMasuk::with(['supplier', 'penerima', 'details.barang'])
+                ->when($start, fn ($query) => $query->whereDate('tanggal_masuk', '>=', $start))
+                ->when($end, fn ($query) => $query->whereDate('tanggal_masuk', '<=', $end))
+                ->orderByDesc('tanggal_masuk')->get();
+            $rows->each(fn ($row) => $row->setAttribute('total_belanja', $row->details->sum('subtotal')));
+            $data += ['rows' => $rows, 'total' => $rows->sum('total_belanja'), 'inventoryMode' => 'penerimaan'];
         } elseif ($tab === 'pembelian') {
             $rows = BarangMasuk::with(['supplier', 'penerima', 'details.barang'])
                 ->when($start, fn ($query) => $query->whereDate('tanggal_masuk', '>=', $start))
                 ->when($end, fn ($query) => $query->whereDate('tanggal_masuk', '<=', $end))
                 ->orderByDesc('tanggal_masuk')->get();
             $rows->each(fn ($row) => $row->setAttribute('total_belanja', $row->details->sum('subtotal')));
-            $data += ['rows' => $rows, 'total' => $rows->sum('total_belanja')];
+            $data += ['rows' => $rows, 'total' => $rows->sum('total_belanja'), 'inventoryMode' => 'penerimaan'];
         } elseif (in_array($tab, ['piutang', 'denda'], true)) {
             $paymentRelation = fn ($query) => $query->whereIn('status_gateway', ['settlement', 'partial_refund']);
             if (Schema::hasTable('alokasi_pembayaran')) $paymentRelation = fn ($query) => $query->whereIn('status_gateway', ['settlement', 'partial_refund'])->with('alokasiDenda');
@@ -282,6 +293,7 @@ class LaporanController extends Controller
                 'totalFisik' => $barang->whereNotNull('stok')->sum('stok'),
                 'totalTersedia' => $barang->whereNotNull('stok')->sum('stok_tersedia'),
                 'belumDiatur' => $barang->whereNull('stok')->count(),
+                'inventoryMode' => 'stok',
             ];
         } elseif ($tab === 'pengeluaran') {
             $rows = PengeluaranOperasional::with('pencatat')
