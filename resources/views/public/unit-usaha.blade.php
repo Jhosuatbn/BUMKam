@@ -26,7 +26,7 @@
 
             <div class="unit-grid catalog-grid" data-unit-grid>
                 <article class="unit-card catalog-card" data-unit-card data-category="retail">
-                    <img class="unit-cover" src="https://images.unsplash.com/photo-1657288649124-b80bdee3c17e?auto=format&amp;fit=crop&amp;w=900&amp;q=80" alt="Sayuran segar di BUMKam Mart" loading="lazy">
+                    <img class="unit-cover unit-cover-mart" src="{{ asset('assets/img/bumkam-mart-marketfront.png') }}" alt="Tampak depan BUMKam Mart Tuah Rezeki" loading="lazy">
                     <div class="unit-body">
                         <span class="catalog-category">Retail</span><h2>BUMKam Mart</h2>
                         <p>Toko kebutuhan sehari-hari lengkap melayani warga kampung dengan harga terjangkau.</p>
@@ -35,7 +35,7 @@
                     </div>
                 </article>
                 <article class="unit-card catalog-card" data-unit-card data-category="keuangan">
-                    <img class="unit-cover" src="https://images.unsplash.com/photo-1769433455452-fcdbe1a6d107?auto=format&amp;fit=crop&amp;w=900&amp;q=80" alt="Suasana desa" loading="lazy">
+                    <img class="unit-cover" src="{{ asset('assets/img/unit-simpan-pinjam.jpeg') }}" alt="Petugas BUMKam melayani warga pada layanan simpan pinjam" loading="lazy">
                     <div class="unit-body">
                         <span class="catalog-category">Keuangan</span><h2>Unit Simpan Pinjam</h2>
                         <p>Layanan simpan pinjam untuk mendukung usaha warga dengan dana perguliran.</p>
@@ -44,7 +44,7 @@
                     </div>
                 </article>
                 <article class="unit-card catalog-card" data-unit-card data-category="keuangan">
-                    <img class="unit-cover" src="https://images.unsplash.com/photo-1594063835708-b3bb19c6e668?auto=format&amp;fit=crop&amp;w=900&amp;q=80" alt="Lanskap Kampung Rantau Bertuah" loading="lazy">
+                    <img class="unit-cover" src="{{ asset('assets/img/jasa-keuangan-mikro.png') }}" alt="Transaksi layanan keuangan dengan uang Rupiah" loading="lazy">
                     <div class="unit-body">
                         <span class="catalog-category">Keuangan</span><h2>Jasa Keuangan Mikro</h2>
                         <p>Berbagai produk simpanan dan pinjaman untuk UMKM dan warga kampung.</p>
@@ -53,7 +53,7 @@
                     </div>
                 </article>
                 <article class="unit-card catalog-card" data-unit-card data-category="pengadaan">
-                    <img class="unit-cover" src="https://images.unsplash.com/photo-1761410201022-cae20bd6abcf?auto=format&amp;fit=crop&amp;w=900&amp;q=80" alt="Kerajinan lokal" loading="lazy">
+                    <img class="unit-cover" src="{{ asset('assets/img/pengadaan-barang.png') }}" alt="Gudang penyimpanan barang dan proses pengadaan" loading="lazy">
                     <div class="unit-body">
                         <span class="catalog-category">Pengadaan</span><h2>Pengadaan Barang &amp; Material</h2>
                         <p>Penyediaan barang dan material kebutuhan pembangunan dan operasional kampung.</p>
@@ -62,7 +62,7 @@
                     </div>
                 </article>
                 <article class="unit-card catalog-card" data-unit-card data-category="event">
-                    <img class="unit-cover" src="https://images.unsplash.com/photo-1773802551633-6068010cdaa4?auto=format&amp;fit=crop&amp;w=900&amp;q=80" alt="Perlengkapan kegiatan warga" loading="lazy">
+                    <img class="unit-cover" src="{{ asset('assets/img/sewa-tenda.jpeg') }}" alt="Tenda acara yang disewakan BUMKam" loading="lazy">
                     <div class="unit-body">
                         <span class="catalog-category">Event</span><h2>Sewa Tenda &amp; Perlengkapan Acara</h2>
                         <p>Penyewaan tenda dan perlengkapan acara untuk kegiatan warga dan kampung.</p>
@@ -71,7 +71,7 @@
                     </div>
                 </article>
                 <article class="unit-card catalog-card" data-unit-card data-category="pangan">
-                    <img class="unit-cover" src="https://images.unsplash.com/photo-1722252799188-87e1db708544?auto=format&amp;fit=crop&amp;w=900&amp;q=80" alt="Aktivitas masyarakat kampung" loading="lazy">
+                    <img class="unit-cover" src="{{ asset('assets/img/ketahanan-pangan.jpeg') }}" alt="Warga bersama ternak dalam kegiatan ketahanan pangan" loading="lazy">
                     <div class="unit-body">
                         <span class="catalog-category">Pangan</span><h2>Ketahanan Pangan – Budidaya Sapi</h2>
                         <p>Program budidaya sapi untuk mendukung ketahanan pangan dan kesejahteraan warga.</p>

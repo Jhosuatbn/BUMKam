@@ -32,8 +32,8 @@
             </div>
             <p class="mt-6 text-xs text-slate-500">Dicetak {{ now()->locale('id')->translatedFormat('d F Y, H:i') }} WIB. Kwitansi ini dibuat berdasarkan catatan transaksi aplikasi.</p>
             <div class="mt-6 flex justify-end gap-3 print:hidden">
-                <a href="{{ route('pembayaran.show', $pembayaran) }}" class="inline-flex min-h-10 items-center rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50">Kembali</a>
-                <button type="button" onclick="window.print()" class="inline-flex min-h-10 items-center rounded-xl bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800">Cetak</button>
+                <a href="{{ route('pembayaran.show', $pembayaran) }}" class="bumkam-cancel-button inline-flex min-h-10 items-center rounded-xl border px-4 py-2 text-sm font-semibold transition hover:bg-slate-50">Kembali</a>
+                <button type="button" onclick="window.print()" class="bumkam-green-action inline-flex min-h-10 items-center rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition"><i class="icon-base bx bx-printer me-1" aria-hidden="true"></i>Cetak</button>
             </div>
         </section>
     </div>

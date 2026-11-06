@@ -33,11 +33,11 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="md:col-span-2">
+                    <div>
                         <label for="nama_barang" class="block text-sm font-semibold text-slate-700">Nama Barang</label>
                         <input id="nama_barang" type="text" name="nama_barang" value="{{ old('nama_barang', $barang->nama_barang) }}" required class="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                     </div>
-                    <div class="md:col-span-2">
+                    <div>
                         <label for="harga" class="block text-sm font-semibold text-slate-700">Harga</label>
                         <div class="mt-2 flex min-h-11 overflow-hidden rounded-xl border border-slate-300 focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-600/20">
                             <span class="inline-flex items-center border-r border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-600">Rp</span>

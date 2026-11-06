@@ -65,16 +65,12 @@
                                 <td class="max-w-xs px-4 py-3.5 sm:px-6">{{ $p->alamat }}</td>
                                 <td class="px-4 py-3.5 text-center sm:px-6">
                                     @if (auth()->user()?->peran !== 'Pimpinan')
-                                        <div class="inline-flex items-center justify-center gap-3">
-                                            <a href="{{ route('pelanggan.edit', $p->id_pelanggan) }}" class="text-amber-600 transition hover:text-amber-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700" title="Edit pelanggan {{ $p->nama_pelanggan }}" aria-label="Edit pelanggan {{ $p->nama_pelanggan }}">
-                                                <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 0 1 2.828 2.828L11.828 15H9v-2.828z"/></svg>
-                                            </a>
+                                        <div class="inline-flex flex-wrap items-center justify-center gap-2">
+                                            <a href="{{ route('pelanggan.edit', $p->id_pelanggan) }}" class="btn btn-sm btn-outline-success" title="Kelola pelanggan {{ $p->nama_pelanggan }}"><i class="icon-base bx bx-edit me-1" aria-hidden="true"></i>Kelola</a>
                                             <form action="{{ route('pelanggan.destroy', $p->id_pelanggan) }}" method="POST" class="inline-block" data-confirm-delete="Yakin ingin menghapus data pelanggan ini?">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="text-rose-600 transition hover:text-rose-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-700" title="Hapus pelanggan {{ $p->nama_pelanggan }}" aria-label="Hapus pelanggan {{ $p->nama_pelanggan }}">
-                                                    <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16"/></svg>
-                                                </button>
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus pelanggan {{ $p->nama_pelanggan }}"><i class="icon-base bx bx-trash me-1" aria-hidden="true"></i>Hapus</button>
                                             </form>
                                         </div>
                                     @else

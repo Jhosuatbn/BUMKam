@@ -89,7 +89,7 @@
                     </div>
                     <div class="d-flex align-items-center gap-2">
                         <span class="badge bg-label-primary">{{ $pemesananTerbaru->count() }} data ditampilkan</span>
-                        <button type="button" class="btn btn-outline-primary btn-sm laporan-print-action" onclick="window.print()"><i class="icon-base bx bx-printer me-1" aria-hidden="true"></i>Cetak</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm laporan-print-action" onclick="window.print()"><i class="icon-base bx bx-printer me-1" aria-hidden="true"></i>Cetak</button>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 gap-3 border-b p-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -152,7 +152,7 @@
                     </div>
                     <div class="d-flex align-items-center gap-2">
                         <span class="badge bg-label-primary">{{ $daftarKredit->count() }} data</span>
-                        <button type="button" class="btn btn-outline-primary btn-sm laporan-print-action" onclick="window.print()"><i class="icon-base bx bx-printer me-1" aria-hidden="true"></i>Cetak</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm laporan-print-action" onclick="window.print()"><i class="icon-base bx bx-printer me-1" aria-hidden="true"></i>Cetak</button>
                     </div>
                 </div>
                 <div class="row g-3 border-bottom p-3 p-md-4">

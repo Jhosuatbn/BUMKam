@@ -17,7 +17,7 @@
         <button class="btn btn-primary w-100" type="submit"><i class="icon-base bx bx-filter-alt me-1" aria-hidden="true"></i>Filter</button>
     </form></div>
     <div class="table-responsive"><table class="table table-hover align-middle mb-0"><thead><tr><th>Waktu</th><th>Pengguna</th><th>Aktivitas</th><th>Modul</th><th>Deskripsi</th><th>IP</th></tr></thead><tbody>
-        @forelse ($aktivitas as $item)<tr><td class="text-nowrap">{{ $item->created_at?->format('d/m/Y H:i:s') }}</td><td>{{ $item->nama_pengguna }}<small class="d-block text-body-secondary">{{ $item->peran_pengguna ?? 'Sistem' }}</small></td><td><span class="badge bg-label-primary">{{ ucfirst(str_replace('_', ' ', $item->jenis_aktivitas)) }}</span></td><td>{{ $item->modul }}</td><td>{{ $item->deskripsi }}</td><td class="text-nowrap">{{ $item->ip_address ?? '—' }}</td></tr>
+        @forelse ($aktivitas as $item)<tr><td class="text-nowrap">{{ $item->created_at?->timezone(config('kredit.zona_waktu', 'Asia/Jakarta'))->format('d/m/Y H:i:s T') }}</td><td>{{ $item->nama_pengguna }}<small class="d-block text-body-secondary">{{ $item->peran_pengguna ?? 'Sistem' }}</small></td><td><span class="badge bg-label-primary">{{ ucfirst(str_replace('_', ' ', $item->jenis_aktivitas)) }}</span></td><td>{{ $item->modul }}</td><td>{{ $item->deskripsi }}</td><td class="text-nowrap">{{ $item->ip_address ?? '—' }}</td></tr>
         @empty<tr><td colspan="6" class="py-5 text-center text-body-secondary">Belum ada aktivitas untuk filter ini.</td></tr>@endforelse
     </tbody></table></div>
     @if ($aktivitas->hasPages())<div class="card-footer">{{ $aktivitas->links() }}</div>@endif

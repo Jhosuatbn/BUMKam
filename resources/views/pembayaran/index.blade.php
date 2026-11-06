@@ -89,9 +89,7 @@
                                 </td>
                                 <td class="px-4 py-3.5 text-center sm:px-6">
                                     <div class="inline-flex items-center justify-center gap-3">
-                                        <a href="{{ route('pembayaran.show', $item->id_pembayaran) }}" class="text-blue-700 transition hover:text-blue-800" title="Lihat detail {{ $item->id_pembayaran }}" aria-label="Lihat detail {{ $item->id_pembayaran }}">
-                                            <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.25 12s3.5-6 9.75-6 9.75 6 9.75 6-3.5 6-9.75 6-9.75-6-9.75-6Z"/><circle cx="12" cy="12" r="2.5" stroke-width="2"/></svg>
-                                        </a>
+                                        <a href="{{ route('pembayaran.show', $item->id_pembayaran) }}" class="btn btn-sm btn-outline-secondary" title="Lihat detail {{ $item->id_pembayaran }}"><i class="icon-base bx bx-show me-1" aria-hidden="true"></i>Detail</a>
                                         @if ($item->metode_pembayaran === 'online' && $item->status_gateway === 'pending' && $item->snap_token)
                                             <a href="{{ route('pembayaran.online', $item->id_pembayaran) }}" class="font-semibold text-blue-800 underline-offset-4 hover:underline">Lanjut Bayar</a>
                                         @endif

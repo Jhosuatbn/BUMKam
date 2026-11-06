@@ -23,6 +23,7 @@
         .visual-inner{display:flex;min-height:100vh;flex-direction:column;padding:40px clamp(34px,5vw,76px) 30px}
         .brand{display:flex;width:max-content;align-items:center;gap:12px;color:#fff;text-decoration:none}
         .brand-mark{display:grid;width:46px;height:46px;place-items:center;border:1px solid rgba(255,255,255,.34);border-radius:14px;background:rgba(255,255,255,.15);box-shadow:0 12px 28px rgba(0,0,0,.2);backdrop-filter:blur(9px);font-size:.86rem;font-weight:700}
+        .brand-mark img{width:100%;height:100%;padding:3px;border-radius:12px;background:#fff;object-fit:contain}
         .brand-copy{line-height:1.35}.brand-overline{margin:0;color:rgba(255,255,255,.64);font-size:.62rem;font-weight:600;letter-spacing:.2em}.brand-name{margin:2px 0 0;font-size:.88rem;font-weight:600}
         .orbit{position:absolute;top:13%;right:8%;width:clamp(220px,22vw,320px);aspect-ratio:1;border:1px solid rgba(255,255,255,.22);border-radius:50%;animation:appear .8s ease both}
         .orbit:before{position:absolute;inset:28px;border:1px solid rgba(255,255,255,.16);border-radius:50%;content:""}
@@ -34,7 +35,6 @@
         .visual-content h1{margin:0;font-size:clamp(2.9rem,5vw,5.2rem);font-weight:600;letter-spacing:-.065em;line-height:1.04}
         .visual-content>p{max-width:540px;margin:22px 0 0;color:rgba(255,255,255,.73);font-size:.92rem;line-height:1.9}
         .trust-row{display:flex;max-width:540px;align-items:center;gap:16px;margin-top:34px;padding-top:22px;border-top:1px solid rgba(255,255,255,.21)}
-        .initials{display:flex;padding-left:2px}.initials span{display:grid;width:35px;height:35px;place-items:center;margin-left:-3px;border:2px solid #244c2d;border-radius:50%;font-size:.55rem;font-weight:700}.initials span:nth-child(1){background:var(--gold);color:#173117}.initials span:nth-child(2){background:#fff;color:#173117}.initials span:nth-child(3){background:#386843;color:#fff}
         .trust-title{margin:0;font-size:.72rem;font-weight:600}.trust-caption{margin:3px 0 0;color:rgba(255,255,255,.53);font-size:.64rem}
         .form-panel{position:relative;display:flex;min-height:100vh;flex-direction:column;padding:20px clamp(22px,3vw,48px);background:radial-gradient(circle at 100% 0,rgba(35,79,45,.055),transparent 260px),#f4f5ef}
         .form-panel:before{position:absolute;top:0;right:0;width:300px;height:300px;border:36px solid rgba(35,79,45,.04);border-radius:50%;content:"";pointer-events:none}
@@ -60,7 +60,7 @@
         .footer{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 0 3px;border-top:1px solid rgba(216,221,207,.8);color:#8c9589;font-size:.55rem;letter-spacing:.09em;text-transform:uppercase}
         @keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}@keyframes appear{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
         @media(max-width:1000px){.login-page{grid-template-columns:minmax(0,1fr) minmax(400px,.88fr)}.visual-inner{padding-right:34px;padding-left:34px}.visual-content h1{font-size:clamp(2.7rem,5.4vw,4.2rem)}.orbit{right:5%;width:clamp(190px,24vw,250px)}}
-        @media(max-width:760px){.login-page{display:flex;min-height:100dvh;flex-direction:column}.visual-panel{display:none}.form-panel{min-height:100dvh;padding:16px 22px 17px}.topbar{min-height:48px}.mobile-brand{display:flex;align-items:center;gap:10px;margin-right:auto;text-decoration:none}.mobile-mark{display:grid;width:38px;height:38px;place-items:center;border-radius:12px;background:var(--primary);color:white;font-size:.68rem;font-weight:700}.mobile-brand p{margin:0}.mobile-brand .small{color:#778477;font-size:.53rem;font-weight:600;letter-spacing:.16em}.mobile-brand .name{color:var(--primary);font-size:.7rem;font-weight:600}.return-link{min-height:38px;padding:0 12px;font-size:.62rem}.return-long{display:none}.return-short{display:inline}.form-wrap{width:min(440px,100%);padding:38px 0 28px}.portal-label{margin-bottom:18px}.intro{margin-bottom:28px}.footer{font-size:.5rem}}
+        @media(max-width:760px){.login-page{display:flex;min-height:100dvh;flex-direction:column}.visual-panel{display:none}.form-panel{min-height:100dvh;padding:16px 22px 17px}.topbar{min-height:48px}.mobile-brand{display:flex;align-items:center;gap:10px;margin-right:auto;text-decoration:none}.mobile-mark{display:grid;width:38px;height:38px;place-items:center;overflow:hidden;border:1px solid #dce8d8;border-radius:12px;background:#fff}.mobile-mark img{width:100%;height:100%;padding:2px;object-fit:contain}.mobile-brand p{margin:0}.mobile-brand .small{color:#778477;font-size:.53rem;font-weight:600;letter-spacing:.16em}.mobile-brand .name{color:var(--primary);font-size:.7rem;font-weight:600}.return-link{min-height:38px;padding:0 12px;font-size:.62rem}.return-long{display:none}.return-short{display:inline}.form-wrap{width:min(440px,100%);padding:38px 0 28px}.portal-label{margin-bottom:18px}.intro{margin-bottom:28px}.footer{font-size:.5rem}}
         @media(max-width:390px){.form-panel{padding-right:17px;padding-left:17px}.return-link{gap:5px;padding:0 10px}.form-wrap{padding-top:30px}.footer{letter-spacing:.04em}}
         @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
     </style>
@@ -72,19 +72,19 @@
             <div class="photo-tint"></div><div class="photo-shade"></div><div class="grid-texture"></div>
             <div class="orbit" aria-hidden="true"><div class="orbit-core"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/><path d="M12 21s-1-5 2-9 6-5 6-5"/></svg></div></div>
             <div class="visual-inner">
-                <a href="{{ route('public.home') }}" class="brand" aria-label="BUMKam Tuah Rezeki, kembali ke beranda"><span class="brand-mark">TR</span><span class="brand-copy"><span class="brand-overline">BUMKAM</span><span class="brand-name">Tuah Rezeki</span></span></a>
+                <a href="{{ route('public.home') }}" class="brand" aria-label="BUMKam Tuah Rezeki, kembali ke beranda"><span class="brand-mark"><img src="{{ asset('assets/img/bumkam-mark.png') }}" alt="Logo BUMKam Tuah Rezeki"></span><span class="brand-copy"><span class="brand-overline">BUMKAM</span><span class="brand-name">Tuah Rezeki</span></span></a>
                 <div class="visual-content">
                     <p class="eyebrow">Tumbuh bersama kampung</p>
                     <h1>Dari kampung,<br>untuk masa depan.</h1>
                     <p>Satu ruang kerja digital untuk mengelola potensi, transparansi, dan pertumbuhan ekonomi Kampung Rantau Bertuah.</p>
-                    <div class="trust-row"><div class="initials" aria-hidden="true"><span>TR</span><span>KR</span><span>SK</span></div><div><p class="trust-title">Dikelola secara profesional</p><p class="trust-caption">Mandiri · Amanah · Terpercaya</p></div></div>
+                    <div class="trust-row"><div><p class="trust-title">Dikelola secara profesional</p><p class="trust-caption">Mandiri · Amanah · Terpercaya</p></div></div>
                 </div>
             </div>
         </section>
 
         <section class="form-panel" aria-labelledby="login-heading">
             <header class="topbar">
-                <a href="{{ route('public.home') }}" class="mobile-brand" aria-label="BUMKam Tuah Rezeki, kembali ke beranda"><span class="mobile-mark">TR</span><span><span class="small">BUMKAM</span><span class="name">Tuah Rezeki</span></span></a>
+                <a href="{{ route('public.home') }}" class="mobile-brand" aria-label="BUMKam Tuah Rezeki, kembali ke beranda"><span class="mobile-mark"><img src="{{ asset('assets/img/bumkam-mark.png') }}" alt="Logo BUMKam Tuah Rezeki"></span><span><span class="small">BUMKAM</span><span class="name">Tuah Rezeki</span></span></a>
                 <a href="{{ route('public.home') }}" class="return-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/><path d="M9 12h12"/></svg><span class="return-long">Kembali ke beranda</span><span class="return-short">Kembali</span></a>
             </header>
             <div class="form-wrap">

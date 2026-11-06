@@ -52,8 +52,9 @@
                 </div>
             </dl>
             <div class="flex flex-wrap justify-end gap-3 border-t border-slate-200 px-5 py-4 sm:px-6">
+                <a href="{{ route('pembayaran.index') }}" class="bumkam-cancel-button inline-flex min-h-10 items-center justify-center rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition hover:bg-slate-50">Kembali</a>
                 @if (in_array($pembayaran->status_gateway, ['settlement', 'partial_refund', 'refund'], true))
-                    <a href="{{ route('pembayaran.receipt', $pembayaran) }}" class="inline-flex min-h-10 items-center justify-center rounded-xl border border-emerald-700 bg-white px-4 py-2 text-sm font-semibold text-emerald-800 shadow-sm transition hover:bg-emerald-50">Cetak Kwitansi</a>
+                    <a href="{{ route('pembayaran.receipt', $pembayaran) }}" class="bumkam-green-action inline-flex min-h-10 items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition"><i class="icon-base bx bx-printer me-1" aria-hidden="true"></i>Cetak Kwitansi</a>
                 @endif
                 @if ($pembayaran->metode_pembayaran === 'online' && $pembayaran->status_gateway === 'pending' && $pembayaran->snap_token)
                     <a href="{{ route('pembayaran.online', $pembayaran->id_pembayaran) }}" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-800">Lanjut Bayar</a>
@@ -71,7 +72,6 @@
                         <button type="submit" class="bumkam-green-action inline-flex min-h-10 items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold text-white">Sinkronkan Status Midtrans</button>
                     </form>
                 @endif
-                <a href="{{ route('pembayaran.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-black shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Kembali</a>
             </div>
         </section>
     </div>

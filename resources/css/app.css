@@ -12,18 +12,71 @@
 
 html, body { font-family: 'Public Sans', ui-sans-serif, system-ui, sans-serif; }
 
+/* Keep the dashboard frame steady and transition only the page content. */
+@view-transition {
+    navigation: auto;
+}
+.layout-menu {
+    view-transition-name: bumkam-sidebar;
+}
+.content-wrapper {
+    view-transition-name: bumkam-page-content;
+}
+::view-transition-old(root),
+::view-transition-new(root),
+::view-transition-group(root),
+::view-transition-group(bumkam-sidebar),
+::view-transition-old(bumkam-sidebar),
+::view-transition-new(bumkam-sidebar) {
+    animation: none;
+}
+::view-transition-old(bumkam-page-content) {
+    animation: bumkam-content-out 100ms ease both;
+}
+::view-transition-new(bumkam-page-content) {
+    animation: bumkam-content-in 240ms ease both;
+}
+@keyframes bumkam-content-out {
+    to { opacity: 0; }
+}
+@keyframes bumkam-content-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(bumkam-page-content),
+    ::view-transition-new(bumkam-page-content) { animation: none; }
+}
+
 .pelanggan-save-button { border-radius: 1rem !important; }
 .bumkam-green-action {
+    display: inline-flex !important;
+    min-height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    padding: .625rem 1rem !important;
     color: #fff !important;
     border: 1px solid #078a46 !important;
-    border-radius: .75rem !important;
+    border-radius: 12px !important;
     background: linear-gradient(135deg, #078a46, #65a30d) !important;
+    box-shadow: 0 2px 5px rgb(8 122 64 / 16%);
+    font-size: .875rem;
+    font-weight: 600;
+    line-height: 1.25rem;
+    text-decoration: none;
+    transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
 }
 .bumkam-green-action:hover,
-.bumkam-green-action:focus-visible {
+.bumkam-green-action:focus,
+.bumkam-green-action:focus-visible,
+.bumkam-green-action:active {
     color: #fff !important;
     border-color: #056b38 !important;
     background: linear-gradient(135deg, #056b38, #4d7c0f) !important;
+    box-shadow: 0 3px 8px rgb(8 122 64 / 22%);
+    text-decoration: none;
+    transform: none !important;
 }
 .bumkam-cancel-button {
     color: #8492a6 !important;
@@ -35,6 +88,17 @@ html, body { font-family: 'Public Sans', ui-sans-serif, system-ui, sans-serif; }
     color: #fff !important;
     border-color: #7f8b9b !important;
     background-color: #7f8b9b !important;
+}
+html.dark .content-wrapper .bumkam-cancel-button {
+    color: #e2e8f0 !important;
+    border-color: #64748b !important;
+    background-color: #1e293b !important;
+}
+html.dark .content-wrapper .bumkam-cancel-button:hover,
+html.dark .content-wrapper .bumkam-cancel-button:focus-visible {
+    color: #fff !important;
+    border-color: #94a3b8 !important;
+    background-color: #334155 !important;
 }
 .barang-modal-action { border-radius: 1rem !important; }
 .bumkam-laporan-tab-active,

@@ -5,9 +5,9 @@
     </div>
 @endif
 <div class="mb-3">
-    <label for="id_pemesanan" class="form-label">Pemesanan yang diretur</label>
+    <label for="id_pemesanan" class="form-label">Transaksi yang diretur</label>
     <select required id="id_pemesanan" name="id_pemesanan" class="form-select">
-        <option value="">Pilih pemesanan</option>
+        <option value="" disabled hidden @selected(old('id_pemesanan') === null)>Pilih transaksi</option>
         @foreach ($orders as $order)
             @php
                 $items = $order->detailPemesanan->map(function ($detail) use ($order) {

@@ -5,6 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard') | BUMKam Tuah Rezeki</title>
+    <script>
+        try {
+            const savedTheme = localStorage.getItem('bumkam-theme');
+            const useDarkTheme = savedTheme === 'dark'
+                || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+            document.documentElement.classList.toggle('dark', useDarkTheme);
+            document.documentElement.dataset.bsTheme = useDarkTheme ? 'dark' : 'light';
+        } catch (error) {
+            document.documentElement.dataset.bsTheme = 'light';
+        }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
