@@ -3,6 +3,8 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" type="image/png" href="{{ asset('assets/img/bumkam-mark.png') }}?v=1">
+        <link rel="apple-touch-icon" href="{{ asset('assets/img/bumkam-mark.png') }}?v=1">
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 

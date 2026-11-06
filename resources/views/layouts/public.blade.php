@@ -6,6 +6,8 @@
     <meta name="theme-color" content="#174c35">
     <meta name="description" content="BUMKam Tuah Rezeki, penggerak ekonomi Kampung Rantau Bertuah sejak 2007.">
     <title>@yield('title', 'BUMKam Tuah Rezeki') | BUMKam Tuah Rezeki</title>
+    <link rel="icon" type="image/png" href="{{ asset('assets/img/bumkam-mark.png') }}?v=1">
+    <link rel="apple-touch-icon" href="{{ asset('assets/img/bumkam-mark.png') }}?v=1">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">

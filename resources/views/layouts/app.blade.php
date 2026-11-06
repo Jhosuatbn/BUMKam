@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Dashboard') | BUMKam Tuah Rezeki</title>
+    <link rel="icon" type="image/png" href="{{ asset('assets/img/bumkam-mark.png') }}?v=1">
+    <link rel="apple-touch-icon" href="{{ asset('assets/img/bumkam-mark.png') }}?v=1">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-slate-100 font-sans text-slate-900 antialiased">
