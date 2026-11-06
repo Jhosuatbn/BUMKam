@@ -4,10 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Pemesanan;
 use App\Services\MonitoringKreditService;
-use App\Models\PenyesuaianDenda;
-use App\Models\AuditTrail;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Pagination\LengthAwarePaginator as Paginator;
@@ -140,67 +136,49 @@ class MonitoringKreditController extends Controller
         return view('monitoring-kredit.jadwal', compact('jadwal', 'dendaAktif'));
     }
 
-    public function denda(MonitoringKreditService $monitoring)
+    public function denda(Request $request, MonitoringKreditService $monitoring)
     {
-        $orders = $this->queryKreditAktif()->with(array_merge([
-            'pelanggan',
-            'pembayaran' => fn ($query) => $query->whereIn('status_gateway', ['settlement', 'partial_refund'])->when(Schema::hasTable('alokasi_pembayaran'), fn ($query) => $query->with('alokasiDenda'))->orderBy('tanggal_pembayaran')->orderBy('id_pembayaran'),
-        ], $this->relasiDendaTersedia(true)))->orderByDesc('tanggal_pemesanan')->get();
-
-        $dataDenda = $orders->map(fn (Pemesanan $order) => [
-            'pemesanan' => $order,
-            'ringkasan' => $monitoring->hitung($order),
+        $request->validate([
+            'q' => ['nullable', 'string', 'max:100'],
+            'dari_tanggal' => ['nullable', 'date'],
+            'sampai_tanggal' => ['nullable', 'date', 'after_or_equal:dari_tanggal'],
         ]);
+        $kataKunci = trim((string) $request->query('q', ''));
+        $dariTanggal = $request->query('dari_tanggal');
+        $sampaiTanggal = $request->query('sampai_tanggal');
+        $perPage = 15;
+        $page = Paginator::resolveCurrentPage();
+        $orders = $this->queryKreditAktif()
+            ->when($kataKunci !== '', fn ($query) => $query->whereHas('pelanggan', fn ($pelanggan) => $pelanggan->where('nama_pelanggan', 'like', '%'.$kataKunci.'%')))
+            ->with(array_merge([
+                'pelanggan',
+                'pembayaran' => fn ($query) => $query->whereIn('status_gateway', ['settlement', 'partial_refund'])->when(Schema::hasTable('alokasi_pembayaran'), fn ($query) => $query->with('alokasiDenda'))->orderBy('tanggal_pembayaran')->orderBy('id_pembayaran'),
+            ], $this->relasiDendaTersedia()))
+            ->orderByDesc('tanggal_pemesanan')
+            ->get();
+
+        $barisDenda = collect();
+        foreach ($orders as $order) {
+            foreach ($monitoring->hitung($order)['jadwal'] as $row) {
+                $tanggalJatuhTempo = $row['tanggal_jatuh_tempo']->toDateString();
+                $sesuaiRentangTanggal = (! $dariTanggal || $tanggalJatuhTempo >= $dariTanggal)
+                    && (! $sampaiTanggal || $tanggalJatuhTempo <= $sampaiTanggal);
+                if ($row['denda_awal'] > 0 && $sesuaiRentangTanggal) {
+                    $barisDenda->push(['pemesanan' => $order, 'angsuran' => $row]);
+                }
+            }
+        }
+
+        $dataDenda = new Paginator(
+            $barisDenda->forPage($page, $perPage)->values(),
+            $barisDenda->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
 
         $dendaAktif = app(\App\Services\DendaKeterlambatanService::class)->tersedia();
-        return view('monitoring-kredit.denda', compact('dataDenda', 'dendaAktif'));
-    }
-
-    public function kurangiDenda(Request $request, Pemesanan $pemesanan, MonitoringKreditService $monitoring)
-    {
-        abort_unless(app(\App\Services\DendaKeterlambatanService::class)->tersedia(), 503, 'Migration fitur denda belum diterapkan.');
-        abort_unless($request->user()?->peran === 'Pimpinan', 403, 'Hanya Pimpinan yang dapat memutuskan pengurangan denda.');
-        abort_unless($this->dapatDimonitor($pemesanan), 404);
-        $validated = $request->validate([
-            'nomor_angsuran' => ['required', 'integer', 'min:1', 'max:120'],
-            'nominal_pengurangan' => ['required', 'numeric', 'gt:0'],
-            'alasan' => ['required', 'string', 'min:8', 'max:2000'],
-        ]);
-
-        DB::transaction(function () use ($request, $pemesanan, $monitoring, $validated) {
-            $order = Pemesanan::whereKey($pemesanan->getKey())->lockForUpdate()->with(array_merge([
-                'pembayaran' => fn ($query) => $query->whereIn('status_gateway', ['settlement', 'partial_refund'])->with('alokasiDenda')->orderBy('tanggal_pembayaran')->orderBy('id_pembayaran'),
-            ], $this->relasiDendaTersedia()))->firstOrFail();
-            $row = collect($monitoring->hitung($order)['jadwal'])->firstWhere('nomor', (int) $validated['nomor_angsuran']);
-            $pengurangan = round((float) $validated['nominal_pengurangan'], 2);
-            if (! $row || $pengurangan > $row['denda_berjalan']) {
-                throw ValidationException::withMessages(['nominal_pengurangan' => 'Pengurangan tidak boleh melebihi denda berjalan pada angsuran ini.']);
-            }
-
-            $record = PenyesuaianDenda::create([
-                'id_pemesanan' => $order->id_pemesanan,
-                'nomor_angsuran' => $row['nomor'],
-                'denda_awal' => $row['denda_awal'],
-                'nominal_pengurangan' => $pengurangan,
-                'alasan' => $validated['alasan'],
-                'id_pimpinan' => $request->user()->id_pengguna,
-                'diputuskan_pada' => now(config('kredit.zona_waktu', 'Asia/Jakarta')),
-            ]);
-            AuditTrail::create([
-                'id_pengguna' => $request->user()->id_pengguna,
-                'nama_pengguna' => $request->user()->nama_lengkap,
-                'peran_pengguna' => $request->user()->peran,
-                'jenis_aktivitas' => 'penyesuaian_denda',
-                'modul' => 'Monitoring Kredit',
-                'deskripsi' => "Pimpinan menyetujui pengurangan denda angsuran {$row['nomor']} pada {$order->id_pemesanan}: Rp ".number_format($pengurangan, 2, ',', '.').". Alasan: ".$validated['alasan'],
-                'ip_address' => $request->ip(),
-                'old_value' => ['denda_awal' => $row['denda_awal']],
-                'new_value' => ['nominal_pengurangan' => $record->nominal_pengurangan, 'alasan' => $record->alasan, 'id_penyesuaian_denda' => $record->id_penyesuaian_denda],
-                'created_at' => now(config('kredit.zona_waktu', 'Asia/Jakarta')),
-            ]);
-        });
-
-        return back()->with('success', 'Pengurangan denda berhasil dicatat dan masuk ke riwayat keputusan.');
+        return view('monitoring-kredit.denda', compact('dataDenda', 'dendaAktif', 'kataKunci', 'dariTanggal', 'sampaiTanggal'));
     }
 
     private function relasiDendaTersedia(bool $withPimpinan = false): array

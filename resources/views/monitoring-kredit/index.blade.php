@@ -91,7 +91,7 @@
                                     {{ $monitoringItem['tanggal_jatuh_tempo_berikutnya']?->format('d/m/Y') ?? '—' }}
                                 </td>
                                 <td><span class="badge bg-label-{{ $statusClass }}">{{ $monitoringItem['status'] }}</span></td>
-                                <td><a href="{{ route('monitoring-kredit.show', $item->id_pemesanan) }}" class="btn btn-sm btn-outline-primary"><i class="icon-base bx bx-show-alt me-1" aria-hidden="true"></i>Detail</a></td>
+                                <td><a href="{{ route('monitoring-kredit.show', $item->id_pemesanan) }}" class="btn btn-sm btn-outline-success"><i class="icon-base bx bx-show-alt me-1" aria-hidden="true"></i>Detail</a></td>
                             </tr>
                         @empty
                             <tr><td colspan="10" class="py-5 text-center text-body-secondary">Tidak ada data kredit yang cocok dengan pencarian atau filter.</td></tr>

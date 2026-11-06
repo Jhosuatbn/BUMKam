@@ -57,7 +57,7 @@
                                     @endif
                                 </td>
                                 <td><span class="badge bg-label-{{ $statusPengembalianClass }}">{{ $item->status_pengembalian_label }}</span></td>
-                                <td><a class="btn btn-sm btn-outline-secondary" href="{{ route('jaminan.show', $item) }}"><i class="icon-base bx bx-show-alt me-1" aria-hidden="true"></i>Detail</a></td>
+                                <td><a class="btn btn-sm btn-outline-success" href="{{ route('jaminan.show', $item) }}"><i class="icon-base bx bx-show-alt me-1" aria-hidden="true"></i>Detail</a></td>
                             </tr>
                         @empty
                             <tr><td colspan="8" class="py-5 text-center text-body-secondary">Belum ada dokumen jaminan yang tercatat. Data jaminan dibuat bersama pengajuan pemesanan kredit.</td></tr>

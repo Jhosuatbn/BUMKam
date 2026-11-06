@@ -28,7 +28,7 @@
             </div>
 
             <div class="mt-6 flex flex-wrap justify-end gap-3">
-                <a href="{{ route('pembayaran.index') }}" class="bumkam-cancel-button inline-flex min-h-11 items-center justify-center rounded-xl border px-5 py-2.5 text-sm font-semibold transition hover:bg-slate-50">Kembali ke Pembayaran</a>
+                <a href="{{ route('pembayaran.index') }}" class="btn bumkam-green-action"><i class="icon-base bx bx-arrow-back" aria-hidden="true"></i>Kembali ke Pembayaran</a>
                 <button id="pay-online-button" type="button" class="bumkam-green-action inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition">
                     <i class="icon-base bx bx-lock-alt" aria-hidden="true"></i> Bayar Sekarang
                 </button>

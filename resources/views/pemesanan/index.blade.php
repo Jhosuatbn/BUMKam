@@ -107,14 +107,14 @@
                                     @elseif ($statusTampilan === 'Ditolak')
                                         <span class="inline-flex rounded-full bg-rose-100 px-2.5 py-1 text-xs font-semibold text-rose-900">{{ $statusTampilan }}</span>
                                     @elseif ($statusTampilan === 'Dibatalkan')
-                                        <span class="inline-flex rounded-full bg-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-800">{{ $statusTampilan }}</span>
+                                        <span class="pemesanan-status-cancelled inline-flex rounded-full border border-slate-300 bg-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-800">{{ $statusTampilan }}</span>
                                     @else
                                         <span class="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-950">{{ $statusTampilan }} · {{ $item->status_penyerahan === 'Diserahkan' ? 'Barang diserahkan' : ($item->status_penyerahan === 'Riwayat Lama' ? 'Data stok lama' : 'Belum diserahkan') }}</span>
                                     @endif
                                 </td>
                                 <td class="px-4 py-3.5 text-center sm:px-6">
                                     <div class="inline-flex items-center justify-center gap-3">
-                                        <a href="{{ route('pemesanan.show', $item->id_pemesanan) }}" class="btn btn-sm btn-outline-secondary" title="Lihat detail {{ $item->id_pemesanan }}"><i class="icon-base bx bx-show me-1" aria-hidden="true"></i>Detail</a>
+                                        <a href="{{ route('pemesanan.show', $item->id_pemesanan) }}" class="btn btn-sm btn-outline-success" title="Lihat detail {{ $item->id_pemesanan }}"><i class="icon-base bx bx-show me-1" aria-hidden="true"></i>Detail</a>
                                         @if (auth()->user()?->peran !== 'Pimpinan' && ($item->status_persetujuan === null || $item->status_persetujuan === 'Menunggu Persetujuan'))
                                         <a href="{{ route('pemesanan.edit', $item->id_pemesanan) }}" class="text-amber-600 transition hover:text-amber-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700" title="Edit pemesanan {{ $item->id_pemesanan }}" aria-label="Edit pemesanan {{ $item->id_pemesanan }}">
                                             <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 0 1 2.828 2.828L11.828 15H9v-2.828z"/></svg>

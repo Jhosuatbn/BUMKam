@@ -51,7 +51,6 @@ class PimpinanAccess
             'monitoring-kredit.index',
             'monitoring-kredit.jadwal',
             'monitoring-kredit.denda',
-            'monitoring-kredit.denda.reduce',
             'monitoring-kredit.show',
             'jaminan.index',
             'jaminan.show',

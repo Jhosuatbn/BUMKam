@@ -89,7 +89,7 @@
                                 </td>
                                 <td class="px-4 py-3.5 text-center sm:px-6">
                                     <div class="inline-flex items-center justify-center gap-3">
-                                        <a href="{{ route('pembayaran.show', $item->id_pembayaran) }}" class="btn btn-sm btn-outline-secondary" title="Lihat detail {{ $item->id_pembayaran }}"><i class="icon-base bx bx-show me-1" aria-hidden="true"></i>Detail</a>
+                                        <a href="{{ route('pembayaran.show', $item->id_pembayaran) }}" class="btn btn-sm btn-outline-success" title="Lihat detail {{ $item->id_pembayaran }}"><i class="icon-base bx bx-show me-1" aria-hidden="true"></i>Detail</a>
                                         @if ($item->metode_pembayaran === 'online' && $item->status_gateway === 'pending' && $item->snap_token)
                                             <a href="{{ route('pembayaran.online', $item->id_pembayaran) }}" class="font-semibold text-blue-800 underline-offset-4 hover:underline">Lanjut Bayar</a>
                                         @endif

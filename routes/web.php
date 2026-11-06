@@ -110,8 +110,6 @@ Route::middleware(['auth', 'pimpinan.access', 'audit.trail'])->group(function ()
         ->name('monitoring-kredit.jadwal');
     Route::get('/monitoring-kredit/denda-keterlambatan', [MonitoringKreditController::class, 'denda'])
         ->name('monitoring-kredit.denda');
-    Route::post('/monitoring-kredit/{pemesanan}/denda', [MonitoringKreditController::class, 'kurangiDenda'])
-        ->name('monitoring-kredit.denda.reduce');
     Route::get('/monitoring-kredit/{pemesanan}', [MonitoringKreditController::class, 'show'])
         ->name('monitoring-kredit.show');
 

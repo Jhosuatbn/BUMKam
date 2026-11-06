@@ -40,7 +40,7 @@
                                 <td class="px-4 py-3.5 sm:px-6"><span class="badge bg-label-{{ $item->is_active ? 'success' : 'secondary' }}">{{ $item->is_active ? 'Aktif' : 'Nonaktif' }}</span><small class="d-block text-body-secondary">{{ $item->created_at?->format('d/m/Y') }}</small></td>
                                 <td class="px-4 py-3.5 sm:px-6">
                                     <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
-                                        <a href="{{ route('pengguna.show', $item->id_pengguna) }}" class="pengguna-action"><i class="icon-base bx bx-show" aria-hidden="true"></i>Detail</a>
+                                        <a href="{{ route('pengguna.show', $item->id_pengguna) }}" class="btn btn-sm btn-outline-success"><i class="icon-base bx bx-show me-1" aria-hidden="true"></i>Detail</a>
                                         @if ($item->peran === 'Staff')<a href="{{ route('pengguna.edit', $item->id_pengguna) }}" class="pengguna-action"><i class="icon-base bx bx-edit" aria-hidden="true"></i>Kelola</a>@endif
                                     </div>
                                 </td>

@@ -10,6 +10,7 @@ use App\Services\MonitoringKreditService;
 use App\Services\InventoryAvailabilityService;
 use App\Services\PengembalianAlokasiPembayaranService;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Schema;
 class LaporanController extends Controller
 {
@@ -30,11 +31,12 @@ class LaporanController extends Controller
         ]);
 
         $tab = $validated['tab'] ?? 'pemesanan';
+        $printAll = $request->boolean('print');
         // Keep the consolidated stock selector and preserve legacy report URLs.
         $persediaanMode = $validated['persediaan_mode'] ?? ($tab === 'pembelian' ? 'penerimaan' : 'stok');
         $validated['persediaan_mode'] = $persediaanMode;
         if (! in_array($tab, ['pemesanan', 'kredit'], true)) {
-            return $this->laporanKeuangan($tab, $validated, $monitoring);
+            return $this->laporanKeuangan($tab, $validated, $monitoring, $request);
         }
 
         /*
@@ -113,8 +115,8 @@ class LaporanController extends Controller
                 'detailPemesanan.barang',
             ])
             ->orderByDesc('tanggal_pemesanan')
-            ->take(10)
-            ->get();
+            ->paginate($printAll ? max(1, (clone $pemesananQuery)->count()) : 15)
+            ->withQueryString();
 
         /*
         |--------------------------------------------------------------------------
@@ -127,8 +129,8 @@ class LaporanController extends Controller
                 'pemesanan.pelanggan',
             ])
             ->orderByDesc('tanggal_pembayaran')
-            ->take(10)
-            ->get();
+            ->paginate($printAll ? max(1, (clone $pembayaranQuery)->count()) : 15, ['*'], 'pembayaran_page')
+            ->withQueryString();
 
         /*
         |--------------------------------------------------------------------------
@@ -193,6 +195,9 @@ class LaporanController extends Controller
         $totalDendaBelumDibayar = $daftarKredit->sum(fn (Pemesanan $order) => $order->monitoring_kredit['total_denda_belum_dibayar']);
         $totalDendaDikurangi = $daftarKredit->sum(fn (Pemesanan $order) => $order->monitoring_kredit['total_denda_dikurangi']);
         $dendaAktif = app(\App\Services\DendaKeterlambatanService::class)->tersedia();
+        $jumlahKredit = $daftarKredit->count();
+        $totalSisaKewajiban = $daftarKredit->sum(fn (Pemesanan $order) => $order->monitoring_kredit['sisa_kewajiban']);
+        $daftarKredit = $this->paginateCollection($daftarKredit, $request, 'page', $printAll ? max(1, $daftarKredit->count()) : 15);
 
         $totalAngsuranBulanan = (clone $kreditQuery)
             ->sum('angsuran');
@@ -211,6 +216,8 @@ class LaporanController extends Controller
             'pemesananTerbaru' => $pemesananTerbaru,
             'pembayaranTerbaru' => $pembayaranTerbaru,
             'daftarKredit' => $daftarKredit,
+            'jumlahKredit' => $jumlahKredit,
+            'totalSisaKewajiban' => $totalSisaKewajiban,
             'totalAngsuranBulanan' => $totalAngsuranBulanan,
             'totalDendaDikenakan' => $totalDendaDikenakan,
             'totalDendaDibayar' => $totalDendaDibayar,
@@ -220,7 +227,7 @@ class LaporanController extends Controller
         ]);
     }
 
-    private function laporanKeuangan(string $tab, array $filter, MonitoringKreditService $monitoring)
+    private function laporanKeuangan(string $tab, array $filter, MonitoringKreditService $monitoring, Request $request)
     {
         $start = $filter['start_date'] ?? null;
         $end = $filter['end_date'] ?? null;
@@ -241,21 +248,21 @@ class LaporanController extends Controller
                 $payment->setAttribute('diterima_bersih', max(0, (float) $payment->nominal - (float) $payment->nominal_dikembalikan));
                 return $payment;
             });
-            $data += ['rows' => $rows, 'total' => $rows->sum('diterima_bersih'), 'totalPokok' => $rows->sum('pokok_bersih'), 'totalDenda' => $rows->sum('denda_bersih')];
+            $data += ['rows' => $this->paginateCollection($rows, $request, 'page', $this->reportPageSize($rows, $request)), 'total' => $rows->sum('diterima_bersih'), 'totalPokok' => $rows->sum('pokok_bersih'), 'totalDenda' => $rows->sum('denda_bersih')];
         } elseif ($tab === 'persediaan' && ($filter['persediaan_mode'] ?? 'stok') === 'penerimaan') {
             $rows = BarangMasuk::with(['supplier', 'penerima', 'details.barang'])
                 ->when($start, fn ($query) => $query->whereDate('tanggal_masuk', '>=', $start))
                 ->when($end, fn ($query) => $query->whereDate('tanggal_masuk', '<=', $end))
                 ->orderByDesc('tanggal_masuk')->get();
             $rows->each(fn ($row) => $row->setAttribute('total_belanja', $row->details->sum('subtotal')));
-            $data += ['rows' => $rows, 'total' => $rows->sum('total_belanja'), 'inventoryMode' => 'penerimaan'];
+            $data += ['rows' => $this->paginateCollection($rows, $request, 'page', $this->reportPageSize($rows, $request)), 'total' => $rows->sum('total_belanja'), 'inventoryMode' => 'penerimaan'];
         } elseif ($tab === 'pembelian') {
             $rows = BarangMasuk::with(['supplier', 'penerima', 'details.barang'])
                 ->when($start, fn ($query) => $query->whereDate('tanggal_masuk', '>=', $start))
                 ->when($end, fn ($query) => $query->whereDate('tanggal_masuk', '<=', $end))
                 ->orderByDesc('tanggal_masuk')->get();
             $rows->each(fn ($row) => $row->setAttribute('total_belanja', $row->details->sum('subtotal')));
-            $data += ['rows' => $rows, 'total' => $rows->sum('total_belanja'), 'inventoryMode' => 'penerimaan'];
+            $data += ['rows' => $this->paginateCollection($rows, $request, 'page', $this->reportPageSize($rows, $request)), 'total' => $rows->sum('total_belanja'), 'inventoryMode' => 'penerimaan'];
         } elseif (in_array($tab, ['piutang', 'denda'], true)) {
             $paymentRelation = fn ($query) => $query->whereIn('status_gateway', ['settlement', 'partial_refund']);
             if (Schema::hasTable('alokasi_pembayaran')) $paymentRelation = fn ($query) => $query->whereIn('status_gateway', ['settlement', 'partial_refund'])->with('alokasiDenda');
@@ -270,10 +277,11 @@ class LaporanController extends Controller
                 ->orderByDesc('tanggal_pemesanan')->get();
             $orders->each(fn (Pemesanan $order) => $order->setAttribute('ringkasan_monitoring', $monitoring->hitung($order)));
             if ($tab === 'piutang') {
-                $data += ['rows' => $orders, 'total' => $orders->sum(fn ($order) => $order->ringkasan_monitoring['sisa_kewajiban'])];
+                $data += ['rows' => $this->paginateCollection($orders, $request, 'page', $this->reportPageSize($orders, $request)), 'total' => $orders->sum(fn ($order) => $order->ringkasan_monitoring['sisa_kewajiban'])];
             } else {
+                $ordersWithPenalty = $orders->filter(fn ($order) => $order->ringkasan_monitoring['total_denda_dikenakan'] > 0)->values();
                 $data += [
-                    'rows' => $orders->filter(fn ($order) => $order->ringkasan_monitoring['total_denda_dikenakan'] > 0)->values(),
+                    'rows' => $this->paginateCollection($ordersWithPenalty, $request, 'page', $this->reportPageSize($ordersWithPenalty, $request)),
                     'totalDikenakan' => $orders->sum(fn ($order) => $order->ringkasan_monitoring['total_denda_dikenakan']),
                     'totalDibayar' => $orders->sum(fn ($order) => $order->ringkasan_monitoring['total_denda_dibayar']),
                     'totalBelumDibayar' => $orders->sum(fn ($order) => $order->ringkasan_monitoring['total_denda_belum_dibayar']),
@@ -286,10 +294,10 @@ class LaporanController extends Controller
             $movements = PergerakanStok::with(['barang', 'pengguna'])
                 ->when($start, fn ($query) => $query->whereDate('created_at', '>=', $start))
                 ->when($end, fn ($query) => $query->whereDate('created_at', '<=', $end))
-                ->latest('created_at')->limit(200)->get();
+                ->latest('created_at')->get();
             $data += [
-                'rows' => $barang,
-                'movements' => $movements,
+                'rows' => $this->paginateCollection($barang, $request, 'barang_page', $this->reportPageSize($barang, $request)),
+                'movements' => $this->paginateCollection($movements, $request, 'movement_page', $this->reportPageSize($movements, $request)),
                 'totalFisik' => $barang->whereNotNull('stok')->sum('stok'),
                 'totalTersedia' => $barang->whereNotNull('stok')->sum('stok_tersedia'),
                 'belumDiatur' => $barang->whereNull('stok')->count(),
@@ -300,7 +308,7 @@ class LaporanController extends Controller
                 ->when($start, fn ($query) => $query->whereDate('tanggal_pengeluaran', '>=', $start))
                 ->when($end, fn ($query) => $query->whereDate('tanggal_pengeluaran', '<=', $end))
                 ->orderByDesc('tanggal_pengeluaran')->get();
-            $data += ['rows' => $rows, 'total' => $rows->sum('nominal')];
+            $data += ['rows' => $this->paginateCollection($rows, $request, 'page', $this->reportPageSize($rows, $request)), 'total' => $rows->sum('nominal')];
         }
 
         return view('laporan.keuangan', $data);
@@ -313,5 +321,27 @@ class LaporanController extends Controller
             ->where(fn ($query) => $query
                 ->whereNull('status_persetujuan')
                 ->orWhere('status_persetujuan', 'Disetujui'));
+    }
+
+    private function paginateCollection($items, Request $request, string $pageName = 'page', int $perPage = 15): LengthAwarePaginator
+    {
+        $page = LengthAwarePaginator::resolveCurrentPage($pageName);
+
+        return new LengthAwarePaginator(
+            $items->forPage($page, $perPage)->values(),
+            $items->count(),
+            $perPage,
+            $page,
+            [
+                'path' => LengthAwarePaginator::resolveCurrentPath(),
+                'pageName' => $pageName,
+                'query' => $request->query(),
+            ],
+        );
+    }
+
+    private function reportPageSize($items, Request $request): int
+    {
+        return $request->boolean('print') ? max(1, $items->count()) : 15;
     }
 }

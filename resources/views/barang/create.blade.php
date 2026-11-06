@@ -9,7 +9,7 @@
                 <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Tambah Barang</h1>
                 <p class="mt-2 text-sm text-slate-600">Lengkapi informasi barang baru.</p>
             </div>
-            <a href="{{ route('barang.index') }}" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Kembali</a>
+            <a href="{{ route('barang.index') }}" class="btn bumkam-green-action"><i class="icon-base bx bx-arrow-back" aria-hidden="true"></i>Kembali</a>
         </header>
 
         @if ($errors->any())

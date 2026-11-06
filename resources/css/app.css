@@ -12,6 +12,21 @@
 
 html, body { font-family: 'Public Sans', ui-sans-serif, system-ui, sans-serif; }
 
+/* Keep Laravel pagination aligned with the BUMKam green palette in light mode. */
+html:not(.dark) body nav[role="navigation"][aria-label="Pagination Navigation"] a {
+    color: #078a46 !important;
+}
+html:not(.dark) body nav[role="navigation"][aria-label="Pagination Navigation"] a:hover,
+html:not(.dark) body nav[role="navigation"][aria-label="Pagination Navigation"] a:focus-visible {
+    color: #056b38 !important;
+    border-color: #078a46 !important;
+    background-color: #e9f7ef !important;
+    outline-color: #078a46;
+}
+html:not(.dark) body nav[role="navigation"][aria-label="Pagination Navigation"] a:focus-visible {
+    --tw-ring-color: #078a46;
+}
+
 /* Keep the dashboard frame steady and transition only the page content. */
 @view-transition {
     navigation: auto;
@@ -130,6 +145,24 @@ html.dark dialog[data-delete-confirmation-dialog] .delete-confirmation-cancel {
 }
 html.dark dialog[data-delete-confirmation-dialog] .delete-confirmation-warning {
     color: #cbd5e1 !important;
+}
+html.dark dialog[data-delete-confirmation-dialog] {
+    color: #f1f5f9 !important;
+    background-color: #111c2e !important;
+}
+html.dark dialog[data-delete-confirmation-dialog] #delete-confirmation-title {
+    color: #f8fafc !important;
+}
+html.dark dialog[data-delete-confirmation-dialog] .delete-confirmation-cancel {
+    color: #e2e8f0 !important;
+    border-color: #475569 !important;
+    background-color: #1e293b !important;
+}
+html.dark dialog[data-delete-confirmation-dialog] .delete-confirmation-cancel:hover,
+html.dark dialog[data-delete-confirmation-dialog] .delete-confirmation-cancel:focus-visible {
+    color: #fff !important;
+    border-color: #64748b !important;
+    background-color: #334155 !important;
 }
 
 /* Keep dashboard charts inside their cards when the viewport or browser zoom changes. */
@@ -333,6 +366,12 @@ body .btn.btn-primary:hover {
     .monitoring-kredit-page .monitoring-summary-item:nth-last-child(-n + 3) { border-bottom: 0; }
 }
 @media (max-width: 639px) {
+    .content-wrapper,
+    .content-wrapper .container-xxl,
+    .content-wrapper .card,
+    .content-wrapper .card-body { min-width: 0; }
+    .content-wrapper .card-title { overflow-wrap: anywhere; }
+
     .monitoring-kredit-page .card-header { padding: 1rem; }
     .monitoring-kredit-page .monitoring-summary-grid { padding: .5rem 1rem .75rem; }
     .monitoring-kredit-page .monitoring-summary-item:last-child { border-bottom: 0; }
@@ -445,6 +484,11 @@ html.dark .pemesanan-page .text-slate-600,
 html.dark .pemesanan-page .text-slate-500 { color: #a8b5c7 !important; }
 html.dark .pemesanan-page .text-blue-700,
 html.dark .pemesanan-page .text-blue-800 { color: #86efac !important; }
+html.dark .pemesanan-page .pemesanan-status-cancelled {
+    border-color: #475569 !important;
+    background-color: #334155 !important;
+    color: #f1f5f9 !important;
+}
 html.dark .pemesanan-page .bg-green-100 { background-color: #173824 !important; }
 html.dark .pemesanan-page .text-green-700 { color: #86efac !important; }
 html.dark .pemesanan-page input:not([type="file"]),
@@ -604,6 +648,12 @@ html.dark .content-wrapper table tbody { color: #cbd5e1 !important; }
 html.dark .pengguna-page .pengguna-role { color: #86efac; background-color: #173824; }
 html.dark .pengguna-page .pengguna-action { border-color: #28583d; background: #173824; color: #86efac; }
 html.dark .pengguna-page .pengguna-action:hover { border-color: #3d8058; background: #1e4930; }
+html.dark .monitoring-stok-page .monitoring-stok-item {
+    background-color: #172337 !important;
+    border-color: #334155 !important;
+}
+html.dark .monitoring-stok-page .monitoring-stok-item .text-slate-500 { color: #a8b5c7 !important; }
+html.dark .monitoring-stok-page .monitoring-stok-item .text-slate-800 { color: #e2e8f0 !important; }
 .modal-backdrop.show {
     background-color: rgb(15 23 42 / 45%) !important;
     -webkit-backdrop-filter: blur(5px);
@@ -612,4 +662,190 @@ html.dark .pengguna-page .pengguna-action:hover { border-color: #3d8058; backgro
 body.modal-open .layout-wrapper {
     filter: blur(5px);
     transition: filter .18s ease;
+}
+
+/* Make operational lists readable on phones without forcing horizontal table scrolling. */
+@media (max-width: 639px) {
+    .mobile-list-page .mobile-list-toolbar,
+    .mobile-list-page .card-header.mobile-list-toolbar {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: .9rem !important;
+        padding: 1rem !important;
+    }
+
+    .mobile-list-page .mobile-list-toolbar h1,
+    .mobile-list-page .mobile-list-toolbar h2,
+    .mobile-list-page .card-title {
+        margin-bottom: .25rem !important;
+        font-size: 1.2rem !important;
+        line-height: 1.35 !important;
+    }
+
+    .mobile-list-page .mobile-list-toolbar p { font-size: .82rem; line-height: 1.5; }
+    .mobile-list-page .mobile-list-actions { width: 100% !important; }
+    .mobile-list-page .mobile-list-add {
+        width: 100% !important;
+        align-self: stretch !important;
+        margin-top: 0 !important;
+    }
+
+    .mobile-list-page .mobile-list-search-container { padding: .85rem 1rem !important; }
+    .mobile-list-page .mobile-list-search {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr);
+        width: 100% !important;
+        max-width: none !important;
+        gap: .55rem !important;
+    }
+    .mobile-list-page .mobile-list-search input,
+    .mobile-list-page .mobile-list-search .form-control {
+        width: 100% !important;
+        max-width: none !important;
+        min-width: 0 !important;
+    }
+    .mobile-list-page .mobile-list-search > div {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .55rem !important;
+    }
+    .mobile-list-page .mobile-list-search > div:has(> :only-child) { grid-template-columns: minmax(0, 1fr); }
+    .mobile-list-page .mobile-list-search button,
+    .mobile-list-page .mobile-list-search > a { width: 100%; }
+
+    .mobile-list-page .overflow-x-auto,
+    .mobile-list-page .table-responsive {
+        overflow: visible !important;
+    }
+    .mobile-list-page table.mobile-card-table {
+        display: block !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        border-collapse: separate !important;
+        border-spacing: 0 !important;
+        background: transparent !important;
+    }
+    .mobile-list-page table.mobile-card-table thead {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
+    }
+    .mobile-list-page table.mobile-card-table tbody {
+        display: grid !important;
+        gap: .7rem;
+        padding: .75rem !important;
+        color: inherit;
+    }
+    .mobile-list-page table.mobile-card-table tbody tr:not(.mobile-card-empty) {
+        display: block !important;
+        overflow: hidden;
+        padding: .25rem .8rem !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: .85rem;
+        background: #fff !important;
+    }
+    .mobile-list-page table.mobile-card-table tbody tr:not(.mobile-card-empty):hover {
+        background: #fff !important;
+    }
+    .mobile-list-page table.mobile-card-table tbody td {
+        display: grid !important;
+        grid-template-columns: minmax(6.2rem, 38%) minmax(0, 1fr);
+        align-items: start;
+        gap: .7rem;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        padding: .58rem .1rem !important;
+        border: 0 !important;
+        border-bottom: 1px solid #edf0f4 !important;
+        color: #475569;
+        font-size: .8rem !important;
+        line-height: 1.45;
+        white-space: normal !important;
+        overflow-wrap: anywhere;
+        text-align: left !important;
+    }
+    .mobile-list-page table.mobile-card-table tbody td::before {
+        content: attr(data-label);
+        color: #64748b;
+        font-size: .68rem;
+        font-weight: 700;
+        line-height: 1.4;
+        letter-spacing: .035em;
+        text-transform: uppercase;
+    }
+    .mobile-list-page table.mobile-card-table tbody td:last-child { border-bottom: 0 !important; }
+    .mobile-list-page table.mobile-card-table tbody td[data-label="Aksi"] {
+        grid-template-columns: minmax(6.2rem, 38%) minmax(0, 1fr);
+        text-align: left !important;
+    }
+    .mobile-list-page table.mobile-card-table tbody td[data-label="Aksi"] > div {
+        justify-content: flex-start !important;
+        flex-wrap: wrap;
+    }
+    .mobile-list-page table.mobile-card-table tbody td[data-label="Aksi"] .btn { min-height: 2rem; }
+    .mobile-list-page table.mobile-card-table tbody tr.mobile-card-empty {
+        display: block !important;
+        border: 0 !important;
+        background: transparent !important;
+    }
+    .mobile-list-page table.mobile-card-table tbody tr.mobile-card-empty td {
+        display: block !important;
+        padding: 1.5rem .5rem !important;
+        border: 0 !important;
+        text-align: center !important;
+    }
+    .mobile-list-page table.mobile-card-table tbody tr.mobile-card-empty td::before { content: none !important; }
+    .mobile-list-page .card-footer .pagination { flex-wrap: wrap; justify-content: center; gap: .15rem; }
+
+    .detail-responsive-page .detail-view-header {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: flex-start !important;
+        justify-content: space-between !important;
+        gap: .75rem !important;
+        padding: 1rem !important;
+    }
+    .detail-responsive-page .detail-record-heading { flex: 1 1 70%; min-width: 0; }
+    .detail-responsive-page .detail-record-heading .card-title {
+        margin: 0 0 .25rem !important;
+        font-size: 1.25rem !important;
+        line-height: 1.35 !important;
+        overflow-wrap: normal;
+    }
+    .detail-responsive-page .detail-record-id {
+        display: block;
+        color: #64748b;
+        font-size: .82rem;
+        font-weight: 600;
+        line-height: 1.45;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+    .detail-responsive-page .detail-record-heading p,
+    .detail-responsive-page .detail-reason { overflow-wrap: anywhere; }
+    .detail-responsive-page > .card-footer .btn { width: 100%; }
+    .detail-responsive-page form.card-footer .flex.justify-end { display: grid !important; }
+    .detail-responsive-page form.card-footer .btn { width: 100%; }
+
+    html.dark .mobile-list-page table.mobile-card-table tbody tr:not(.mobile-card-empty) {
+        border-color: #334155 !important;
+        background: #111c2e !important;
+    }
+    html.dark .mobile-list-page table.mobile-card-table tbody tr:not(.mobile-card-empty):hover {
+        background: #111c2e !important;
+    }
+    html.dark .mobile-list-page table.mobile-card-table tbody td {
+        border-bottom-color: #263449 !important;
+        color: #cbd5e1 !important;
+    }
+    html.dark .mobile-list-page table.mobile-card-table tbody td::before { color: #94a3b8; }
+    html.dark .detail-responsive-page .detail-record-id { color: #94a3b8; }
 }

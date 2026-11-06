@@ -26,7 +26,7 @@ class BarangController extends Controller
             ->orderBy('kategori')
             ->orderByRaw('CAST(SUBSTRING(id_barang, 4) AS UNSIGNED)')
             ->orderBy('id_barang')
-            ->paginate(20)
+            ->paginate(10)
             ->withQueryString();
         $availability->withAvailability($barang->getCollection());
         $kategoriList = ['Elektronik', 'Pertanian', 'Furniture', 'Kendaraan'];

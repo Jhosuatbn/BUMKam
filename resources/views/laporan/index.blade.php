@@ -88,8 +88,8 @@
                         <p class="mb-0 text-body-secondary">Transaksi pemesanan barang BUMKam.</p>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-label-primary">{{ $pemesananTerbaru->count() }} data ditampilkan</span>
-                        <button type="button" class="btn btn-outline-secondary btn-sm laporan-print-action" onclick="window.print()"><i class="icon-base bx bx-printer me-1" aria-hidden="true"></i>Cetak</button>
+                        <span class="badge bg-label-primary">{{ $pemesananTerbaru->count() }} dari {{ $pemesananTerbaru->total() }} data</span>
+                        <button type="button" class="btn bumkam-green-action btn-sm laporan-print-action" data-print-url="{{ route('laporan.index', request()->except(['page', 'pembayaran_page', 'barang_page', 'movement_page']) + ['print' => 1]) }}" onclick="window.open(this.dataset.printUrl, '_blank')"><i class="icon-base bx bx-printer me-1" aria-hidden="true"></i>Cetak</button>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 gap-3 border-b p-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -136,9 +136,14 @@
                     </table>
                 </div>
                 <div class="card-footer d-flex flex-column flex-sm-row justify-content-between gap-2 text-body-secondary">
-                    <span>Menampilkan {{ $pemesananTerbaru->count() }} data pemesanan terbaru.</span>
-                    <span>Total nilai pada daftar: <strong class="text-heading">Rp {{ number_format($pemesananTerbaru->sum('total_harga'), 0, ',', '.') }}</strong></span>
+                    <span>Menampilkan {{ $pemesananTerbaru->firstItem() ?? 0 }}–{{ $pemesananTerbaru->lastItem() ?? 0 }} dari {{ $pemesananTerbaru->total() }} pemesanan.</span>
+                    <span>Total nilai pada halaman ini: <strong class="text-heading">Rp {{ number_format($pemesananTerbaru->sum('total_harga'), 0, ',', '.') }}</strong></span>
                 </div>
+                @if ($pemesananTerbaru->hasPages())
+                    <div class="border-t border-slate-200 px-5 py-4 sm:px-6 laporan-pagination">
+                        {{ $pemesananTerbaru->links() }}
+                    </div>
+                @endif
                 <div class="laporan-signature"><p>Rantau Bertuah, {{ now()->locale('id')->translatedFormat('d F Y') }}</p><p>Pimpinan BUMKam Tuah Rezeki</p><div class="signature-space"></div><strong>( ........................................ )</strong></div>
             </section>
         @elseif ($tabAktif === 'kredit')
@@ -151,20 +156,24 @@
                         <p class="mb-0 text-body-secondary">Ringkasan pembiayaan, sisa piutang, angsuran, dan denda pelanggan.</p>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-label-primary">{{ $daftarKredit->count() }} data</span>
-                        <button type="button" class="btn btn-outline-secondary btn-sm laporan-print-action" onclick="window.print()"><i class="icon-base bx bx-printer me-1" aria-hidden="true"></i>Cetak</button>
+                        <span class="badge bg-label-primary">{{ $daftarKredit->total() }} data</span>
+                        <button type="button" class="btn bumkam-green-action btn-sm laporan-print-action" data-print-url="{{ route('laporan.index', request()->except(['page', 'pembayaran_page', 'barang_page', 'movement_page']) + ['print' => 1]) }}" onclick="window.open(this.dataset.printUrl, '_blank')"><i class="icon-base bx bx-printer me-1" aria-hidden="true"></i>Cetak</button>
                     </div>
                 </div>
                 <div class="row g-3 border-bottom p-3 p-md-4">
-                    @foreach ([['Jumlah Kredit', $daftarKredit->count() . ' transaksi'], ['Sisa Kewajiban', 'Rp ' . number_format($daftarKredit->sum(fn ($order) => $order->monitoring_kredit['sisa_kewajiban']), 0, ',', '.')], ['Denda Dikenakan', 'Rp ' . number_format($totalDendaDikenakan, 0, ',', '.')], ['Denda Belum Dibayar', 'Rp ' . number_format($totalDendaBelumDibayar, 0, ',', '.')]] as [$labelRingkasan, $nilaiRingkasan])
+                    @foreach ([['Jumlah Kredit', $jumlahKredit . ' transaksi'], ['Sisa Kewajiban', 'Rp ' . number_format($totalSisaKewajiban, 0, ',', '.')], ['Denda Dikenakan', 'Rp ' . number_format($totalDendaDikenakan, 0, ',', '.')], ['Denda Belum Dibayar', 'Rp ' . number_format($totalDendaBelumDibayar, 0, ',', '.')]] as [$labelRingkasan, $nilaiRingkasan])
                         <div class="col-12 col-sm-6 col-xl-3"><article class="h-100 rounded-xl border border-slate-200 p-3"><p class="mb-1 small text-body-secondary">{{ $labelRingkasan }}</p><strong>{{ $nilaiRingkasan }}</strong></article></div>
                     @endforeach
                 </div>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0 laporan-table laporan-credit-table">
+                <div class="table-responsive" style="overflow-x:auto;width:100%">
+                    <table class="table table-hover align-middle mb-0 laporan-table laporan-credit-table" style="width:1765px!important;min-width:1765px!important;table-layout:fixed!important">
+                        <colgroup>
+                            <col style="width:60px"><col style="width:130px"><col style="width:225px"><col style="width:200px"><col style="width:190px">
+                            <col style="width:150px"><col style="width:190px"><col style="width:190px"><col style="width:270px"><col style="width:160px">
+                        </colgroup>
                         <thead>
                             <tr>
-                                <th scope="col">No.</th><th scope="col">Tanggal</th><th scope="col">Pelanggan</th><th scope="col">Barang</th>
+                                <th scope="col">#</th><th scope="col">Tanggal</th><th scope="col">Pelanggan</th><th scope="col">Barang</th>
                                 <th scope="col">Nilai Kredit</th><th scope="col">Angsuran</th><th scope="col">Sudah Dibayar</th><th scope="col">Sisa Kewajiban</th><th scope="col">Denda</th><th scope="col">Status</th>
                             </tr>
                         </thead>
@@ -194,7 +203,16 @@
                                     <td class="text-nowrap">Rp {{ number_format($kredit->angsuran ?? 0, 0, ',', '.') }}</td>
                                     <td class="text-nowrap">Rp {{ number_format($monitoringKredit['total_terbayar'], 0, ',', '.') }}<small class="d-block text-body-secondary">{{ $kredit->pembayaran->count() }} transaksi</small></td>
                                     <td class="text-nowrap fw-semibold">Rp {{ number_format($sisaTagihan, 0, ',', '.') }}<small class="d-block text-body-secondary">angsuran + denda</small></td>
-                                    <td class="small"><span class="d-block">Dikenakan Rp {{ number_format($monitoringKredit['total_denda_dikenakan'], 0, ',', '.') }}</span><span class="d-block text-body-secondary">Dibayar Rp {{ number_format($monitoringKredit['total_denda_dibayar'], 0, ',', '.') }}</span><span class="d-block text-body-secondary">Sisa Rp {{ number_format($monitoringKredit['total_denda_belum_dibayar'], 0, ',', '.') }}</span><span class="d-block text-body-secondary">Dikurangi Rp {{ number_format($monitoringKredit['total_denda_dikurangi'], 0, ',', '.') }}</span></td>
+                                    <td>
+                                        <div class="credit-penalty-breakdown">
+                                            <div><span>Dikenakan</span><strong>Rp {{ number_format($monitoringKredit['total_denda_dikenakan'], 0, ',', '.') }}</strong></div>
+                                            <div><span>Dibayar</span><strong>Rp {{ number_format($monitoringKredit['total_denda_dibayar'], 0, ',', '.') }}</strong></div>
+                                            <div><span>Sisa</span><strong>Rp {{ number_format($monitoringKredit['total_denda_belum_dibayar'], 0, ',', '.') }}</strong></div>
+                                            @if ($monitoringKredit['total_denda_dikurangi'] > 0)
+                                                <div><span>Penyesuaian lama</span><strong>Rp {{ number_format($monitoringKredit['total_denda_dikurangi'], 0, ',', '.') }}</strong></div>
+                                            @endif
+                                        </div>
+                                    </td>
                                     <td><span class="badge bg-label-{{ $statusKreditClass }}">{{ $statusKredit }}</span></td>
                                 </tr>
                             @empty
@@ -204,9 +222,14 @@
                     </table>
                 </div>
                 <div class="card-footer d-flex flex-column flex-sm-row justify-content-between gap-2 text-body-secondary">
-                    <span>Menampilkan {{ $daftarKredit->count() }} data kredit.</span>
+                    <span>Menampilkan {{ $daftarKredit->firstItem() ?? 0 }}–{{ $daftarKredit->lastItem() ?? 0 }} dari {{ $daftarKredit->total() }} data kredit.</span>
                     <span>Total angsuran per bulan: <strong class="text-heading">Rp {{ number_format($totalAngsuranBulanan ?? 0, 0, ',', '.') }}</strong></span>
                 </div>
+                @if ($daftarKredit->hasPages())
+                    <div class="border-t border-slate-200 px-5 py-4 sm:px-6 laporan-pagination">
+                        {{ $daftarKredit->links() }}
+                    </div>
+                @endif
                 <div class="laporan-signature"><p>Rantau Bertuah, {{ now()->locale('id')->translatedFormat('d F Y') }}</p><p>Pimpinan BUMKam Tuah Rezeki</p><div class="signature-space"></div><strong>( ........................................ )</strong></div>
             </section>
 
@@ -220,7 +243,15 @@
     <style>
         .laporan-table { min-width: 980px; }
         .laporan-table th { white-space: nowrap; font-size: .75rem; }
-        .laporan-credit-table { min-width: 1500px; }
+        .laporan-credit-table { width: 1765px !important; min-width: 1765px !important; table-layout: fixed !important; }
+        .laporan-credit-table th, .laporan-credit-table td { vertical-align: middle; padding: .85rem .75rem; }
+        .laporan-credit-table th { white-space: normal; line-height: 1.35; }
+        .laporan-credit-table td { overflow-wrap: anywhere; }
+        .laporan-credit-table td:nth-child(5), .laporan-credit-table td:nth-child(6), .laporan-credit-table td:nth-child(7), .laporan-credit-table td:nth-child(8) { white-space: nowrap; }
+        .credit-penalty-breakdown { display: grid; gap: .35rem; min-width: 0; font-size: .8rem; }
+        .credit-penalty-breakdown > div { display: flex; align-items: baseline; justify-content: space-between; gap: .65rem; }
+        .credit-penalty-breakdown span { color: var(--bs-secondary-color); }
+        .credit-penalty-breakdown strong { white-space: nowrap; font-weight: 600; }
         .laporan-official-header, .laporan-signature { display: none; }
         @media print {
             @page { size: A4 landscape; margin: 12mm; }
@@ -246,4 +277,12 @@
             .laporan-signature .signature-space { height: 54px; }
         }
     </style>
+    @if (request()->boolean('print'))
+        <script>
+            window.addEventListener('load', () => {
+                window.addEventListener('afterprint', () => window.close(), { once: true });
+                window.print();
+            });
+        </script>
+    @endif
 @endsection

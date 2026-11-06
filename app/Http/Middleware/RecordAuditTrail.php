@@ -22,7 +22,6 @@ class RecordAuditTrail
         'pemesanan.cancel',
         'pembayaran.reverse',
         'jaminan.update',
-        'monitoring-kredit.denda.reduce',
     ];
 
     public function __construct(private readonly AuditTrailWriter $writer)
