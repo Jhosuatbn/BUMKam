@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#f4f5ef">
     <title>Masuk | BUMKam Tuah Rezeki</title>
+    <link rel="icon" type="image/png" href="{{ asset('assets/img/bumkam-mark.png') }}?v=1">
+    <link rel="apple-touch-icon" href="{{ asset('assets/img/bumkam-mark.png') }}?v=1">
     @vite(['resources/css/app.css'])
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
