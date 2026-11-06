@@ -33,7 +33,7 @@
         .map-frame iframe{width:100%;height:310px;border:0}
         .map-link{position:absolute;right:12px;bottom:12px;padding:9px 13px;border-radius:999px;background:#fff;color:var(--green-900);font-size:12px;font-weight:700;box-shadow:0 4px 15px rgba(0,0,0,.14)}
         .unit-card{min-height:0;overflow:hidden;padding:0}
-        .unit-cover{display:block;width:100%;height:170px;object-fit:cover}
+        .unit-cover{display:block;width:100%;height:170px;object-fit:cover}.unit-cover-mart{object-position:center top}
         .unit-body{padding:20px 22px 23px}
         .unit-body h3{margin:0 0 8px}
         .unit-body p{margin:0}
@@ -73,6 +73,7 @@
         .org-leadership .org-item:first-child{grid-column:auto;max-width:none}
         @media(max-width:700px){.org-advisors,.org-leadership,.org-units,.org-analysts{grid-template-columns:1fr}.org-director{grid-template-columns:minmax(0,288px);margin-inline:auto}}
         .site-header .nav-wrap{width:100%;max-width:none;padding-inline:clamp(16px,3vw,44px);gap:24px}.main-nav{margin-left:auto}.nav-actions{flex:0 0 auto}.nav-login{min-height:40px;padding-inline:16px;font-size:13px}
+        .brand img.brand-mark{display:block;width:48px;height:48px;padding:2px;border-radius:10px;background:#fff;object-fit:contain}
     </style>
 </head>
 <body>
@@ -80,7 +81,7 @@
     <header class="site-header">
         <div class="container nav-wrap">
             <a class="brand" href="{{ route('public.home') }}" aria-label="BUMKam Tuah Rezeki, beranda">
-                <span class="brand-mark" aria-hidden="true">TR</span>
+                <img class="brand-mark" src="{{ asset('assets/img/bumkam-mark.png') }}" alt="Logo BUMKam Tuah Rezeki">
                 <span class="brand-copy"><strong>BUMKAM</strong><span>Tuah Rezeki</span></span>
             </a>
             <nav class="main-nav" aria-label="Navigasi utama">
@@ -103,7 +104,7 @@
         <div class="container">
             <div class="footer-grid">
                 <div>
-                    <a class="footer-brand" href="{{ route('public.home') }}"><span class="brand-mark" aria-hidden="true">TR</span><strong>BUMKAM Tuah Rezeki</strong></a>
+                    <a class="footer-brand" href="{{ route('public.home') }}"><img class="brand-mark" src="{{ asset('assets/img/bumkam-mark.png') }}" alt="Logo BUMKam Tuah Rezeki"><strong>BUMKAM Tuah Rezeki</strong></a>
                     <p>Menebar Manfaat, Menjemput Tuah Rezeki. Penggerak ekonomi kampung yang mandiri, amanah, dan terpercaya.</p>
                 </div>
                 <div><h3>Kontak Kami</h3><div class="footer-links"><span>Kampung Rantau Bertuah, Kabupaten Siak, Riau</span><a href="mailto:bumkampungtuahrezeki@gmail.com">bumkampungtuahrezeki@gmail.com</a><a href="mailto:bumkampungtuahrezeki2@gmail.com">bumkampungtuahrezeki2@gmail.com</a></div></div>

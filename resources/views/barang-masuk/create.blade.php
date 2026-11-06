@@ -25,7 +25,7 @@
                 <div class="col-md-6">
                     <label class="form-label" for="id_supplier">Supplier</label>
                     <select id="id_supplier" name="id_supplier" class="form-select" required>
-                        <option value="">Pilih supplier</option>
+                        <option value="" disabled hidden @selected(old('id_supplier') === null)>Pilih supplier</option>
                         @foreach ($suppliers as $supplier)
                             <option value="{{ $supplier->id_supplier }}" @selected(old('id_supplier') === $supplier->id_supplier)>{{ $supplier->nama_supplier }}</option>
                         @endforeach

@@ -4,8 +4,9 @@
 
 'use strict';
 
-let menu,
-  animate;
+let menu;
+const sidebarScrollKey = 'bumkam-sidebar-scroll';
+
 document.addEventListener('DOMContentLoaded', function () {
   // class for ios specific styles
   if (navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
@@ -23,9 +24,29 @@ document.addEventListener('DOMContentLoaded', function () {
       orientation: 'vertical',
       closeChildren: false
     });
-    // Change parameter to true if you want scroll animation
-    window.Helpers.scrollToActive((animate = false));
     window.Helpers.mainMenu = menu;
+
+    const menuInner = element.querySelector('.menu-inner');
+    if (menuInner) {
+      try {
+        const saveSidebarScroll = () => {
+          sessionStorage.setItem(sidebarScrollKey, String(menuInner.scrollTop));
+        };
+        const savedScroll = Number(sessionStorage.getItem(sidebarScrollKey) || 0);
+        menuInner.scrollTop = savedScroll;
+        window.Helpers.menuPsScroll?.update();
+
+        menuInner.addEventListener('scroll', saveSidebarScroll, { passive: true });
+        window.addEventListener('pagehide', saveSidebarScroll);
+        document.addEventListener('click', (event) => {
+          const link = event.target.closest('#layout-menu a[href]');
+          if (!link || link.getAttribute('href') === 'javascript:void(0);') return;
+          saveSidebarScroll();
+        }, true);
+      } catch (error) {
+        // Sidebar navigation remains usable when session storage is unavailable.
+      }
+    }
   });
 
   // Initialize menu togglers and bind click on each

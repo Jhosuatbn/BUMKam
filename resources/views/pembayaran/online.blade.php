@@ -6,7 +6,6 @@
     <div class="pembayaran-page mx-auto max-w-3xl space-y-6">
         <header>
             <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Pembayaran Online</h1>
-            <p class="mt-2 text-sm text-slate-600">Selesaikan angsuran melalui kanal pembayaran Midtrans.</p>
         </header>
 
         <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
@@ -15,6 +14,7 @@
                 <div>
                     <h2 class="text-lg font-bold text-slate-900">{{ $pembayaran->pemesanan?->pelanggan?->nama_pelanggan ?? 'Pelanggan' }}</h2>
                     <p class="mt-1 text-sm text-slate-500">Pemesanan {{ $pembayaran->id_pemesanan }} · Pembayaran {{ $pembayaran->id_pembayaran }}</p>
+                    <p class="mt-2 text-sm text-slate-600">Selesaikan angsuran melalui kanal pembayaran Midtrans.</p>
                 </div>
             </div>
 
@@ -27,11 +27,11 @@
                 Status pembayaran masih menunggu konfirmasi resmi dari Midtrans. Status tidak berubah hanya karena jendela pembayaran ditutup.
             </div>
 
-            <div class="mt-6 flex flex-wrap gap-3">
-                <button id="pay-online-button" type="button" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-800">
+            <div class="mt-6 flex flex-wrap justify-end gap-3">
+                <a href="{{ route('pembayaran.index') }}" class="bumkam-cancel-button inline-flex min-h-11 items-center justify-center rounded-xl border px-5 py-2.5 text-sm font-semibold transition hover:bg-slate-50">Kembali ke Pembayaran</a>
+                <button id="pay-online-button" type="button" class="bumkam-green-action inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition">
                     <i class="icon-base bx bx-lock-alt" aria-hidden="true"></i> Bayar Sekarang
                 </button>
-                <a href="{{ route('pembayaran.index') }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">Kembali ke Pembayaran</a>
             </div>
         </section>
     </div>

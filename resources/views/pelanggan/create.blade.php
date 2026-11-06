@@ -18,8 +18,7 @@
         <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6" aria-labelledby="pelanggan-form-heading">
             <h2 id="pelanggan-form-heading" class="mb-4 text-base font-semibold text-slate-900">Informasi Pelanggan</h2>
 
-            {{-- enctype WAJIB ada agar file bisa diunggah --}}
-            <form action="{{ route('pelanggan.store') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('pelanggan.store') }}" method="POST">
                 @csrf
                 <div class="grid grid-cols-1 gap-x-6 gap-y-6 md:grid-cols-2">
 
@@ -50,35 +49,7 @@
                         @enderror
                     </div>
 
-                    {{-- Upload foto KTP --}}
                     <div>
-                        <label for="foto_ktp" class="block text-sm font-semibold text-slate-700">Foto KTP</label>
-                        <div class="mt-2 space-y-2">
-                            <input id="foto_ktp" type="file" name="foto_ktp" accept="image/jpeg,image/png,image/webp" data-upload-preview-input data-max-size="2097152" data-allowed-label="JPG, PNG, atau WEBP" aria-describedby="foto_ktp_hint" class="form-control @error('foto_ktp') border-rose-400 @enderror">
-                            <div id="foto_ktp_preview_box" data-upload-preview-box class="hidden flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white p-3" aria-live="polite">
-                                <button type="button" data-upload-preview-image-button class="hidden cursor-zoom-in rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700" aria-label="Perbesar pratinjau foto KTP">
-                                    <img id="foto_ktp_preview" data-upload-preview-image src="" alt="Pratinjau foto KTP yang dipilih" class="h-36 w-56 rounded-lg bg-slate-100 object-contain">
-                                </button>
-                                <button type="button" data-upload-preview-file-button class="hidden rounded-lg bg-slate-100 px-4 py-3 text-sm font-semibold text-blue-800">Lihat dokumen</button>
-                                <span class="min-w-0 flex-1"><span class="block text-xs font-medium text-slate-500">Foto siap diunggah</span><span data-upload-preview-name class="mt-0.5 block truncate text-sm font-semibold text-slate-800"></span></span>
-                                <button type="button" data-clear-upload-preview class="inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-xl leading-none text-slate-500 shadow-sm transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700" aria-label="Hapus foto yang dipilih" title="Hapus foto yang dipilih">&times;</button>
-                            </div>
-                        </div>
-                        <p id="foto_ktp_hint" class="mt-1.5 text-xs text-slate-500">Opsional. JPG, PNG, atau WEBP, maksimal 2 MB.</p>
-                        <p id="foto_ktp_error" data-upload-preview-error role="alert" class="mt-1 hidden text-xs font-medium text-rose-700"></p>
-                        @error('foto_ktp')
-                            <p class="mt-1 text-xs font-medium text-rose-700">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div>
-                        <div class="mb-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
-                            <label for="wa_reminder_opt_in" class="flex items-start gap-3 text-sm font-medium text-slate-800">
-                                <input id="wa_reminder_opt_in" type="checkbox" name="wa_reminder_opt_in" value="1" @checked(old('wa_reminder_opt_in')) class="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-700 focus:ring-blue-700">
-                                <span>Pelanggan menyetujui menerima pengingat tagihan melalui WhatsApp.</span>
-                            </label>
-                            <p class="mt-2 pl-7 text-xs text-slate-500">Centang hanya setelah persetujuan pelanggan diperoleh. Pengingat otomatis dinonaktifkan bila tidak dicentang.</p>
-                        </div>
                         <label for="alamat" class="block text-sm font-semibold text-slate-700">Alamat</label>
                         <textarea id="alamat" name="alamat" rows="4" required maxlength="255" autocomplete="street-address" class="mt-2 block w-full rounded-xl border bg-white px-3.5 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 @error('alamat') border-rose-400 focus:border-rose-600 focus:ring-rose-600/20 @else border-slate-300 focus:border-blue-600 focus:ring-blue-600/20 @enderror">{{ old('alamat') }}</textarea>
                         @error('alamat')
@@ -87,9 +58,17 @@
                     </div>
                 </div>
 
+                <div class="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <label for="wa_reminder_opt_in" class="flex items-start gap-3 text-sm font-medium text-slate-800">
+                        <input id="wa_reminder_opt_in" type="checkbox" name="wa_reminder_opt_in" value="1" @checked(old('wa_reminder_opt_in')) class="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-700 focus:ring-blue-700">
+                        <span>Pelanggan menyetujui menerima pengingat tagihan melalui WhatsApp.</span>
+                    </label>
+                    <p class="mt-2 pl-7 text-xs text-slate-500">Centang hanya setelah persetujuan pelanggan diperoleh. Pengingat otomatis dinonaktifkan bila tidak dicentang.</p>
+                </div>
+
                 <div class="mt-8 flex flex-wrap justify-end gap-3 border-t border-slate-200 pt-5">
-                    <button type="submit" data-no-auto-icon class="pelanggan-save-button inline-flex min-h-11 items-center justify-center rounded-2xl bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Simpan</button>
                     <a href="{{ route('pelanggan.index') }}" class="bumkam-cancel-button inline-flex min-h-11 items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-bold text-black shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Batal</a>
+                    <button type="submit" data-no-auto-icon class="pelanggan-save-button inline-flex min-h-11 items-center justify-center rounded-2xl bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Simpan</button>
                 </div>
             </form>
         </section>

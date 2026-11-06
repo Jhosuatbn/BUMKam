@@ -86,9 +86,7 @@
                                 </td>
                                 <td class="px-4 py-3.5 text-center sm:px-6">
                                     <div class="inline-flex items-center justify-center gap-3">
-                                        <a href="{{ route('pemesanan.show', $item->id_pemesanan) }}" class="text-blue-700 transition hover:text-blue-800" title="Lihat detail {{ $item->id_pemesanan }}" aria-label="Lihat detail {{ $item->id_pemesanan }}">
-                                            <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.25 12s3.5-6 9.75-6 9.75 6 9.75 6-3.5 6-9.75 6-9.75-6-9.75-6Z"/><circle cx="12" cy="12" r="2.5" stroke-width="2"/></svg>
-                                        </a>
+                                        <a href="{{ route('pemesanan.show', $item->id_pemesanan) }}" class="btn btn-sm btn-outline-secondary" title="Lihat detail {{ $item->id_pemesanan }}"><i class="icon-base bx bx-show me-1" aria-hidden="true"></i>Detail</a>
                                         @if (auth()->user()?->peran !== 'Pimpinan' && ($item->status_persetujuan === null || $item->status_persetujuan === 'Menunggu Persetujuan'))
                                         <a href="{{ route('pemesanan.edit', $item->id_pemesanan) }}" class="text-amber-600 transition hover:text-amber-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700" title="Edit pemesanan {{ $item->id_pemesanan }}" aria-label="Edit pemesanan {{ $item->id_pemesanan }}">
                                             <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 0 1 2.828 2.828L11.828 15H9v-2.828z"/></svg>

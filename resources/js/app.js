@@ -141,27 +141,31 @@ const syncThemeToggleLabels = () => {
     document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
         button.setAttribute('aria-label', `Aktifkan mode ${nextMode}`);
         button.setAttribute('title', `Aktifkan mode ${nextMode}`);
-        button.replaceChildren();
-
         if (button.classList.contains('bumkam-theme-toggle')) {
-            const icon = document.createElement('i');
+            let icon = button.querySelector('i');
+            if (!icon) {
+                icon = document.createElement('i');
+                icon.setAttribute('aria-hidden', 'true');
+                button.append(icon);
+            }
             icon.className = `icon-base bx ${isDark ? 'bx-sun' : 'bx-moon'}`;
-            icon.setAttribute('aria-hidden', 'true');
-            button.append(icon);
             return;
         }
 
-        const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        icon.setAttribute('class', 'size-4');
-        icon.setAttribute('viewBox', '0 0 24 24');
-        icon.setAttribute('fill', 'none');
-        icon.setAttribute('stroke', 'currentColor');
-        icon.setAttribute('stroke-width', '1.8');
-        icon.setAttribute('aria-hidden', 'true');
+        let icon = button.querySelector('svg');
+        if (!icon) {
+            icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            icon.setAttribute('class', 'size-4');
+            icon.setAttribute('viewBox', '0 0 24 24');
+            icon.setAttribute('fill', 'none');
+            icon.setAttribute('stroke', 'currentColor');
+            icon.setAttribute('stroke-width', '1.8');
+            icon.setAttribute('aria-hidden', 'true');
+            button.append(icon);
+        }
         icon.innerHTML = isDark
             ? '<circle cx="12" cy="12" r="4"/><path stroke-linecap="round" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>'
             : '<path stroke-linecap="round" stroke-linejoin="round" d="M20.9 13.1A8.5 8.5 0 0 1 10.9 3.1 8.5 8.5 0 1 0 20.9 13.1Z"/>';
-        button.append(icon);
     });
 };
 syncThemeToggleLabels();

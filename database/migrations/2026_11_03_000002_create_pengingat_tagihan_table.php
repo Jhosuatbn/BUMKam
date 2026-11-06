@@ -8,6 +8,12 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Some local databases already have the older Fonnte reminder table.
+        // Preserve it and let the compatibility migration add the newer fields.
+        if (Schema::hasTable('pengingat_tagihan')) {
+            return;
+        }
+
         Schema::create('pengingat_tagihan', function (Blueprint $table) {
             $table->id();
             $table->string('id_pemesanan', 20);
@@ -30,6 +36,9 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('pengingat_tagihan');
+        // Never drop a pre-existing legacy reminder table and its history.
+        if (Schema::hasTable('pengingat_tagihan') && ! Schema::hasColumn('pengingat_tagihan', 'fonnte_request_id')) {
+            Schema::dropIfExists('pengingat_tagihan');
+        }
     }
 };
