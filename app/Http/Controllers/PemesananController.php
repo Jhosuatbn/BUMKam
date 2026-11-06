@@ -35,12 +35,17 @@ class PemesananController extends Controller
         abort_unless(auth()->user()?->peran === 'Pimpinan', 403);
         $status = $request->query('status', 'Menunggu Persetujuan');
         abort_unless(in_array($status, ['Menunggu Persetujuan', 'Disetujui', 'Ditolak'], true), 404);
+        $jumlahPersetujuan = Pemesanan::query()
+            ->whereIn('status_persetujuan', ['Menunggu Persetujuan', 'Disetujui', 'Ditolak'])
+            ->selectRaw('status_persetujuan, COUNT(*) as total')
+            ->groupBy('status_persetujuan')
+            ->pluck('total', 'status_persetujuan');
         $pemesanan = Pemesanan::with('pelanggan')
             ->where('status_persetujuan', $status)
             ->latest('created_at')
             ->paginate(15)
             ->withQueryString();
-        return view('pemesanan.index', compact('pemesanan', 'status'))->with('halamanPersetujuan', true);
+        return view('pemesanan.index', compact('pemesanan', 'status', 'jumlahPersetujuan'))->with('halamanPersetujuan', true);
     }
 
     public function cariPelanggan(Request $request)

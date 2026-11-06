@@ -15,21 +15,49 @@
 
         <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" aria-labelledby="pemesanan-list-heading">
             @if (($halamanPersetujuan ?? false) && auth()->user()?->peran === 'Pimpinan')
-                <nav aria-label="Filter status persetujuan" class="hidden border-b border-slate-200 px-5 py-3 sm:block sm:px-6">
-                    <div class="inline-flex flex-wrap gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1">
-                    @foreach (['Menunggu Persetujuan', 'Disetujui', 'Ditolak'] as $statusTab)
-                        <a href="{{ route('pemesanan.persetujuan', ['status' => $statusTab]) }}" @class(['inline-flex min-h-9 items-center rounded-lg px-3 py-1.5 text-sm font-semibold transition', 'bg-emerald-700 text-white shadow-sm hover:bg-emerald-800' => $status === $statusTab, 'text-slate-600 hover:bg-white hover:text-slate-900' => $status !== $statusTab]) @if($status === $statusTab) aria-current="page" @endif>{{ $statusTab }}</a>
-                    @endforeach
+                @php
+                    $statusPersetujuanTabs = [
+                        'Menunggu Persetujuan' => ['icon' => 'time-five', 'hint' => 'Perlu ditinjau'],
+                        'Disetujui' => ['icon' => 'check-circle', 'hint' => 'Telah disetujui'],
+                        'Ditolak' => ['icon' => 'x-circle', 'hint' => 'Tidak disetujui'],
+                    ];
+                @endphp
+                <nav aria-label="Filter status persetujuan" class="border-b border-slate-200 px-5 py-4 sm:px-6">
+                    <div class="grid grid-cols-1 gap-2 sm:grid-cols-3" role="list">
+                        @foreach ($statusPersetujuanTabs as $statusTab => $tabInfo)
+                            <a href="{{ route('pemesanan.persetujuan', ['status' => $statusTab]) }}"
+                                @class([
+                                    'group flex min-h-[4.5rem] items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm transition-colors',
+                                    'border-[#078a46] bg-gradient-to-r from-[#078a46] to-[#65a30d] text-white shadow-sm hover:from-[#056b38] hover:to-[#4d7c0f]' => $status === $statusTab,
+                                    'border-slate-200 bg-white text-slate-700 hover:border-emerald-300 hover:bg-emerald-50/70' => $status !== $statusTab,
+                                ])
+                                @if ($status === $statusTab) aria-current="page" @endif>
+                                <span class="flex min-w-0 items-center gap-3">
+                                    <span @class([
+                                        'grid size-10 shrink-0 place-items-center rounded-xl',
+                                        'bg-white/15 text-white' => $status === $statusTab,
+                                        'bg-slate-100 text-slate-600 group-hover:bg-emerald-100 group-hover:text-emerald-700' => $status !== $statusTab,
+                                    ]) aria-hidden="true">
+                                        <i class="icon-base bx bx-{{ $tabInfo['icon'] }} text-xl"></i>
+                                    </span>
+                                    <span class="min-w-0 text-left">
+                                        <span class="block font-semibold leading-snug">{{ $statusTab }}</span>
+                                        <span @class([
+                                            'mt-0.5 block text-xs',
+                                            'text-emerald-100' => $status === $statusTab,
+                                            'text-slate-500' => $status !== $statusTab,
+                                        ])>{{ $tabInfo['hint'] }}</span>
+                                    </span>
+                                </span>
+                                <span @class([
+                                    'inline-flex min-w-8 shrink-0 items-center justify-center rounded-full px-2.5 py-1 text-xs font-bold tabular-nums',
+                                    'bg-white/15 text-white' => $status === $statusTab,
+                                    'bg-slate-100 text-slate-600' => $status !== $statusTab,
+                                ])>{{ number_format($jumlahPersetujuan[$statusTab] ?? 0, 0, ',', '.') }}</span>
+                            </a>
+                        @endforeach
                     </div>
                 </nav>
-                <form action="{{ route('pemesanan.persetujuan') }}" method="GET" class="flex items-center gap-2 border-b border-slate-200 px-5 py-3 sm:hidden">
-                    <label for="status-persetujuan-mobile" class="sr-only">Pilih status persetujuan</label>
-                    <select id="status-persetujuan-mobile" name="status" class="form-select" onchange="this.form.requestSubmit()">
-                        @foreach (['Menunggu Persetujuan', 'Disetujui', 'Ditolak'] as $statusTab)
-                            <option value="{{ $statusTab }}" @selected($status === $statusTab)>{{ $statusTab }}</option>
-                        @endforeach
-                    </select>
-                </form>
             @endif
             <div class="flex flex-col gap-3 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
                 <div>
