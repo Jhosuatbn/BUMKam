@@ -659,6 +659,30 @@ html.dark .monitoring-stok-page .monitoring-stok-item .text-slate-800 { color: #
     -webkit-backdrop-filter: blur(5px);
     backdrop-filter: blur(5px);
 }
+.barang-modal-backdrop {
+    z-index: 1;
+    background-color: rgb(15 23 42 / 60%);
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+}
+.barang-create-dialog {
+    box-sizing: border-box;
+    width: min(32.5rem, calc(100vw - 2rem));
+    padding: 1.375rem;
+}
+.barang-create-dialog-heading h3 {
+    font-size: 1.625rem;
+    line-height: 1.25;
+}
+.barang-create-dialog-field {
+    box-sizing: border-box;
+    min-height: 2.625rem;
+    padding-block: .625rem;
+    font-size: .875rem;
+}
+.barang-create-dialog .barang-modal-action {
+    min-height: 2.375rem;
+}
 body.modal-open .layout-wrapper {
     filter: blur(5px);
     transition: filter .18s ease;

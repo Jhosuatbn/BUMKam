@@ -137,10 +137,10 @@
 
     {{-- POP-UP / MODAL TAMBAH BARANG --}}
     <div id="tambahBarangModal" class="hidden fixed inset-0 z-[9999] overflow-y-auto">
-        <div onclick="closeModal()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"></div>
+        <div onclick="closeModal()" class="barang-modal-backdrop fixed inset-0 transition-opacity" aria-hidden="true"></div>
         <div class="flex min-h-screen items-center justify-center p-4">
-            <div class="relative w-full max-w-xl transform rounded-2xl bg-slate-100 p-6 text-left shadow-2xl transition-all border border-slate-300 z-10">
-                <div class="mb-5 flex items-center justify-between">
+            <div class="barang-create-dialog relative w-full max-w-xl transform rounded-2xl bg-slate-100 p-6 text-left shadow-2xl transition-all border border-slate-300 z-10">
+                <div class="barang-create-dialog-heading mb-5 flex items-center justify-between">
                     <h3 class="text-xl font-bold text-slate-800">Tambah Barang</h3>
                     <button onclick="closeModal()" type="button" class="text-slate-400 hover:text-slate-600 focus:outline-none">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -163,11 +163,11 @@
                 <form action="{{ route('barang.store') }}" method="POST" class="space-y-4">
                     @csrf
                     <div>
-                        <input id="nama_barang" type="text" name="nama_barang" value="{{ old('nama_barang') }}" placeholder="Nama Barang" required class="block w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                        <input id="nama_barang" type="text" name="nama_barang" value="{{ old('nama_barang') }}" placeholder="Nama Barang" required class="barang-create-dialog-field block w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                     </div>
 
                     <div>
-                        <select id="kategori" name="kategori" required class="block w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                        <select id="kategori" name="kategori" required class="barang-create-dialog-field block w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                             <option value="" disabled hidden @selected(old('kategori') === null)>Pilih jenis barang</option>
                             @foreach ($kategoriList as $kat)
                                 <option value="{{ $kat }}" {{ old('kategori') == $kat ? 'selected' : '' }}>{{ $kat }}</option>
@@ -176,7 +176,7 @@
                     </div>
 
                     <div>
-                        <input id="harga" type="text" inputmode="numeric" data-rupiah-input name="harga" value="{{ old('harga') }}" placeholder="Harga" required class="block w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                        <input id="harga" type="text" inputmode="numeric" data-rupiah-input name="harga" value="{{ old('harga') }}" placeholder="Harga" required class="barang-create-dialog-field block w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
                     </div>
 
                     <div>
@@ -197,7 +197,13 @@
     {{-- Script JavaScript Modal --}}
     <script>
         function openModal() {
-            document.getElementById('tambahBarangModal').classList.remove('hidden');
+            const modal = document.getElementById('tambahBarangModal');
+            // Keep the fixed backdrop at the document root so it covers the sidebar,
+            // navbar, and page content as one continuous layer.
+            if (modal.parentElement !== document.body) {
+                document.body.appendChild(modal);
+            }
+            modal.classList.remove('hidden');
         }
 
         function closeModal() {
